@@ -1,0 +1,48 @@
+/*
+ * HierarchicalTraverseEdgeType.java
+ * This file is part of aida_scraper
+ *
+ * Copyright (C) 2018 giacomo
+ *
+ * aida_scraper is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * aida_scraper is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with aida_scraper. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+package org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_1;
+
+public class HierarchicalTraverseEdgeType {
+    public final boolean affermative;
+    public final HierarchicalTraverse type;
+
+    public HierarchicalTraverseEdgeType(HierarchicalTraverse type, boolean affermative) {
+        this.affermative = affermative;
+        this.type = type;
+    }
+
+    public HierarchicalTraverseEdgeType negate() {
+        return new HierarchicalTraverseEdgeType(type, !affermative);
+    }
+
+    public HierarchicalTraverseEdgeType invertRelationType() {
+        return new HierarchicalTraverseEdgeType(type.invertRelationDirection(), affermative);
+    }
+
+    public boolean isPreferredDirection() {
+        return type.isPreferredDirection();
+    }
+
+    public HierarchicalTraverseEdgeType normalize() {
+        return type.isPreferredDirection() ? this : invertRelationType();
+    }
+}
