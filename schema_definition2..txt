@@ -1,0 +1,359 @@
+## TODO for time: add time representation as subset of arrays
+## TODO: geographical locations are represented in hierarchies, but the hierarchies from GeoNames are not perfectly linked. I need to further reify the ones from GeoNames
+relation be  (val,place,time);
+
+relation beB (val,place,time);
+	rule beB (val,place,time) => be (val,place,time);
+
+relation beC (val,place,time);
+	rule beC (val,place,time) => be (val,place,time);
+
+relation isA (subtype, suptype);
+    rule isA(subtype, suptype) isA(suptype, supsuptype) with subtype notnull suptype notnull supsuptype notnull => isA(subtype, supsuptype);
+    rule isA(subtype, suptupe) with subtype notnull => isA(subtype, subtype);
+    rule isA(subtype, suptupe) with suptupe notnull => isA(suptupe, suptupe);
+
+## Basic elements required by the formalism
+## type and isA are the same kind of relationship
+relation type(val,ty);
+	rule type(val,ty) => isA(val,ty);
+	rule type(val,ty) => isA(val,val);
+
+relation owned (subtype, suptype, T);
+    rule owned(subtype, suptype, T) owned(suptype, supsuptype, T) with subtype notnull suptype notnull supsuptype notnull => owned(subtype, supsuptype,T);
+
+# val is the entity/filler
+relation ex  (val,time);
+relation nex (val,time);
+    rule ex(val,time) nex(val,time) => False;
+    rule ~ex(val,time) => nex(val,time);
+
+relation beA (val,time);
+	rule beA (val,time) => ex (val,time);
+	rule ~beA (val,time) => ~ex (val,time);
+
+## Being projection: if an entity x existed at a given place s at time t, it existed at that time
+/* Please note that not being in a spatio-temporal region does not necessairly imply
+   that an entity did not existed at that time.*/
+rule be(val,place,time) => ex(val,time);
+
+# Macros defined a timed isA relationship
+#macro R(x,y,z,t) as tisaTa, rule R(x,y,z,t) with z notnull => tIsA(x,y,z);
+#macro R(x,y,z,t) as tisaTb, rule R(x,y,z,t) with t notnull => tIsA(x,y,t);
+
+#############################################################
+## Providing the database schema for all the relationships ##
+#############################################################
+## In the meantime, I expand the existance rules for the entities involved in the declaration
+relation MeasurementCount(Count,Item,TStart,TEnd);
+    entity exist Item in time TStart, TEnd;
+
+relation PhysicalLocatedNear(Entity,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+relation PhysicalResident(Resident,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+relation OrganizationLocation(Organization,Place,TStart,TEnd);
+    entity exist Organization in time TStart, TEnd;
+
+relation PhysicalOrganizationHeadquarter(Organization,Place,TStart,TEnd);
+    rule PhysicalOrganizationHeadquarter(Organization,Place,TStart,TEnd) => OrganizationLocation(Organization,Place,TStart,TEnd);
+    rule PhysicalOrganizationHeadquarter(Organization,Place,TStart,TEnd) => PhysicalLocatedNear(Organization,Place,TStart,TEnd);
+    rule ~PhysicalOrganizationHeadquarter(Organization,Place,TStart,TEnd) => ~PhysicalLocatedNear(Organization,Place,TStart,TEnd);
+
+relation PhysicalOrganizationLocationOrigin(Organization,Place,TStart,TEnd);
+    rule PhysicalOrganizationLocationOrigin(Organization,Place,TStart,TEnd) => OrganizationLocation(Organization,Place,TStart,TEnd);
+
+relation PersonalSocialRoleTitle(Person,Title,TStart,TEnd);
+    entity exist except Title in time TStart, TEnd;
+	
+
+# This information can be also derived from any event providing a `Beneficiary`
+relation GeneralAffiliationSponsorship(Entity,Sponsor,TStart,TEnd);
+    entity exist except Title in time TStart, TEnd;
+
+relation OrganizationAffiliationEmploymentMembership(Employee,Organization,TStart,TEnd);
+    entity exist in time TStart, TEnd;
+
+relation OrganizationAffiliationLeadership(Leader,Organization,TStart,TEnd);
+    entity exist in time TStart, TEnd;
+
+relation GeneralAffiliationMORE(Person,Affiliation,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+
+relation GeneralAffiliationPersonAge(Person,Age,TStart,TEnd);
+	entity exist except Age in time TStart, TEnd;
+
+# This information can be also derived from `BusinessStart`
+relation OrganizationAffiliationFounder(Founder,Organization,TStart,TEnd);
+	entity exist except Age in time TStart, TEnd;
+
+relation OrganizationAffiliationInvestorShareholder(InvestorShareholder,Organization,TStart,TEnd);
+	entity exist except Age in time TStart, TEnd;
+
+relation OrganizationAffiliationStudentAlum(StudentAlum,Organization,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	
+
+relation GeneralAffiliationOPRA(Organization,Affiliation,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	
+
+relation OrganizationAffiliationOwnership(Owner,Organization,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	
+
+relation GeneralAffiliationAPORA(Affiliate,Affiliation,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	
+
+relation PersonalSocialUnspecified(PersonA, PersonB, TStart,TEnd);
+	entity exist in time TStart, TEnd;
+
+relation PersonalSocialBusiness(PersonA, PersonB,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	rule PersonalSocialBusiness(PersonA, PersonB,TStart,TEnd) => PersonalSocialUnspecified(PersonA, PersonB,TStart,TEnd);
+
+relation GeneralAffiliationOrganizationWebsite(Organization,Website,TStart,TEnd);
+	entity exist except Website in time TStart, TEnd;
+	
+
+relation PersonalSocialFamily(PersonA, PersonB, TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	
+	rule PersonalSocialFamily(PersonA, PersonB,TStart,TEnd) => PersonalSocialUnspecified(PersonA, PersonB,TStart,TEnd);
+
+relation PartWholeSubsidiary(Subsidiary,Parent,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	
+
+relation PartWholeMembership(Member,Organization,TStart,TEnd);
+	entity exist in time TStart, TEnd;
+	
+
+## TODO: change nex(x,y) with a non-negated predicate, stating the assertion of notex
+## Given a relation R(x, y), if we know that entities x or y did not exist then we can validate that the relation did not exist at such time
+/* Please note that if two entities existed in a given time and eventually were located
+   in a near region, it does not necessairly imply that they established the relation at
+   that given time and space. This remarks the need of having timed relationships
+   (contrariwise to the AIDA ontology specification.
+*/
+macro R(x,y,ts,te) as RnexA, rule R(x,y,ts,te) nex(y,ts) with y notnull ts notnull => ~R(x,y,ts,te);
+macro R(x,y,ts,te) as RnexB, rule R(x,y,ts,te) nex(y,te) with y notnull te notnull => ~R(x,y,ts,te);
+macro R(x,y,ts,te) as RnexC, rule R(x,y,ts,te) nex(x,ts) with y notnull ts notnull => ~R(x,y,ts,te);
+macro R(x,y,ts,te) as RnexD, rule R(x,y,ts,te) nex(x,te) with y notnull te notnull => ~R(x,y,ts,te);
+try-expand RnexA, RnexB, RnexC, RnexD for relation;
+
+######################################################
+## Providing the database schema for all the events ##
+######################################################
+
+event GovernmentAgreements(SignerA,SignerB,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event LifeInjure(Agent,Victim,Instrument,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+##################################################
+event LifeMarry(PersonA,PersonB,Place,TStart,TEnd);
+    begin PersonalSocialFamily(PersonA, PersonB,TStart,TEnd) in time TStart, TEnd;
+    rule LifeMarry(PersonA,PersonB,Place,TStart,TEnd) => LifeMarry(PersonB,PersonA,Place,TStart,TEnd);
+
+event LifeDivorce(PersonA, PersonB,Place,TStart,TEnd);
+    end PersonalSocialFamily(PersonA, PersonB,TStart,TEnd) in time TStart, TEnd;
+    rule LifeDivorce(PersonA,PersonB,Place,TStart,TEnd) => LifeDivorce(PersonB,PersonA,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+##################################################
+
+##############################################
+event BusinessStart(Organization,Place,Agent,TStart,TEnd);
+    begin OrganizationLocation(Organization,Place,TStart,TEnd) in time TStart, TEnd;
+    entity exist in time TStart, TEnd and space Place;
+    rule BusinessStart(Organization,Place,Agent,TStart,TEnd) => PhysicalOrganizationLocationOrigin(Organization,Place,TStart,TEnd);
+    rule BusinessStart(Organization,Place,Founder,TStart,TEnd) => OrganizationAffiliationFounder(Founder,Organization,TStart,TEnd);
+
+event BusinessMerge(OrganizationA, OrganizationB, Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule BusinessMerge(OrganizationA, OrganizationB, Place,TStart,TEnd) with OrganizationA notnull OrganizationB notnull => BusinessMerge(OrganizationB, OrganizationA, Place,TStart,TEnd);
+    rule BusinessMerge(OrganizationA, OrganizationB, Place,TStart,TEnd) BusinessMerge(OrganizationB, OrganizationC, Place,TStart,TEnd) with OrganizationA notnull OrganizationB notnull OrganizationC notnull => BusinessMerge(OrganizationA, OrganizationC, Place, TStart,TEnd);
+
+event BusinessEnd(Organization,Place,TStart,TEnd);
+    end OrganizationLocation(Organization,Place,TStart,TEnd) in time TStart, TEnd;
+    entity exist in time TStart, TEnd and space Place;
+    # If one business ends and that was merged with another one, then even the other ends with it
+    rule BusinessEnd(OrganizationA,Place,TStart,TEnd) BusinessMerge(OrganizationA, OrganizationB, Place,TStart,TEnd)  with OrganizationA notnull OrganizationB notnull => BusinessEnd(OrganizationB,Place,TStart,TEnd);
+##############################################
+
+## Any prediction with respect to this event are linked to the Place definition
+event BusinessDeclareBankruptcy(Organization, Place, TStart,TEnd);
+
+######################################
+event PersonnelStartPosition(Person,Organization,Position,Place,TStart,TEnd);
+    begin OrganizationAffiliationEmploymentMembership(Person,Organization,TStart,TEnd) in time TStart, TEnd;
+    entity exist except Position in time TStart, TEnd and space Place;
+
+## TODO: not unique -- if no other position covered in organization
+event PersonnelEndPosition(Person,Organization,Position,Place,TStart,TEnd);
+    end OrganizationAffiliationEmploymentMembership(Person,Organization,TStart,TEnd) in time TStart, TEnd;
+    entity exist except Position in time TStart, TEnd and space Place;
+#######################################
+
+###################################
+event LifeBeBorn(Person,Place,TStart,TEnd);
+    unique begin be(Person,TEnd) in time TStart, TEnd;
+    entity exist in time TStart, TEnd and space Place;
+
+event LifeDie(Agent,Victim,Instrument,Place,TStart,TEnd);
+    unique end beA(Victim,TEnd) in time TStart, TEnd;
+    entity exist in time TStart, TEnd and space Place;
+##################################
+
+event ContactContact(ParticipantA, ParticipantB, Place,TStart,TEnd);
+    # TODO: place?
+    entity exist in time TStart, TEnd;
+
+event ContactMeet(ParticipantA, ParticipantB,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule ContactMeet(ParticipantA, ParticipantB,Place,TStart,TEnd) => ContactMeet(ParticipantB, ParticipantA,Place,TStart,TEnd);
+    rule ContactMeet(ParticipantA, ParticipantB,Place,TStart,TEnd) ContactMeet(ParticipantB, ParticipantC,Place,TStart,TEnd) => ContactMeet(ParticipantA, ParticipantC,Place,TStart,TEnd);
+
+event ContactBroadcast(Broadcaster,Audience,Place,TStart,TEnd);
+    entity exist Broadcaster in time TStart, TEnd and space Place;
+
+event ContactCorrespondence(ParticipantA, ParticipantB,Place,TStart,TEnd);
+    entity exist ParticipantA in time TStart, TEnd and space Place;
+    rule ContactCorrespondence(ParticipantA, ParticipantB,Place,TStart,TEnd) => ContactCorrespondence(ParticipantB, ParticipantA,"null",TStart,TEnd);
+
+###################################
+event ManufactureArtifact(Manufacturer,Artifact,Instrument,Place,TStart,TEnd);
+    unique begin be(Artifact,TEnd) in time TStart, TEnd;
+    entity exist except Artifact in time TStart, TEnd and space Place;
+
+## This could imply the destruction of the artifact only if we knew that it was not damaged. On the other hand, this event is merged and not kept distinct
+event ExistenceDamageDestroy(Agent,Victim,Instrument,Place,TStart,TEnd);
+    entity exist  in time TStart, TEnd and space Place;
+    rule LifeDie(Agent,Victim,Instrument,Place,TStart,TEnd) with Agent notnull => ExistenceDamageDestroy(Agent,Victim,Instrument,Place,TStart,TEnd);
+    rule LifeInjure(Agent,Victim,Instrument,Place,TStart,TEnd) with Agent notnull => ExistenceDamageDestroy(Agent,Victim,Instrument,Place,TStart,TEnd);
+
+event JusticeInvestigate(Investigator,Investigatee,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd and space Place;
+
+event ConflictDemonstrate(Demonstrator,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event GovernmentVote(Voter,Candidate,Ballot,Results,Place,TStart,TEnd);
+    entity exist except Ballot, Results, Candidate in time TStart, TEnd and space Place;
+    entity exist Candidate in time TStart, TEnd;
+
+event Inspection(Inspector,Object,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event InspectionArtifact(Inspector,Thing,Place,TStart,TEnd);
+    rule InspectionArtifact(Inspector,Thing,Place,TStart,TEnd)=>Inspection(Inspector,Thing,Place,TStart,TEnd);
+
+event InspectionPeople(Inspector,Person,Place,TStart,TEnd);
+    rule InspectionPeople(Inspector,Person,Place,TStart,TEnd)=>Inspection(Inspector,Person,Place,TStart,TEnd);
+
+######################################
+event TransactionTransfer(Giver, Recipient, Beneficiary, Object, Place,TStart,TEnd);
+    entity exist Beneficiary in time TStart, TEnd;
+    transfer owned(Object,Giver,TEnd) in time TStart, TEnd as Object,Recipient,TEnd;
+    rule TransactionTransfer(Giver, Recipient, Beneficiary, Object, Place,TStart,TEnd) with Recipient notnull Beneficiary notnull => GeneralAffiliationSponsorship(Recipient,Beneficiary,TStart,TEnd);
+
+event TransactionTransferMoney(Giver,Recipient,Beneficiary,Money,Place,TStart,TEnd);
+    entity exist except Money, Beneficiary in time TStart, TEnd and space Place;
+    rule TransactionTransferMoney(Giver,Recipient,Beneficiary,Money,Place,TStart,TEnd) with Money notnull => TransactionTransfer(Giver,Recipient,Beneficiary,Money,Place,TStart,TEnd);
+
+event TransactionTransferOwnership(Giver,Recipient,Beneficiary,Thing,Place,TStart,TEnd);
+    rule TransactionTransferOwnership(Giver,Recipient,Beneficiary,Thing,Place,TStart,TEnd) with Thing notnull => TransactionTransfer(Giver,Recipient,Beneficiary,Thing,Place,TStart,TEnd);
+
+event TransactionTransferControl(Giver,Recipient,Beneficiary,Territory, Place, TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule TransactionTransferControl(Giver,Recipient,Beneficiary,Territory, Place, TStart,TEnd) with Territory notnull =>TransactionTransfer(Giver,Recipient,Beneficiary,Territory, Place, TStart,TEnd);
+######################################
+
+
+###########################################
+##TODO: change of status, relation exists(x,place,time)
+event MovementTransport(Agent,Object,Instrument,Origin,Destination,TStart,TEnd);
+    entity exist Object, Agent, Instrument in time TEnd and space Destination;
+    transfer be(Object,Origin,TStart) in time TStart, TEnd as Object,Destination,TEnd;
+
+event MovementTransportArtifact(Agent,Artifact,Instrument,Origin,Destination,TStart,TEnd);
+    #entity exist Artifact, Agent, Instrument in time TEnd and space Destination;
+    rule MovementTransportArtifact(Agent,Artifact,Instrument,Origin,Destination,TStart,TEnd) => MovementTransport(Agent,Artifact,Instrument,Origin,Destination,TStart,TEnd);
+
+event MovementTransportPerson(Agent,Person,Instrument,Origin,Destination,TStart,TEnd);
+    #entity exist Person, Agent, Instrument in time TEnd and space Destination;
+    rule MovementTransportArtifact(Agent,Person,Instrument,Origin,Destination,TStart,TEnd) => MovementTransport(Agent,Person,Instrument,Origin,Destination,TStart,TEnd);
+    #TODO: Transport person
+###########################################
+
+event GovernmentLegislate(Legislature,Law,Place,TStart,TEnd);
+    entity exist except Law in time TStart, TEnd and space Place;
+
+event ConflictAttack(Attacker,Target,Instrument,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule LifeDie(Agent,Victim,Instrument,Place,TStart,TEnd) with Agent notnull => ConflictAttack(Agent,Victim,Instrument,Place,TStart,TEnd);
+    rule LifeInjure(Agent,Victim,Instrument,Place,TStart,TEnd) with Agent notnull => ConflictAttack(Agent,Victim,Instrument,Place,TStart,TEnd);
+    rule ConflictAttack(Attacker,Target,Instrument,Place,TStart,TEnd) with Attacker notnull Instrument notnull TEnd notnull => owned(Instrument, Attacker, TEnd);
+    rule ConflictAttack(Attacker,Target,Instrument,Place,TStart,TEnd) with Attacker notnull Instrument notnull TStart notnull => owned(Instrument, Attacker, TStart);
+    rule ExistenceDamageDestroy(Agent,Victim,Instrument,Place,TStart,TEnd) with Insturmennt notnull Attacker notnull => ConflictAttack(Agent,Victim,Instrument,Place,TStart,TEnd);
+
+event GovernmentSpy(Agent,Target,Beneficiary,Place,TStart,TEnd);
+    entity exist except Beneficiary in time TStart, TEnd and space Place;
+    entity exist Beneficiary in time TStart, TEnd;
+    rule GovernmentSpy(Agent,Target,Beneficiary,Place,TStart,TEnd) with Agent notnull Beneficiary notnull => GeneralAffiliationSponsorship(Agent,Beneficiary,TStart,TEnd);
+
+
+event JusticeArrestJail(Agent,Person,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd and space Place;
+
+event JusticeTrialHearing(Prosecutor,Adjudicator,Defendant,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd;
+
+event JusticeChargeIndict(Prosecutor,Adjudicator,Defendant,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd;
+
+event JusticeSue(Plaintiff,Adjudicator,Defendant,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd;
+
+event JusticeConvict(Adjudicator,Defendant,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd;
+
+event JusticeAppeal(Prosecutor,Adjudicator,Defendant,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd;
+
+event JusticePardon(Adjudicator,Defendant,Crime,Place,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd;
+
+
+event JusticeSentence(Adjudicator,Defendant,Crime,Sentence,Place,TStart,TEnd);
+    entity exist except Crime, Sentence in time TStart, TEnd;
+
+event JusticeFine(Adjudicator,Defendant,Money,Crime,Place,TStart,TEnd);
+    entity exist except Crime, Money in time TStart, TEnd;
+
+event JusticeExtradite(Agent,Person,Crime,Origin,Destination,TStart,TEnd);
+    entity exist except Person, Crime in time TStart, TEnd;
+    entity exist Person in time TEnd and space Destination;
+    rule JusticeExtradite(Agent,Person,Crime,Origin,Destination,TStart,TEnd) => MovementTransportPerson(Agent,Person,"null",Origin,Destination,TStart,TEnd);
+
+event JusticeReleaseParole(Agent,Person,Crime,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd;
+
+event JusticeAcquit(Adjudicator,Defendant,Crime,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd;
+
+event JusticeExecute(Agent,Person,Crime,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule JusticeExecute(Agent,Person,Crime,Place,TStart,TEnd)=> LifeDie(Agent,Person,"null",Place,TStart,TEnd);
+
+event PersonnelElect(Elector,Elect,Place,TStart,TEnd);
+    entity exist Elector in time TStart, TEnd and space Place;
+    entity exist Elect in time TStart, TEnd;
+
+event PersonnelNominate(Nominator,Nominee,Place,TStart,TEnd);
+    entity exist except Nominee in time TStart, TEnd and space Place;
+    entity exist Nominee in time TStart, TEnd.
