@@ -132,9 +132,10 @@ public class QueryGenerationConf {
             System.err.println("Ignoring error requiring querying or disjunction...");
             return null;
         }
-        if (r.body.isEmpty() || r.isFinalBottom) {
+        if (r.head.isEmpty() || r.isFinalBottom) {
+            r.head.add(new Clause(new Proposition("_bot_")));
             System.err.println("Ignoring mutual exclusions...");
-            return null;
+            //return null;
         }
 
         // Associating into the bitmap whether the final result should be negated, too.

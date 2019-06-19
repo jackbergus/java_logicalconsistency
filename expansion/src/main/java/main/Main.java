@@ -71,7 +71,7 @@ public class Main {
         System.out.println("TAB PRINTING (ltd.)");
         System.out.println("===================");
         QueryGenerationConf qgc = new QueryGenerationConf();
-        classListener.printQueriesFromTabs(qgc);
+        //classListener.printQueriesFromTabs(qgc);
         System.out.println("===================\n");
 
         /*for (Map.Entry<Rule, ArrayList<Rule>> x : classListener.ruleTabClassification.entrySet()) {
@@ -89,7 +89,7 @@ public class Main {
         Files.write(Paths.get("example.tex"), it);*/
 
         System.err.println("INFO: detecting cycles");
-        DependencyGraph dg = new DependencyGraph(classListener);
+        DependencyGraph dg = new DependencyGraph(classListener, qgc);
         dg.plot();
     }
 

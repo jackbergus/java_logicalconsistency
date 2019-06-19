@@ -8,17 +8,15 @@ relation beB (val,place,time);
 relation beC (val,place,time);
 	rule beC (val,place,time) => be (val,place,time);
 
-relation isA (subtype, suptype);
-    rule isA(subtype, suptype) isA(suptype, supsuptype) with subtype notnull suptype notnull supsuptype notnull => isA(subtype, supsuptype);
-    rule isA(subtype, suptupe) with subtype notnull => isA(subtype, subtype);
-    rule isA(subtype, suptupe) with suptupe notnull => isA(suptupe, suptupe);
-
+#relation isA (subtype, suptype);
+#    rule isA(subtype, suptype) isA(suptype, supsuptype) with subtype notnull suptype notnull supsuptype notnull => isA(subtype, supsuptype);
+#    rule isA(subtype, suptupe) with subtype notnull => isA(subtype, subtype);
+#    rule isA(subtype, suptupe) with suptupe notnull => isA(suptupe, suptupe);
 ## Basic elements required by the formalism
 ## type and isA are the same kind of relationship
-relation type(val,ty);
-	rule type(val,ty) => isA(val,ty);
-	rule type(val,ty) => isA(val,val);
-
+#relation type(val,ty);
+#	rule type(val,ty) => isA(val,ty);
+#	rule type(val,ty) => isA(val,val);
 # T provides the time information
 #relation tIsA (subtype, suptype, T);
 #    rule tIsA(subtype, suptype, T) tIsA(suptype, supsuptype, T) with subtype notnull suptype notnull supsuptype notnull => tIsA(subtype, supsuptype,T);

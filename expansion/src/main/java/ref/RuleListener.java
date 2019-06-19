@@ -47,6 +47,7 @@ import java.util.stream.Stream;
 public class RuleListener implements schemaListener {
 
 	public HashMap<Rule, Integer> ruleTabToId;
+	public HashMap<Integer, Rule> idToRuleTab;
 	public HashMap<String, Schema> schema;
 	public HashMap<String, Substitute.SubPair<Schema, Rule>> macros;
 	public HashMap<Schema, ArrayList<MVD>> mvdMap;
@@ -69,22 +70,23 @@ public class RuleListener implements schemaListener {
 
 	public void printQueriesFromTabs(QueryGenerationConf qgc) {
 		for (Rule r : ruleTabClassification.keySet()) {
-			SelectFromWhere macroQuery = qgc.compileQuery(r);
-			if (macroQuery == null)
-				continue; // TODO: implement this case
+
 			int tabId = ruleTabToId.get(r);
-
-			Stream<HashMap<String, String>> xyz = ruleTabClassification4DB.get(ruleTabToId.get(r)).keySet().stream().map(ruleToResolvedPredicates::get);
-
-
-
+			System.out.println(tabId+") "+r);
+			//Stream<HashMap<String, String>> xyz = ruleTabClassification4DB.get(tabId).keySet().stream().map(ruleToResolvedPredicates::get);
 			/*HashMap<Integer, Rule> m = ruleTabClassification4DB.get(tabId);
 			QueryCollection qc = new QueryCollection(SetOperations.UNION, false, m.size());
 			for (Integer ruleId : ruleTabClassification4DB.get(tabId).keySet()) {
 				HashMap<String, String> conversion = ruleToResolvedPredicates.get(ruleId);
 				qc.add(macroQuery.copy().instantiateQuery(conversion));
 			}*/
-			System.out.println(tabId+") "+r+"\n================================================\n"+macroQuery.transformFromLegacy().toString(xyz)+"\n\n\n");
+			SelectFromWhere macroQuery = qgc.compileQuery(r);
+			if (macroQuery == null) {
+				System.err.println(r);
+				qgc.compileQuery(r);
+				System.exit(1);
+			}
+			System.out.println("================================================\n"+macroQuery.transformFromLegacy().toString(ruleTabClassification4DB.get(tabId).keySet().stream().map(ruleToResolvedPredicates::get))+"\n\n\n");
 
 		}
 	}
@@ -98,6 +100,7 @@ public class RuleListener implements schemaListener {
 			mvdMap = new HashMap<>();
 			ruleTabToId = new HashMap<>();
 			ruleTabClassification = new HashMap<>();
+			idToRuleTab = new HashMap<>();
 			macros = new HashMap<>();
 			schemaClassificationType = new HashMap<>();
 			eventAssociation = new HashMap<>();
@@ -110,6 +113,7 @@ public class RuleListener implements schemaListener {
 			macros.clear();
 			schema.clear();
 			mvdMap.clear();
+			idToRuleTab.clear();
 			ruleTabClassification.clear();
 			schemaClassificationType.clear();
 			eventAssociation.clear();
@@ -208,6 +212,7 @@ public class RuleListener implements schemaListener {
 			ruleTabClassification.put(key, rl);
 			ruleTabClassification4DB.put(tabN, ir);
 			ruleTabToId.put(key, tabN);
+			idToRuleTab.put(tabN, key);
 		} else {
 			ls.add(r);
 			Integer tabId = ruleTabToId.get(key);

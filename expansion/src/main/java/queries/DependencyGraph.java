@@ -18,32 +18,28 @@
  * along with KnowledgeBaseExpansion. If not, see <http://www.gnu.org/licenses/>.
  */
 
- 
+
 package queries;
 
-import com.google.common.collect.HashMultimap;
+import algos.graphs.SCC;
+import algos.graphs.Visiting;
+import javafx.util.Pair;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.cycle.TarjanSimpleCycles;
-import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import queries.sql.v1.QueryGenerationConf;
 import ref.RuleListener;
 import types.Rule;
 
 import java.io.IOException;
-import java.rmi.UnexpectedException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 // Strong assumption: there are predicates that have
 
 public class DependencyGraph {
 
+    public static String staring_nodes = "";
     public Collection<String> getPredicates;
-    DefaultDirectedWeightedGraph<String, Edge> graph;
     public Set<List<String>> cycles = new HashSet<>();
 
     // Reflexive or transitive rules that reduce to hooks over one vertex
@@ -72,58 +68,64 @@ public class DependencyGraph {
 
     // If there are some hooks that are in starting nodes, then these are all the rules that must be applied first using the fixed point
     public Set<Integer> firstRuleId = new HashSet<>();
-
+    DefaultDirectedWeightedGraph<String, Edge> graph;
     //remove from the inference graph the nodes that have degree 0
     Set<String> toBeRemovedVertices = new HashSet<>();
-
     // All the cycles that we want to break somehow
     Set<List<String>> cycleSet = new HashSet<>();
-
     // Terminal node of a cycle
     Set<String> cycleMaxVertices = new HashSet<>();
 
-    public static class Edge {
-        public HashMap<Integer, AtomicInteger> ruleToNoInstances = new HashMap<>();
-        public String dst, src;
 
-        public Edge() {
-        }
+    Set<String> remainingNodes = new HashSet<>();
 
-        public double getWeight() {
-            return ruleToNoInstances.values().stream().mapToInt(AtomicInteger::get).sum();
-        }
-
-        public void putRuleId(int id) {
-            AtomicInteger exp = null;
-            if ((exp = ruleToNoInstances.get(id)) == null) {
-                ruleToNoInstances.put(id, new AtomicInteger(1));
-            } else {
-                exp.incrementAndGet();
-            }
-        }
-    }
-
-    public DependencyGraph(RuleListener l) throws IOException {
+    public DependencyGraph(RuleListener l, QueryGenerationConf qgc) throws IOException {
+        System.err.println("INFO -  Creating the graph");
         graph = new DefaultDirectedWeightedGraph<>(Edge.class);
-        getPredicates = l.schema.keySet();
+        // All the predicates are the elements declared in the schema of the ontology
+        //getPredicates = l.schema.keySet();
+        /*// Each predicate will represent a node in the graph
         for (String x : getPredicates) {
             graph.addVertex(x);
-        }
+        }*/
+        // Inconsistency will be another node.
         graph.addVertex("_bot_");
-        Iterator<Map.Entry<Integer, Rule>> it = l.ruleTabClassification4DB.values().stream().flatMap(x -> x.entrySet().stream()).iterator();
-        while (it.hasNext()) {
-            Map.Entry<Integer, Rule> cp = it.next();
-            int ruleId = cp.getKey();
 
+        // Creating the map for all the high-level rule connected to the element
+        Map<Integer, Pair<Set<String>, Set<String>>> map = new HashMap<>();
+
+        l.ruleTabClassification4DB.entrySet().forEach((cp) -> {
+            if (qgc.compileQuery(l.idToRuleTab.get(cp.getKey())) != null) {
+                createHyperedge(cp.getKey(), cp.getValue(), map);
+                remainingNodes.add(cp.getKey().toString());
+                graph.addVertex(cp.getKey().toString());
+            }
+        });
+
+        for (Map.Entry<Integer, Pair<Set<String>, Set<String>>> cp1 : map.entrySet()) {
+            for (Map.Entry<Integer, Pair<Set<String>, Set<String>>> cp2 : map.entrySet()) {
+                if (!cp1.getKey().equals(cp2.getKey())) { //self hooks are not required, as each node is per se a self hook
+                    TreeSet<String> intersection = new TreeSet<>(cp1.getValue().getValue());
+                    intersection.retainAll(cp2.getValue().getKey());
+                    if (!intersection.isEmpty()) {
+                        Edge e = graph.addEdge(cp1.getKey().toString(), cp2.getKey().toString());
+                        e.src = cp1.getKey().toString();
+                        e.dst = cp2.getKey().toString();
+                        System.out.println(e.src + " --> " + e.dst);
+                        //e.putRuleId(cp1.getKey().toString()+"--"+cp2.getKey().toString());
+                        e.putRuleId(intersection.size());
+                    }
+                }
+            }
+
+            /*int ruleId = cp.getKey();
             HashSet<String> origDependencies = new HashSet<>();
             HashSet<String> dstDependencies = new HashSet<>();
-
             cp.getValue().body.stream().map(x -> x.prop.relName).forEach(origDependencies::add);
             cp.getValue().head.stream().filter(x -> x.exists.isEmpty()).map(x -> x.prop.relName).forEach(dstDependencies::add);
             cp.getValue().head.stream().filter(x -> !x.exists.isEmpty()).map(x -> x.prop.relName).forEach(origDependencies::add);
             if (cp.getValue().isFinalBottom)
                 dstDependencies.add("_bot_");
-
             for (String x : origDependencies) {
                 for (String y : dstDependencies) {
                     Edge e = graph.getEdge(x, y);
@@ -134,21 +136,21 @@ public class DependencyGraph {
                     }
                     e.putRuleId(ruleId);
                 }
-            }
+            }*/
         }
 
         graph.edgeSet().forEach(x -> {
             graph.setEdgeWeight(x, 1.0 / x.getWeight());
         });
 
-        // removing all the tuples that do not participate in the inference process.
+        System.err.println("INFO - removing all the tuples that do not participate in the inference process.");
         graph.vertexSet().forEach(v -> {
             if (graph.outDegreeOf(v) + graph.inDegreeOf(v) == 0)
                 toBeRemovedVertices.add(v);
         });
         graph.removeAllVertices(toBeRemovedVertices);
 
-        // One of the possible starting points are the nodes with maximum outDegree
+        System.err.println("INFO - possible starting points are the nodes with maximum outDegree");
         Set<String> startingPoints = new HashSet<>();
         {
             Integer maxOutDegree = Integer.MIN_VALUE;
@@ -163,6 +165,7 @@ public class DependencyGraph {
         }
 
         // Sorting the vertices by ingoing degree
+        System.err.println("INFO - Sorting the vertices by ingoing degree");
         Map<String, Integer> degreeMap = new HashMap<>();
         for (String x : graph.vertexSet()) {
             int inDeg = graph.inDegreeOf(x);
@@ -174,164 +177,219 @@ public class DependencyGraph {
             degreeMap.put(x, graph.inDegreeOf(x));
         }
 
-        String maxIndegree = degreeMap.entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get().getKey();
+        //String maxIndegree = degreeMap.entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get().getKey();
 
-        if (startingNodes.isEmpty())
-            throw new UnexpectedException("This algorithm works by supposing that there are some predicates with indegree of zero");
-
-        // Cycles that will require many possible fixpoints
-        TarjanSimpleCycles<String, Edge> cd = new TarjanSimpleCycles<>(graph);
-        cd.findSimpleCycles().forEach(x -> {
-            if (x.size() == 1) {
-                reflOrTtrans.addAll(x);
-                String y = x.get(0);
-                (startingNodes.contains(y) ? firstRuleId : lastRuleId).addAll(graph.getEdge(y, y).ruleToNoInstances.keySet());
-            } else {
-                List<String> cycle = new ArrayList<>(x);
-                String cycleMaxInDegree = Collections.max(cycle, Comparator.comparingInt(degreeMap::get));
-                cycleMaxVertices.add(cycleMaxInDegree);
-                int maxIndex = cycle.indexOf(cycleMaxInDegree);
-                if (maxIndex != cycle.size() - 1) {
-                    List<String> head = new ArrayList<>();
-                    ListIterator<String> itt = cycle.listIterator(maxIndex + 1);
-                    while (itt.hasNext()) {
-                        head.add(itt.next());
-                        itt.remove();
+        // Getting all the cycles (strongly connected components) in a graph.
+        // As a consequence, the algorithm visits all the possible connected components
+        //Tarjan t = new Tarjan(graph);
+        System.out.println("Detecting Cycles:");
+        //new AllCycles(graph).run()
+        new Visiting(graph).run()
+        //System.exit(1);
+        //new SCC(graph).runDFSStack()
+        //t.run()
+                .forEach(cycle -> {
+                    //List<String> cycle = new ArrayList<>(cycleColl);
+                    //Set<String> x = graph.vertexSet();
+                    if (cycle.size() == 1) {
+                        reflOrTtrans.addAll(cycle);
+                        String y = cycle.get(0);
+                        if (graph.getEdge(y, y) != null) {
+                            (startingNodes.contains(y) ? firstRuleId : lastRuleId).add(/*graph.getEdge(y, y).ruleToNoInstances.keySet()*/Integer.valueOf(y));
+                            remainingNodes.remove(y);
+                        }
+                    } else {
+                        // Getting the node in the cycle with the maximum ingoing degree
+                        System.out.println(cycle);
+                        String cycleMaxInDegree = Collections.max(cycle, Comparator.comparingInt(degreeMap::get));
+                        // This vertex should be one towards which we find some paths
+                        cycleMaxVertices.add(cycleMaxInDegree);
+                        // Getting the position of the maximum element within the list
+                        int maxIndex = cycle.indexOf(cycleMaxInDegree);
+                        if (maxIndex != cycle.size() - 1) {
+                            // Now, the current cycle is rewritten in a way that it will end in the maximum degree node.
+                            List<String> head = new ArrayList<>();
+                            ListIterator<String> itt = cycle.listIterator(maxIndex + 1);
+                            while (itt.hasNext()) {
+                                head.add(itt.next());
+                                itt.remove();
+                            }
+                            head.addAll(cycle);
+                            cycle = head;
+                        }
+                        System.out.println("\t * " + cycle);
+                        cycle.forEach(y -> remainingNodes.remove(y));
+                        cycleSet.add(cycle);
                     }
-                    head.addAll(cycle);
-                    cycle = head;
-                }
-                cycleSet.add(cycle);
-            }
-        });
+                });
 
-        startingNodes.addAll(startingPoints);
 
-        // Incrementally choose the starting nodes until I reach some kind of fixpoint
+        firstRuleId.forEach(x -> startingNodes.add(x.toString()));
+        //startingNodes.addAll();
+        System.out.println("Starting nodes: " + startingNodes);
+        System.out.println("Ending nodes: " + lastRuleId);
+
+        remainingNodes.removeAll(startingNodes);
+        lastRuleId.forEach(x -> remainingNodes.remove(x.toString()));
+        System.out.println("\n\nRemaining nodes: " + remainingNodes); // Supposedly, these nodes should be the ones connecting the starting nodes to the ones in the cycles, or the ones connecting the starting nodes to the ending nodes.
+        //System.exit(1);
+
+        /*// If there are no starting nodes, incrementally choose the starting nodes until I reach some kind of fixpoint.
+        // This case needs to be considered when there are no nodes having zero degree from which we know for sure where to start from.
         Set<String> remainingVertices = null;
         Set<List<String>> startingPaths = null;
-        {
-            DijkstraShortestPath<String, Edge> sp = new DijkstraShortestPath<>(graph);
-            do {
-                HashSet<String> maxes = new HashSet<>();
-                if (startingPaths == null)
-                    startingPaths = new HashSet<>();
-                else {
-                    startingPaths.clear();
-                    remainingVertices.clear();
-                }
-                for (String src : this.startingNodes) {
-                    for (String dst : this.cycleMaxVertices) {
-                        GraphPath<String, Edge> path = sp.getPath(src, dst);
-                        if (path != null) {
-                            List<String> vertexList = path.getVertexList();
-                            // Then, interrupt the path on the vertex of maximum degree
-                            String maxDegVTX = Collections.max(vertexList, Comparator.comparingInt(degreeMap::get));
-                            vertexList = vertexList.subList(0, vertexList.indexOf(maxDegVTX) + 1);
-                            startingPaths.add(vertexList);
-                            maxes.add(maxDegVTX);
+        if (startingNodes.isEmpty()) {
+            System.err.println("INFO - Incrementally choose the starting nodes until I reach some kind of fixpoint");
+
+            {
+                DijkstraShortestPath<String, Edge> sp = new DijkstraShortestPath<>(graph);
+                do {
+                    HashSet<String> maxes = new HashSet<>();
+                    if (startingPaths == null)
+                        startingPaths = new HashSet<>();
+                    else {
+                        startingPaths.clear();
+                        remainingVertices.clear();
+                    }
+                    for (String src : this.startingNodes) {
+                        for (String dst : this.cycleMaxVertices) {
+                            GraphPath<String, Edge> path = sp.getPath(src, dst);
+                            if (path != null) {
+                                List<String> vertexList = path.getVertexList();
+                                // Then, interrupt the path on the vertex of maximum degree
+                                String maxDegVTX = Collections.max(vertexList, Comparator.comparingInt(degreeMap::get));
+                                vertexList = vertexList.subList(0, vertexList.indexOf(maxDegVTX) + 1);
+                                startingPaths.add(vertexList);
+                                maxes.add(maxDegVTX);
+                            }
                         }
                     }
-                }
-                if (remainingVertices == null)
-                    remainingVertices = new HashSet<>(graph.vertexSet());
-                else {
-                    remainingVertices.addAll(graph.vertexSet());
-                }
-                cycleSet.forEach(remainingVertices::removeAll);
-                startingPaths.forEach(remainingVertices::removeAll);
-                maxes.forEach(max -> graph.outgoingEdgesOf(max).forEach(e -> startingNodes.add(e.dst)));
+                    if (remainingVertices == null)
+                        remainingVertices = new HashSet<>(graph.vertexSet());
+                    else {
+                        remainingVertices.addAll(graph.vertexSet());
+                    }
+                    cycleSet.forEach(remainingVertices::removeAll);
+                    startingPaths.forEach(remainingVertices::removeAll);
+                    maxes.forEach(max -> graph.outgoingEdgesOf(max).forEach(e -> startingNodes.add(e.dst)));
 
-            } while (startingNodes.addAll(remainingVertices) || cycleMaxVertices.addAll(remainingVertices));
+                } while (startingNodes.addAll(remainingVertices) || cycleMaxVertices.addAll(remainingVertices));
+            }
+        } else {
+            startingPaths = new HashSet<>();
+            remainingVertices = new HashSet<>();
         }
 
-        AllDirectedPaths<String, Edge> sp = new AllDirectedPaths<>(graph);
-        do {
-            startingPaths.clear();
-            remainingVertices.clear();
-            for (GraphPath<String, Edge> path : sp.getAllPaths(startingNodes, cycleMaxVertices, true, null)) {
-                List<String> vertexList = path.getVertexList();
-                // Then, interrupt the path on the vertex of maximum degree
-                String maxDegVTX = Collections.max(vertexList, Comparator.comparingInt(degreeMap::get));
-                vertexList = vertexList.subList(0, vertexList.indexOf(maxDegVTX) + 1);
-                startingPaths.add(vertexList);
-            }
-            remainingVertices.addAll(graph.vertexSet());
-            cycleSet.forEach(remainingVertices::removeAll);
-            startingPaths.forEach(remainingVertices::removeAll);
-        } while (startingNodes.addAll(remainingVertices) || cycleMaxVertices.addAll(remainingVertices));
+        // Now I need to detect which are the paths connecting the starting nodes to the paths.
 
-        if (startingNodes.size() == graph.vertexSet().size())
-            throw new UnexpectedException("This algorithm is extimated to be efficient iif. the starting nodes are not all the vertices of the graph");
+        // The vertices that I should reach from the
+        cycleMaxVertices.clear();
+        cycleSet.stream().flatMap(x -> x.stream()).distinct().forEach(cycleMaxVertices::add);
 
-        Set<List<String>> sp2 = startingPaths;
-        //startingPaths.stream().filter(x -> sp2.stream().anyMatch(ls -> Collections.indexOfSubList(ls, x) != -1)).collect(Collectors.toList()).forEach(sp2::remove);
+        // Clearing the starting nodes: if a starting node is reached from another, this one shall not be a starting node
+        AllDirectedPaths2 sp = new AllDirectedPaths2(graph);
+        if (true) {
+            System.err.println("INFO - Getting all the paths from the starting nodes towards the nodes having a sort of cycle");
+            //AllDirectedPaths<String, Edge> sp = new AllDirectedPaths<>(graph);
+            do {
+                startingPaths.clear();
+                remainingVertices.clear();
+                for (List<String> vertexList : sp.getAllPaths(startingNodes, cycleMaxVertices, false)) {
+                    // List<String> vertexList = path.getVertexList();
+                    // Then, interrupt the path on the vertex of maximum degree
+                    String maxDegVTX = Collections.max(vertexList, Comparator.comparingInt(degreeMap::get));
+                    vertexList = vertexList.subList(0, vertexList.indexOf(maxDegVTX) + 1);
+                    startingPaths.add(vertexList);
+                }
+                remainingVertices.addAll(graph.vertexSet());
+                cycleSet.forEach(remainingVertices::removeAll);
+                startingPaths.forEach(remainingVertices::removeAll);
+            } while (startingNodes.addAll(remainingVertices) || cycleMaxVertices.addAll(remainingVertices));
 
-        // Getting all the cycles that will lead to a fixpoint
-        System.out.println("Cycles:");
-        System.out.println("===============");
-        HashSet<String> cycleNodes = new HashSet<>();
-        HashMultimap<String, List<String>> cyclesWithTerminals = HashMultimap.create();
-        cycleSet.forEach(x -> {
-            cyclesWithTerminals.put(x.get(x.size() - 1), x);
-        });
-        cyclesWithTerminals.asMap().forEach((x, y) -> {
-            System.out.println(x);
-            y.forEach(z -> {
-                cycleNodes.addAll(z);
-                System.out.println("\t" + z);
+            if (startingNodes.size() == graph.vertexSet().size())
+                throw new UnexpectedException("This algorithm is extimated to be efficient iif. the starting nodes are not all the vertices of the graph");
+
+            //Set<List<String>> sp2 = startingPaths;
+            //startingPaths.stream().filter(x -> sp2.stream().anyMatch(ls -> Collections.indexOfSubList(ls, x) != -1)).collect(Collectors.toList()).forEach(sp2::remove);
+
+            // Getting all the cycles that will lead to a fixpoint
+            System.out.println("Cycles:");
+            System.out.println("===============");
+            HashSet<String> cycleNodes = new HashSet<>();
+            HashMultimap<String, List<String>> cyclesWithTerminals = HashMultimap.create();
+            cycleSet.forEach(x -> {
+                cyclesWithTerminals.put(x.get(x.size() - 1), x);
             });
-            graph.outgoingEdgesOf(x).forEach(z -> {
-                if (!x.equals(z.dst)) System.out.println("\t -->" + z.dst);
+            cyclesWithTerminals.asMap().forEach((x, y) -> {
+                System.out.println(x);
+                y.forEach(z -> {
+                    cycleNodes.addAll(z);
+                    System.out.println("\t" + z);
+                });
+                graph.outgoingEdgesOf(x).forEach(z -> {
+                    if (!x.equals(z.dst)) System.out.println("\t -->" + z.dst);
+                });
             });
-        });
 
-        //
-        System.out.println("Starting paths:");
-        System.out.println("```````````````");
-        startingPaths.forEach(x -> {
-            ArrayList<List<String>> splittedPath = new ArrayList<>();
-            getLesserPosition(x, cycleNodes, splittedPath, false);
-            for (List<String> subpath : splittedPath) {
-                if (startingNodes.contains(subpath.get(0))) {
-                    if (graph.inDegreeOf(subpath.get(0)) == 0)
-                        this.pathsBeforeFixPointsWithNoInput.add(subpath);
-                    else if (graph.outDegreeOf(subpath.get(subpath.size()-1)) != 0) {
-                        if (graph.inDegreeOf(subpath.get(0)) == 1 && graph.getEdge(subpath.get(0), subpath.get(0)) != null) {
-                            this.reflOrTtransFromTheBeginning.add(subpath.get(0));
-                            this.reflOrTtrans.remove(subpath.get(0));
+            //
+            System.out.println("Starting paths:");
+            System.out.println("```````````````");
+            startingPaths.forEach(x -> {
+                ArrayList<List<String>> splittedPath = new ArrayList<>();
+                getLesserPosition(x, cycleNodes, splittedPath, false);
+                for (List<String> subpath : splittedPath) {
+                    if (startingNodes.contains(subpath.get(0))) {
+                        if (graph.inDegreeOf(subpath.get(0)) == 0)
+                            this.pathsBeforeFixPointsWithNoInput.add(subpath);
+                        else if (graph.outDegreeOf(subpath.get(subpath.size() - 1)) != 0) {
+                            if (graph.inDegreeOf(subpath.get(0)) == 1 && graph.getEdge(subpath.get(0), subpath.get(0)) != null) {
+                                this.reflOrTtransFromTheBeginning.add(subpath.get(0));
+                                this.reflOrTtrans.remove(subpath.get(0));
+                            } else
+                                this.pathsBeforeFixPointsWithInput.add(subpath);
                         } else
-                            this.pathsBeforeFixPointsWithInput.add(subpath);
+                            this.terminalPaths.add(subpath);
+                    } else if (cycleNodes.contains(subpath.get(0))) {
+                        if (graph.outDegreeOf(subpath.get(subpath.size() - 1)) != 0)
+                            this.pathsCausingMoreComplexConditions.add(subpath);
+                        else
+                            this.terminalPaths.add(subpath);
                     } else
-                        this.terminalPaths.add(subpath);
-                } else if (cycleNodes.contains(subpath.get(0))) {
-                    if (graph.outDegreeOf(subpath.get(subpath.size()-1)) != 0)
                         this.pathsCausingMoreComplexConditions.add(subpath);
-                    else
-                        this.terminalPaths.add(subpath);
-                } else
-                    this.pathsCausingMoreComplexConditions.add(subpath);
-            }
+                }
+            });
+            System.out.println("Starting paths [Paths before fixpoint]: no input");
+            System.out.println("================================================");
+            pathsBeforeFixPointsWithNoInput.forEach(y -> System.out.println("\t" + y));
+
+            System.out.println("Paths before fixpoint: input which requires to solve some self-`closure`");
+            System.out.println("=================================");
+            reflOrTtransFromTheBeginning.forEach(y -> System.out.println("\t" + y));
+
+            System.out.println("Paths before fixpoint: input [??]");
+            System.out.println("=================================");
+            pathsBeforeFixPointsWithInput.forEach(y -> System.out.println("\t" + y));
+
+            System.out.println("Terminal Paths [Paths after fixpoint]");
+            System.out.println("=====================================");
+            terminalPaths.forEach(y -> System.out.println("\t" + y));
+
+            System.out.println("Paths causing problems for more complex conditions:");
+            System.out.println("===================================================");
+            pathsCausingMoreComplexConditions.forEach(y -> System.out.println("\t" + y));
+        }*/
+    }
+
+    private static void createHyperedge(Integer r, Map<Integer, Rule> cps, Map<Integer, Pair<Set<String>, Set<String>>> map) {
+        Pair<Set<String>, Set<String>> cp = new Pair<>(new HashSet<>(), new HashSet<>());
+        cps.forEach((k, v) -> {
+            v.body.stream().map(x -> x.prop.relName).forEach(cp.getKey()::add);
+            v.head.stream().filter(x -> x.exists.isEmpty()).map(x -> x.prop.relName).forEach(cp.getValue()::add);
+            v.head.stream().filter(x -> !x.exists.isEmpty()).map(x -> x.prop.relName).forEach(cp.getKey()::add);
+            if (v.isFinalBottom)
+                cp.getValue().add("_bot_");
         });
-        System.out.println("Starting paths [Paths before fixpoint]: no input");
-        System.out.println("================================================");
-        pathsBeforeFixPointsWithNoInput.forEach(y -> System.out.println("\t"+y));
-
-        System.out.println("Paths before fixpoint: input which requires to solve some self-`closure`");
-        System.out.println("=================================");
-        reflOrTtransFromTheBeginning.forEach(y -> System.out.println("\t"+y));
-
-        System.out.println("Paths before fixpoint: input [??]");
-        System.out.println("=================================");
-        pathsBeforeFixPointsWithInput.forEach(y -> System.out.println("\t"+y));
-
-        System.out.println("Terminal Paths [Paths after fixpoint]");
-        System.out.println("=====================================");
-        terminalPaths.forEach(y -> System.out.println("\t"+y));
-
-        System.out.println("Paths causing problems for more complex conditions:");
-        System.out.println("===================================================");
-        pathsCausingMoreComplexConditions.forEach(y -> System.out.println("\t"+y));
+        map.put(r, cp);
     }
 
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
@@ -342,78 +400,6 @@ public class DependencyGraph {
             result.put(entry.getKey(), entry.getValue());
         }
         return result;
-    }
-
-    public static String staring_nodes = "";
-
-    public void plot() {
-        MultiGraph graph = new MultiGraph("Tutorial 1");
-        graph.addAttribute("ui.quality");
-        graph.addAttribute("ui.antialias");
-        graph.addAttribute("ui.stylesheet", "edge {\n" +
-                "\tshape: line;\n" +
-                "\tfill-mode: dyn-plain;\n" +
-                "\tfill-color: #222, #555, green, yellow;\n" +
-                "\tarrow-size: 3px, 2px;\n" +
-                "}\n" +
-                "\nnode.startingnodes { fill-color: green; }\n" +
-                "edge.startingpaths { shape:line; fill-color: green; }"+
-                "edge.beforepaths { shape:line; fill-color: blue; }"+
-                "edge.terminalpaths { shape:line; fill-color: #6A5ACD; }"+
-                "node.singlefixpoint { fill-color: #FF7F50; }"+
-                "edge.bohpaths { fill-color: red; }"+
-                "edge.complicated {  size: 2px; stroke-color: orange; stroke-width: 1px; stroke-mode: plain;  }");
-
-        for (String v : this.graph.vertexSet()) {
-            Node node = graph.addNode(v);
-            node.setAttribute("ui.label", v);
-            if (reflOrTtransFromTheBeginning.contains(v))
-                node.addAttribute("ui.class", "singlefixpoint");
-            else if (startingNodes.contains(v))
-                node.addAttribute("ui.class", "startingnodes");
-        }
-        for (Edge e : this.graph.edgeSet()) {
-            org.graphstream.graph.Edge ep = graph.addEdge(e.src + "_" + e.dst + "_" + e.ruleToNoInstances.keySet(), e.src, e.dst, true);
-            //ep.setAttribute("ui.label", e.ruleToNoInstances.values()+"");
-        }
-
-        for (List<String> x :pathsBeforeFixPointsWithNoInput) {
-            for (int i = 0, N = x.size(); i<N-1; i++) {
-                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
-                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst + "_" + e.ruleToNoInstances.keySet());
-                ep.setAttribute("ui.class", "startingpaths");
-            }
-        }
-        for (List<String> x : pathsBeforeFixPointsWithInput) {
-            for (int i = 0, N = x.size(); i<N-1; i++) {
-                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
-                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst + "_" + e.ruleToNoInstances.keySet());
-                ep.setAttribute("ui.class", "beforepaths");
-            }
-        }
-        for (List<String> x : terminalPaths) {
-            for (int i = 0, N = x.size(); i<N-1; i++) {
-                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
-                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst + "_" + e.ruleToNoInstances.keySet());
-                ep.setAttribute("ui.class", "terminalpaths");
-            }
-        }
-        for (List<String> x : pathsBeforeFixPointsWithInput) {
-            for (int i = 0, N = x.size(); i<N-1; i++) {
-                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
-                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst + "_" + e.ruleToNoInstances.keySet());
-                ep.setAttribute("ui.class", "bohpaths");
-            }
-        }
-        for (List<String> x :pathsCausingMoreComplexConditions) {
-            for (int i = 0, N = x.size(); i<N-1; i++) {
-                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
-                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst + "_" + e.ruleToNoInstances.keySet());
-                ep.setAttribute("ui.class", "complicated");
-            }
-        }
-
-        graph.display();
     }
 
     private static void getLesserPosition(List<String> path, Set<String> terminators, List<List<String>> splittedPath, boolean firstMiss) {
@@ -444,8 +430,112 @@ public class DependencyGraph {
             // If I cannot find a terminator
             splittedPath.add(path);
         } else {
-            splittedPath.add(path.subList(0, minPos+1));
-            getLesserPosition(path.subList(minPos,path.size()),  terminators, splittedPath, false);
+            splittedPath.add(path.subList(0, minPos + 1));
+            getLesserPosition(path.subList(minPos, path.size()), terminators, splittedPath, false);
+        }
+    }
+
+    public void plot() {
+        MultiGraph graph = new MultiGraph("Tutorial 1");
+        graph.addAttribute("ui.quality");
+        graph.addAttribute("ui.antialias");
+        graph.addAttribute("ui.stylesheet", "edge {\n" +
+                "\tshape: line;\n" +
+                "\tfill-mode: dyn-plain;\n" +
+                "\tfill-color: #222, #555, green, yellow;\n" +
+                "\tarrow-size: 3px, 2px;\n" +
+                "}\n" +
+                "\nnode.startingnodes { fill-color: green; }\n" +
+                "edge.startingpaths { shape:line; fill-color: green; }" +
+                "edge.beforepaths { shape:line; fill-color: blue; }" +
+                "edge.terminalpaths { shape:line; fill-color: #6A5ACD; }" +
+                "node.singlefixpoint { fill-color: #FF7F50; }" +
+                "node.loopnodes { fill-color: blue; }" +
+                "edge.bohpaths { fill-color: red; }" +
+                "edge.complicated {  size: 2px; fill-color: orange; stroke-width: 1px; stroke-mode: plain;  }");
+
+        for (String v : this.graph.vertexSet()) {
+            Node node = graph.addNode(v);
+            node.setAttribute("ui.label", v);
+            if (remainingNodes.contains(v))
+                node.addAttribute("ui.class", "singlefixpoint");
+            else if (startingNodes.contains(v))
+                node.addAttribute("ui.class", "startingnodes");
+        }
+        for (Edge e : this.graph.edgeSet()) {
+            org.graphstream.graph.Edge ep = graph.addEdge(e.src + "_" + e.dst , e.src, e.dst, true);
+            System.out.println(e.src + " --> " + e.dst );
+            //ep.setAttribute("ui.label", e.ruleToNoInstances.values()+"");
+
+        }
+        for (List<String> cycle : this.cycleSet) {
+            for (int i = 0, n = cycle.size(); i<n; i++ ) {
+                int next = (i+1) % (n);
+                org.graphstream.graph.Edge ep;
+                ep =  graph.getEdge(cycle.get(i)  + "_" +  cycle.get(next));
+                System.out.println("\t\t"+ep.getSourceNode() + " --> " + ep.getTargetNode() );
+                if (ep != null) {
+                    ep.setAttribute("ui.class", "complicated");
+                }
+            }
+        }
+
+        /*for (List<String> x : pathsBeforeFixPointsWithNoInput) {
+            for (int i = 0, N = x.size(); i < N - 1; i++) {
+                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
+                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst );
+                ep.setAttribute("ui.class", "startingpaths");
+            }
+        }
+        for (List<String> x : pathsBeforeFixPointsWithInput) {
+            for (int i = 0, N = x.size(); i < N - 1; i++) {
+                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
+                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst );
+                ep.setAttribute("ui.class", "beforepaths");
+            }
+        }
+        for (List<String> x : terminalPaths) {
+            for (int i = 0, N = x.size(); i < N - 1; i++) {
+                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
+                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst);
+                ep.setAttribute("ui.class", "terminalpaths");
+            }
+        }
+        for (List<String> x : pathsBeforeFixPointsWithInput) {
+            for (int i = 0, N = x.size(); i < N - 1; i++) {
+                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
+                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst);
+                ep.setAttribute("ui.class", "bohpaths");
+            }
+        }
+        for (List<String> x : pathsCausingMoreComplexConditions) {
+            for (int i = 0, N = x.size(); i < N - 1; i++) {
+                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
+                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst);
+                ep.setAttribute("ui.class", "complicated");
+            }
+        }*/
+
+        graph.display();
+    }
+
+    public static class Edge {
+        //public HashMap<Integer, AtomicInteger> ruleToNoInstances = new HashMap<>();
+        public String dst, src;
+        double weight;
+
+        public double getWeight() {
+            return /*ruleToNoInstances.values().stream().mapToInt(AtomicInteger::get).sum()*/weight;
+        }
+
+        public void putRuleId(double id) {
+            /*AtomicInteger exp = null;
+            if ((exp = ruleToNoInstances.get(id)) == null) {
+                ruleToNoInstances.put(id, new AtomicInteger(1));
+            } else {
+                exp.incrementAndGet();
+            }*/
+            weight = id;
         }
     }
 
