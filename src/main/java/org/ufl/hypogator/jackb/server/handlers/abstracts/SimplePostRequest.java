@@ -61,7 +61,9 @@ public abstract class SimplePostRequest extends AbstractHandler {
                     he.sendResponseHeaders(405, 0);
                     break;
             }
-        } finally {
+        }  catch (Exception e) {
+            e.printStackTrace();
+        }  finally {
             he.close();
         }
     }

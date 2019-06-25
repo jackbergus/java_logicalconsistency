@@ -48,10 +48,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Field;
 
 public class JsonServer {
-    private static final String HOSTNAME = "localhost";
-    private static final int PORT = 9999;
+    private static final String HOSTNAME = "0.0.0.0";
+    private static final int PORT = 9998;
     private static final int BACKLOG = 1;
 
     private static final String HEADER_ALLOW = "Allow";
@@ -68,7 +69,13 @@ public class JsonServer {
     private static final String METHOD_OPTIONS = "OPTIONS";
     private static final String ALLOWED_METHODS = METHOD_GET + "," + METHOD_OPTIONS;
 
-    public static void main(final String... args) throws IOException {
+    public static void main(final String... args) throws Exception {
+	System.setProperty("file.encoding","UTF-8");
+	Field charset = Charset.class.getDeclaredField("defaultCharset");
+	charset.setAccessible(true);
+	charset.set(null,null);
+
+
         final HttpServer server = HttpServer.create(new InetSocketAddress(HOSTNAME, PORT), BACKLOG);
         server.createContext("/kbAllInconsistency", new Baseline2());
         server.createContext("/factLoad", new LoadDatabaseViaRequest());
