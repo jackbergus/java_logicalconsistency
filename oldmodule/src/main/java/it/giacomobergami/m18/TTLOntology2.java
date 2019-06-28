@@ -12,6 +12,11 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.core.Prologue;
 
 // Require classes in the new project
+import org.jgrapht.alg.shortestpath.AllDirectedPaths;
+import org.jgrapht.alg.shortestpath.ListSingleSourcePathsImpl;
+import org.jgrapht.alg.shortestpath.TreeSingleSourcePathsImpl;
+import org.jgrapht.graph.DefaultDirectedWeightedGraph;
+import org.jgrapht.graph.GraphWalk;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.ontology.Label;
 import org.ufl.hypogator.jackb.ontology.Ontology;
@@ -32,6 +37,7 @@ import java.util.stream.Collectors;
 
 public class TTLOntology2 {
     private static final String sparql = "SELECT * { ?s ?p ?o }";
+    private static final String isa_sparql = "SELECT * { ?s a ?o }";
     private Model model;
     private Ontology self;
 
@@ -39,6 +45,7 @@ public class TTLOntology2 {
     private HashMultimap<String, TypeSubtype> typeResolve;
     private HashMultimap<String, TypeSubtype> labelAcceptedArgumentResolve;
     private Set<String> entityOrFillers;
+    DiGraph<String> top_down_hierarchy;
 
     public TTLOntology2(String url) {
         this.model = RDFDataMgr.loadModel(url);
@@ -47,6 +54,13 @@ public class TTLOntology2 {
         typeResolve = HashMultimap.create();
         labelAcceptedArgumentResolve = HashMultimap.create();
         entityOrFillers = new HashSet<>();
+        self = new Ontology();
+        category = createResource("jackb", "Category");
+        subclassof = createResource("rdfs", "subClassOf");
+        domain = createResource("rdfs", "domain");
+        label = createResource("rdfs", "label");
+        allowedNist = createResource("schema", "rangeIncludes");
+        top_down_hierarchy = new DiGraph<>();
         load();
     }
 
@@ -80,66 +94,30 @@ public class TTLOntology2 {
         return qe.execSelect();
     }
 
+
+    Resource category;
+    Resource subclassof;
+    Resource domain;
+    Resource label;
+    Resource allowedNist;
     private Ontology load() {
-        Resource category = createResource("jackb", "Category");
-        Resource subclassof = createResource("rdfs", "subClassOf");
-        Resource domain = createResource("rdfs", "domain");
-        Resource label = createResource("rdfs", "label");
-        Resource allowedNist = createResource("schema", "rangeIncludes");
-        self = new Ontology();
 
-        Iterable<QuerySolution> it = () -> query(null, subclassof, category);
-        for (QuerySolution kind : it) {
-            RDFNode sort = kind.get("s");
-            String sortName = sort.toString().split("#")[1].replaceAll("Type$","");
-
-            Iterable<QuerySolution> it2 = () ->  query(null, subclassof, sort.asResource());
+        Iterable<QuerySolution> getKindFromSorts = () -> query(null, subclassof, category);
+        for (QuerySolution kind : getKindFromSorts) {
+            RDFNode currKind = kind.get("s");
+            String  kindName = currKind.toString().split("#")[1].replaceAll("Type$","");
             ArrayList<TypeSubtype> ls = new ArrayList<>();
-            for (QuerySolution type : it2) {
-                TypeSubtype ts = new TypeSubtype();
-                ts.kind = sortName;
-                RDFNode typeInstance = type.get("s");
-                ts.nistName = typeInstance.toString().split("#")[1].replaceAll("Type$","");
 
-                Iterable<QuerySolution> it3 = () ->  query(null, domain, typeInstance.asResource());
-                ArrayList<Label> lbs = new ArrayList<>();
-                for (QuerySolution field: it3) {
-                    Label l = new Label();
-                    l.fromNISTType = ts.nistName;
-                    RDFNode fieldGen = field.get("s");
-                    RDFNode shortLabel;
-                    Iterable<QuerySolution> itI = () -> query(fieldGen.asResource(), label, null);
-                    for (QuerySolution io : itI) {
-                        shortLabel = io.get("o");
-                        l.nistName = l.fromNISTType+"."+shortLabel.toString();
-                        //System.out.println("\t\t"+shortLabel.toString());
-                        break;
-                    }
+            toAddTypes(currKind, kindName, ls);
 
-                    Iterable<QuerySolution> it4 = () ->  query(fieldGen.asResource(), allowedNist, null);
-                    ArrayList<String> nistTypes = new ArrayList<>();
-                    for (QuerySolution args2 : it4) {
-                        RDFNode fieldType = args2.get("o");
-                        String str = fieldType.toString().split("#")[1];
-                        if (str.endsWith("Type"))
-                            str = str.replaceAll("Type$","");
-                        nistTypes.add(str);
-                    }
-                    l.allowedLDCTypes = nistTypes.toArray(new String[nistTypes.size()]);
-                    lbs.add(l);
-                }
-                ts.argumentTypes = lbs.toArray(new Label[lbs.size()]);
-                ls.add(ts);
-            }
-
-            Sort s = new Sort(sortName, ls.toArray(new TypeSubtype[ls.size()]));
-            if (sortName.toLowerCase().equals("entity"))
+            Sort s = new Sort(kindName, ls.toArray(new TypeSubtype[ls.size()]));
+            if (kindName.toLowerCase().equals("entity"))
                 self.entity = s;
-            else if (sortName.toLowerCase().equals("relation"))
+            else if (kindName.toLowerCase().equals("relation"))
                 self.relation = s;
-            else if (sortName.toLowerCase().equals("filler"))
+            else if (kindName.toLowerCase().equals("filler"))
                 self.filler = s;
-            else if (sortName.toLowerCase().equals("event"))
+            else if (kindName.toLowerCase().equals("event"))
                 self.event = s;
         }
         //return self;
@@ -157,6 +135,8 @@ public class TTLOntology2 {
                     //ldcToNist(ts.ldcName, ts.nistName);
                 }
         }
+        extractHierarchy(true, new File("test.txt"));
+        expandArgumentTypes();
 
         for (Sort s : self.getSorts()) {
             if (s.hasTypes != null)
@@ -176,6 +156,72 @@ public class TTLOntology2 {
                 }
         }
         return self;
+    }
+
+    private void expandArgumentTypes() {
+        if (self.getSorts() != null) {
+            Set<String> vertices = top_down_hierarchy.graph.vertexSet();
+            for (Sort s : self.getSorts()) {
+                if (s.hasTypes != null)
+                    for (TypeSubtype ts : s.hasTypes) {
+                        for (Label l : ts.argumentTypes) {
+                            ArrayList<String> expandedTypes = new ArrayList<>();
+                            for (String allowedType : l.allowedLDCTypes) {
+                                expandedTypes.add(allowedType);
+                                new AllDirectedPaths<>(top_down_hierarchy.graph).getAllPaths(Collections.<String>singleton(allowedType), vertices, true, null).forEach(
+                                        path -> {
+                                            expandedTypes.add(path.getEndVertex());
+                                        }
+                                );
+                            }
+                            l.allowedLDCTypes = expandedTypes.toArray(new String[expandedTypes.size()]);
+                        }
+                    }
+            }
+        }
+    }
+
+    private void toAddTypes(RDFNode currKind, String kindName, ArrayList<TypeSubtype> ls) {
+        Iterable<QuerySolution> getRootTypesFromKind = () ->  query(null, subclassof, currKind.asResource());
+        for (QuerySolution type : getRootTypesFromKind) {
+            TypeSubtype currentType = new TypeSubtype();
+            currentType.kind = kindName;
+            RDFNode typeInstance = type.get("s");
+            currentType.nistName = typeInstance.toString().split("#")[1].replaceAll("Type$","");
+
+            // Recursion
+            toAddTypes(typeInstance, kindName, ls);
+
+            Iterable<QuerySolution> it3 = () ->  query(null, domain, typeInstance.asResource());
+            ArrayList<Label> lbs = new ArrayList<>();
+            for (QuerySolution field: it3) {
+                Label l = new Label();
+                l.fromNISTType = currentType.nistName;
+                RDFNode fieldGen = field.get("s");
+                RDFNode shortLabel;
+                Iterable<QuerySolution> itI = () -> query(fieldGen.asResource(), label, null);
+                for (QuerySolution io : itI) {
+                    shortLabel = io.get("o");
+                    l.nistName = l.fromNISTType+"."+shortLabel.toString();
+                    //System.out.println("\t\t"+shortLabel.toString());
+                    break;
+                }
+
+                Iterable<QuerySolution> it4 = () ->  query(fieldGen.asResource(), allowedNist, null);
+                ArrayList<String> nistTypes = new ArrayList<>();
+                for (QuerySolution args2 : it4) {
+                    RDFNode fieldType = args2.get("o");
+                    String str = fieldType.toString().split("#")[1];
+                    if (str.endsWith("Type"))
+                        str = str.replaceAll("Type$","");
+                    nistTypes.add(str);
+                }
+                l.allowedLDCTypes = nistTypes.toArray(new String[nistTypes.size()]);
+                lbs.add(l);
+            }
+            currentType.argumentTypes = lbs.toArray(new Label[lbs.size()]);
+            ls.add(currentType);
+        }
     }
 
     public Set<TypeSubtype> resolveNISTTypes(String nistType) {
@@ -217,20 +263,50 @@ public class TTLOntology2 {
     }
 
     public static void main(String args[]) throws IOException {
-        TTLOntology2 fringes = new TTLOntology2("data/SeedlingOntology_m18.ttl");
-        DiGraph<String> hierarchyTest = new DiGraph<>();
-        fringes.entityOrFillers.forEach(x ->  {
-            String arguments[] = x.split("\\.");
-            String builtUp = "";
-            for (int i = 0, n = arguments.length; i<n; i++) {
-                String current = builtUp + (builtUp.length() > 0 ? "." : "") + arguments[i];
-                hierarchyTest.add(builtUp.length() == 0 ? "_" : builtUp, current, 1.0);
-                builtUp = current;
+
+        TTLOntology2 fringes = new TTLOntology2("data/SeedlingOntology2.ttl");
+        printSchema(fringes.self.relation);
+        printSchema(fringes.self.event);
+
+        // TODO: move to a dedicated method. Creating a union hierarchy for all those concepts.
+        //fringes.extractHierarchy(true);
+    }
+
+    /**
+     *
+     * @param top_down
+     * @param filename      Optional argument providing the location where to store the hierarchy
+     * @return              The return value returns whether some failuer occurred during the method invocation.
+     *                      If the filename has been specified, it returns whether the file was written with success.
+     *                      Returns always true otherwise.
+     */
+    private boolean extractHierarchy(boolean top_down, File filename) {
+        for (Sort s : self.getSorts()) {//entityOrFillers
+            if (s.hasTypes != null)
+                for (TypeSubtype ts : s.hasTypes) {
+                    String x = ts.nistName;
+                    String arguments[] = x.split("\\.");
+                    String builtUp = "";
+                    for (int i = 0, n = arguments.length; i<n; i++) {
+                        String current = builtUp + (builtUp.length() > 0 ? "." : "") + arguments[i];
+                        String parent = builtUp.length() == 0 ? s.name : builtUp;
+                        top_down_hierarchy.add(top_down ? parent : current, top_down ? current : parent, 1.0);
+                        builtUp = current;
+                    }
+                }
+        }
+
+        if (filename != null) {
+            try {
+                top_down_hierarchy.writeToFile(filename, String::toString);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
             }
-        });
-        /*printSchema(fringes.self.relation);
-        printSchema(fringes.self.event);*/
-        hierarchyTest.writeToFile(new File("test.txt"), String::toString);
+        } else {
+            return true;
+        }
     }
 
     private static void printSchema(Sort relation) {

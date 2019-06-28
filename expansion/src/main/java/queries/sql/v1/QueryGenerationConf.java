@@ -22,6 +22,7 @@
 package queries.sql.v1;
 
 import algos.Substitute;
+import com.google.common.collect.HashMultimap;
 import queries.bitmaps.BitMap;
 import queries.sql.v1.SelectFromWhere;
 import queries.sql.v1.WhereEqValueCondition;
@@ -88,6 +89,24 @@ public class QueryGenerationConf {
         if (r.body != null) r.body.forEach(x -> updateArgumentSet(arguments, x));
     }
 
+    public static String intersect_elements(Collection<String> elements) {
+        if (elements.isEmpty())
+            return "";
+        else {
+            int n = elements.size();
+            if (n == 1) {
+                return elements.iterator().next();
+            } else {
+                Iterator<String> component = elements.iterator();
+                String current_step = component.next();
+                while (component.hasNext()) {
+                    current_step = "array_intersect("+current_step+", "+component.next()+")";
+                }
+                return current_step;
+            }
+        }
+    }
+
     private void createSelectAndJoinConditions(PropArgument variable, Proposition prop, List<CompPair<String, Integer>> ls) {
         if (variable.isVariable && ls != null) {
             for (int i = 0, N = prop.args.size(); i<N; i++) {
@@ -134,16 +153,15 @@ public class QueryGenerationConf {
         }
         if (r.head.isEmpty() || r.isFinalBottom) {
             r.head.add(new Clause(new Proposition("_bot_")));
-            System.err.println("Ignoring mutual exclusions...");
+            //System.err.println("Ignoring mutual exclusions...");
             //return null;
         }
 
         // Associating into the bitmap whether the final result should be negated, too.
-        BitMap resultNegated = new BitMap(Integer.valueOf(properties.getProperty("negatedS")));
+        BitMap resultNegated = new BitMap(Integer.valueOf(properties.getProperty("negS")));
         if (r.head.get(0).isNegated) {
             resultNegated.on(0);
         }
-
 
         Set<PropArgument> joinVariables = new HashSet<>();
 
@@ -176,7 +194,7 @@ public class QueryGenerationConf {
                 }
             }
             if (b.isNegated) {
-                BitMap bm = new BitMap(Integer.valueOf(properties.getProperty("negatedS")));
+                BitMap bm = new BitMap(Integer.valueOf(properties.getProperty("negS")));
                 bm.on(0);
                 negatedMaps.put(tableName, bm);
             }
@@ -195,7 +213,7 @@ public class QueryGenerationConf {
         r.body.forEach(x -> {
             fromTables.add(properties.getProperty("tupleTable")+" "+getTableName(x.prop.relName));
             tableRenamings.add(getTableName(x.prop.relName));
-            selectSpecificERTypes.add(new WhereEqValueCondition(getTableName(x.prop.relName), properties.getProperty("type"), "'"+x.prop.relName+"'"));
+            selectSpecificERTypes.add(new WhereEqValueCondition(getTableName(x.prop.relName), properties.getProperty("type"), "'"+x.prop.relName+"'", false));
         });
 
         // Generating all the join conditions. All the values in the map must be linked
@@ -222,24 +240,33 @@ public class QueryGenerationConf {
                 CompPair<String, Integer> getSelectElementRaw = toJoin.get(0);
                 CompPair<String, String> getSelectArgument = getJoinConditionForSQL(getSelectElementRaw);
                 CompPair<String, String> getSelectType = getArgTypeForSQL(getSelectElementRaw);
+                HashMultimap<String, String> hmm2 = HashMultimap.create();
+
+            int N = toJoin.size();
+            for (int i = 0; i < N-1; i++) {
+                CompPair<String, String> left = getJoinConditionForSQL(toJoin.get(i));
+                CompPair<String, String> right = getJoinConditionForSQL(toJoin.get(i + 1));
+                hmm2.put(left.key+"."+left.val, left.key+"."+left.val);
+                hmm2.put(right.key+"."+right.val, right.key+"."+right.val);
+                if (!((!tableRenamings.contains(left.key)) || (!tableRenamings.contains(right.key)))) {
+                    //System.err.println("ERROR: join condition that is not reflected into a resulting table. Killing");
+                    //return null;
+                    hmm2.put(left.key+"."+left.val, right.key+"."+right.val);
+                    hmm2.put(right.key+"."+right.val, left.key+"."+left.val);
+                    wjcLsAND.add( new WhereJoinCondition(left.key, left.val, right.key, right.val, true));
+                }
+            }
 
                 for (CompPair<String, Integer> getSelectPosition : inSelect) {
                     resultMapForNullCheck.put(getSelectPosition.val, getTableName(getSelectArgument.key) + "." + getSelectArgument.val);
-                    selectionMap.put(getArgumentName(getSelectPosition.val), getTableName(getSelectArgument.key) + "." + getSelectArgument.val);
-                    selectionMap.put(getArgumentType(getSelectPosition.val), getTableName(getSelectType.key) + "." + getSelectType.val);
+                    String toArg = getTableName(getSelectArgument.key) + "." + getSelectArgument.val;
+                    toArg = intersect_elements(hmm2.get(toArg));
+                    selectionMap.put(getArgumentName(getSelectPosition.val), toArg);
+                    //selectionMap.put(getArgumentType(getSelectPosition.val), getTableName(getSelectType.key) + "." + getSelectType.val);
                 }
 
-                int N = toJoin.size();
                 //if (N>2) {
-                    for (int i = 0; i < N-1; i++) {
-                        CompPair<String, String> left = getJoinConditionForSQL(toJoin.get(i));
-                        CompPair<String, String> right = getJoinConditionForSQL(toJoin.get(i + 1));
-                        if (!((!tableRenamings.contains(left.key)) || (!tableRenamings.contains(right.key)))) {
-                            //System.err.println("ERROR: join condition that is not reflected into a resulting table. Killing");
-                            //return null;
-                            wjcLsAND.add( new WhereJoinCondition(left.key, left.val, right.key, right.val));
-                        }
-                    }
+
                 //}
             //}
 
@@ -258,10 +285,13 @@ public class QueryGenerationConf {
                 ls.add("B'0'");
             }
         }
+        if (ls.isEmpty()) {
+            ls.add("0");
+        }
 
         selectionMap.put(properties.getProperty("null"), "("+String.join(" || ", ls)+")::bit("+properties.getProperty("nullS")+")");
-        selectionMap.put(properties.getProperty("negated"), resultNegated.toString());
-        selectionMap.put(properties.getProperty("hedged"), new BitMap(Integer.valueOf(properties.getProperty("hedgedS"))).toString());
+        selectionMap.put(properties.getProperty("neg"), resultNegated.toString());
+        selectionMap.put(properties.getProperty("hed"), new BitMap(Integer.valueOf(properties.getProperty("hedS"))).toString());
 
 
         return new SelectFromWhere(selectionMap,

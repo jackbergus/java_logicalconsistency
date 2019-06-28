@@ -87,6 +87,18 @@ public class LoadFact extends StaticDatabaseClass {
             System.out.println("s = " + d);
         }
 
+        // Define the array_intersect function
+        database.rawSqlStatement("CREATE FUNCTION array_intersect(anyarray, anyarray)\n" +
+                "  RETURNS anyarray\n" +
+                "  language sql\n" +
+                "as $FUNCTION$\n" +
+                "    SELECT ARRAY(\n" +
+                "        SELECT UNNEST($1)\n" +
+                "        INTERSECT\n" +
+                "        SELECT UNNEST($2)\n" +
+                "    );\n" +
+                "$FUNCTION$;");
+
         /*if (true) {
             // associating to each clusterId the element that has more occurences. Therefore, we're going to
             // disambiguate only this element,..

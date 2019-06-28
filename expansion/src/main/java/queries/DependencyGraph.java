@@ -21,11 +21,13 @@
 
 package queries;
 
-import algos.graphs.SCC;
-import algos.graphs.Visiting;
+import algos.graphs.AllCycles;
+import algos.graphs.AllDirectedPaths2;
 import javafx.util.Pair;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import queries.sql.v1.QueryGenerationConf;
 import ref.RuleListener;
@@ -49,7 +51,7 @@ public class DependencyGraph {
     public Set<String> reflOrTtransFromTheBeginning = new HashSet<>();
 
     // By using the former hooks, I know which are the rules that must applied at the end
-    public Set<Integer> lastRuleId = new HashSet<>();
+    public Set<String> endingNodes = new HashSet<>();
 
     // I want to start the join computation from the nodes that have no incoming rules, whenever that's possible
     public Set<String> startingNodes = new HashSet<>();
@@ -58,7 +60,7 @@ public class DependencyGraph {
     public Set<List<String>> pathsBeforeFixPointsWithNoInput = new HashSet<>();
 
     // Paths eventually connecting some cycles, starting from the starting nodes but not arriving into zero outgoing degree nodes
-    public Set<List<String>> pathsBeforeFixPointsWithInput = new HashSet<>();
+    public List<List<String>> pathsBeforeFixPointsWithInput;
 
     // Paths not providing cycles that are neither starting nor ending cycles
     public Set<List<String>> pathsCausingMoreComplexConditions = new HashSet<>();
@@ -68,11 +70,15 @@ public class DependencyGraph {
 
     // If there are some hooks that are in starting nodes, then these are all the rules that must be applied first using the fixed point
     public Set<Integer> firstRuleId = new HashSet<>();
+
     DefaultDirectedWeightedGraph<String, Edge> graph;
+
     //remove from the inference graph the nodes that have degree 0
     Set<String> toBeRemovedVertices = new HashSet<>();
+
     // All the cycles that we want to break somehow
     Set<List<String>> cycleSet = new HashSet<>();
+
     // Terminal node of a cycle
     Set<String> cycleMaxVertices = new HashSet<>();
 
@@ -111,7 +117,7 @@ public class DependencyGraph {
                         Edge e = graph.addEdge(cp1.getKey().toString(), cp2.getKey().toString());
                         e.src = cp1.getKey().toString();
                         e.dst = cp2.getKey().toString();
-                        System.out.println(e.src + " --> " + e.dst);
+                        //System.out.println(e.src + " --> " + e.dst);
                         //e.putRuleId(cp1.getKey().toString()+"--"+cp2.getKey().toString());
                         e.putRuleId(intersection.size());
                     }
@@ -165,6 +171,7 @@ public class DependencyGraph {
         }
 
         // Sorting the vertices by ingoing degree
+        Set<String> cycleNodes = new HashSet<>();
         System.err.println("INFO - Sorting the vertices by ingoing degree");
         Map<String, Integer> degreeMap = new HashMap<>();
         for (String x : graph.vertexSet()) {
@@ -173,6 +180,8 @@ public class DependencyGraph {
             // I will start to produce the rules from the nodes that I know that have no inputs
             if (inDeg == 0) {
                 startingNodes.add(x);
+            } else if (graph.outDegreeOf(x) == 0) {
+                endingNodes.add(x);
             }
             degreeMap.put(x, graph.inDegreeOf(x));
         }
@@ -184,7 +193,7 @@ public class DependencyGraph {
         //Tarjan t = new Tarjan(graph);
         System.out.println("Detecting Cycles:");
         //new AllCycles(graph).run()
-        new Visiting(graph).run()
+        new AllCycles(graph).run()
         //System.exit(1);
         //new SCC(graph).runDFSStack()
         //t.run()
@@ -192,12 +201,12 @@ public class DependencyGraph {
                     //List<String> cycle = new ArrayList<>(cycleColl);
                     //Set<String> x = graph.vertexSet();
                     if (cycle.size() == 1) {
-                        reflOrTtrans.addAll(cycle);
+                        /*reflOrTtrans.addAll(cycle);
                         String y = cycle.get(0);
                         if (graph.getEdge(y, y) != null) {
-                            (startingNodes.contains(y) ? firstRuleId : lastRuleId).add(/*graph.getEdge(y, y).ruleToNoInstances.keySet()*/Integer.valueOf(y));
+                            (startingNodes.contains(y) ? firstRuleId : lastRuleId).add(Integer.valueOf(y));
                             remainingNodes.remove(y);
-                        }
+                        }*/
                     } else {
                         // Getting the node in the cycle with the maximum ingoing degree
                         System.out.println(cycle);
@@ -217,9 +226,11 @@ public class DependencyGraph {
                             head.addAll(cycle);
                             cycle = head;
                         }
-                        System.out.println("\t * " + cycle);
+                        //System.out.println("\t * " + cycle);
                         cycle.forEach(y -> remainingNodes.remove(y));
                         cycleSet.add(cycle);
+                        cycleNodes.addAll(cycle);
+                        startingNodes.removeAll(cycle);
                     }
                 });
 
@@ -227,12 +238,18 @@ public class DependencyGraph {
         firstRuleId.forEach(x -> startingNodes.add(x.toString()));
         //startingNodes.addAll();
         System.out.println("Starting nodes: " + startingNodes);
-        System.out.println("Ending nodes: " + lastRuleId);
+        System.out.println("Ending nodes: " + endingNodes);
 
         remainingNodes.removeAll(startingNodes);
-        lastRuleId.forEach(x -> remainingNodes.remove(x.toString()));
+        endingNodes.forEach(x -> remainingNodes.remove(x.toString()));
         System.out.println("\n\nRemaining nodes: " + remainingNodes); // Supposedly, these nodes should be the ones connecting the starting nodes to the ones in the cycles, or the ones connecting the starting nodes to the ending nodes.
         //System.exit(1);
+
+        // TODO: getting all the paths from the beginning node and the ending nodes
+        System.out.println("INFO: Generating all the paths going directly from the beginning to the terminal nodes, and not passing through the cycleNodes");
+        generateShortestPaths(cycleNodes, graph, startingNodes, endingNodes, terminalPaths);
+
+        pathsBeforeFixPointsWithInput = generateAllPaths(graph, startingNodes, cycleNodes);
 
         /*// If there are no starting nodes, incrementally choose the starting nodes until I reach some kind of fixpoint.
         // This case needs to be considered when there are no nodes having zero degree from which we know for sure where to start from.
@@ -380,6 +397,31 @@ public class DependencyGraph {
         }*/
     }
 
+    public static void generateShortestPaths(Set<String> toBeExcludedNodes, DefaultDirectedWeightedGraph<String, Edge> graph, Collection<String> sources, Collection<String> sinks, Set<List<String>> resultingPaths) {
+        DijkstraShortestPath<String, Edge> sp = new DijkstraShortestPath<>(graph);
+        for (String src: sources) {
+            for (String dstI : sinks) {
+                GraphPath<String, Edge> path = sp.getPath(src, dstI);
+                if (path != null) {
+                    List<String> vertexList = path.getVertexList();
+                    if (Collections.disjoint(vertexList, toBeExcludedNodes)) {
+                        resultingPaths.add(vertexList);
+                    }
+                    // Then, interrupt the path on the vertex of maximum degree
+                    /*String maxDegVTX = Collections.max(vertexList, Comparator.comparingInt(degreeMap::get));
+                    vertexList = vertexList.subList(0, vertexList.indexOf(maxDegVTX) + 1);
+                    startingPaths.add(vertexList);
+                    maxes.add(maxDegVTX);*/
+                }
+            }
+        }
+    }
+
+    private static List<List<String>> generateAllPaths(DefaultDirectedWeightedGraph<String, Edge> graph, Collection<String> sources, Collection<String> sinks) {
+        AllDirectedPaths2 sp = new AllDirectedPaths2(graph);
+        return AllCycles.removeSuppaths(sp.getAllPaths(sources, sinks, false));
+    }
+
     private static void createHyperedge(Integer r, Map<Integer, Rule> cps, Map<Integer, Pair<Set<String>, Set<String>>> map) {
         Pair<Set<String>, Set<String>> cp = new Pair<>(new HashSet<>(), new HashSet<>());
         cps.forEach((k, v) -> {
@@ -446,6 +488,7 @@ public class DependencyGraph {
                 "\tarrow-size: 3px, 2px;\n" +
                 "}\n" +
                 "\nnode.startingnodes { fill-color: green; }\n" +
+                "\nnode.endingnodes { fill-color: red; }\n" +
                 "edge.startingpaths { shape:line; fill-color: green; }" +
                 "edge.beforepaths { shape:line; fill-color: blue; }" +
                 "edge.terminalpaths { shape:line; fill-color: #6A5ACD; }" +
@@ -458,25 +501,36 @@ public class DependencyGraph {
             Node node = graph.addNode(v);
             node.setAttribute("ui.label", v);
             if (remainingNodes.contains(v))
-                node.addAttribute("ui.class", "singlefixpoint");
+                node.addAttribute("ui.class", "loopnodes");
             else if (startingNodes.contains(v))
                 node.addAttribute("ui.class", "startingnodes");
+            else if (endingNodes.contains(Integer.valueOf(v)))
+                node.addAttribute("ui.class", "endingnodes");
         }
         for (Edge e : this.graph.edgeSet()) {
             org.graphstream.graph.Edge ep = graph.addEdge(e.src + "_" + e.dst , e.src, e.dst, true);
             System.out.println(e.src + " --> " + e.dst );
             //ep.setAttribute("ui.label", e.ruleToNoInstances.values()+"");
-
         }
         for (List<String> cycle : this.cycleSet) {
             for (int i = 0, n = cycle.size(); i<n; i++ ) {
                 int next = (i+1) % (n);
                 org.graphstream.graph.Edge ep;
                 ep =  graph.getEdge(cycle.get(i)  + "_" +  cycle.get(next));
-                System.out.println("\t\t"+ep.getSourceNode() + " --> " + ep.getTargetNode() );
+                // OK! System.out.println("\t\t"+ep.getSourceNode() + " --> " + ep.getTargetNode() );
                 if (ep != null) {
+                    graph.getNode(cycle.get(i)).addAttribute("ui.class", "singlefixpoint");
+                    graph.getNode(cycle.get(next)).addAttribute("ui.class", "singlefixpoint");
                     ep.setAttribute("ui.class", "complicated");
                 }
+            }
+        }
+
+        for (List<String> x : pathsBeforeFixPointsWithInput) {
+            for (int i = 0, N = x.size(); i < N - 1; i++) {
+                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
+                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst );
+                ep.setAttribute("ui.class", "beforepaths");
             }
         }
 
@@ -487,20 +541,8 @@ public class DependencyGraph {
                 ep.setAttribute("ui.class", "startingpaths");
             }
         }
-        for (List<String> x : pathsBeforeFixPointsWithInput) {
-            for (int i = 0, N = x.size(); i < N - 1; i++) {
-                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
-                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst );
-                ep.setAttribute("ui.class", "beforepaths");
-            }
-        }
-        for (List<String> x : terminalPaths) {
-            for (int i = 0, N = x.size(); i < N - 1; i++) {
-                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
-                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst);
-                ep.setAttribute("ui.class", "terminalpaths");
-            }
-        }
+
+
         for (List<String> x : pathsBeforeFixPointsWithInput) {
             for (int i = 0, N = x.size(); i < N - 1; i++) {
                 Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
@@ -515,6 +557,14 @@ public class DependencyGraph {
                 ep.setAttribute("ui.class", "complicated");
             }
         }*/
+
+        for (List<String> x : terminalPaths) {
+            for (int i = 0, N = x.size(); i < N - 1; i++) {
+                Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
+                org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst);
+                ep.setAttribute("ui.class", "terminalpaths");
+            }
+        }
 
         graph.display();
     }

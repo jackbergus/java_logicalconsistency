@@ -33,8 +33,8 @@ public class WhereJoinCondition extends WhereEqValueCondition {
     public String tableRight;
     public String argRight;
 
-    public WhereJoinCondition(String tableLeft, String argLeft, String tableRight, String argRight) {
-        super(tableLeft, argRight, tableRight+"."+argRight);
+    public WhereJoinCondition(String tableLeft, String argLeft, String tableRight, String argRight, boolean vectorIntersection) {
+        super(tableLeft, argRight, tableRight+"."+argRight, vectorIntersection);
         this.tableLeft = tableLeft;
         this.argLeft = argLeft;
         this.tableRight = tableRight;
@@ -43,7 +43,7 @@ public class WhereJoinCondition extends WhereEqValueCondition {
 
     @Override
     public String toString() {
-        return tableLeft + "." + argLeft +" = " + tableRight+"."+argRight;
+        return tableLeft + "." + argLeft +" "+(vectorIntersection ? "&&" : "=")+" "  + tableRight+"."+argRight;
     }
 
     @Override
@@ -64,6 +64,6 @@ public class WhereJoinCondition extends WhereEqValueCondition {
 
     @Override
     public WhereJoinCondition copy() {
-        return new WhereJoinCondition(tableLeft, argLeft, tableRight, argRight);
+        return new WhereJoinCondition(tableLeft, argLeft, tableRight, argRight, vectorIntersection);
     }
 }

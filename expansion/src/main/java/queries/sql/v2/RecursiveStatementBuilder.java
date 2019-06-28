@@ -105,19 +105,4 @@ public class RecursiveStatementBuilder {
         return fibonacci(i-1)+fibonacci(i-2);
     }
 
-    public static void main(String s[]) {
-
-        Set<String> knowledgeBase = new HashSet<>();
-        Set<String> groundedKnowledgeBase = new HashSet<>();
-        knowledgeBase.add("hello");
-        knowledgeBase.add("world");
-        do {
-            // Recursion.... f(knowledgeBase)
-        } while (! groundedKnowledgeBase.containsAll(knowledgeBase));
-        knowledgeBase = groundedKnowledgeBase;
-
-        // f(kb), f(f(kb)), f(f(f(kb))) ..... f^n(kb)=f^{n+1}(kb)
-
-    }
-
 }

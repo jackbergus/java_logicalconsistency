@@ -43,7 +43,7 @@ public class AllDirectedPaths2 {
             // current path[]
             if (u.equals(d)) {
                 List<String> toSet = Arrays.asList(path).subList(0, path_index+1);
-                System.out.println(toSet);
+               // System.out.println(toSet);
                 //nodes.add(toSet);
                 yield.returning(toSet);
                 if (first) {
@@ -83,7 +83,7 @@ public class AllDirectedPaths2 {
             for (String src : source) {
                 for (String dst : target) {
                     visited.clear();
-                    System.out.println(src+" -- "+dst);
+                    //System.out.println(src+" -- "+dst);
                     printAllPathsUtil(src, dst, visited, nodes,  getFirst, yield);
                 }
             }
@@ -97,7 +97,7 @@ public class AllDirectedPaths2 {
             String[] nodes = new String[graph.vertexSet().size()];
             Set<String> visited = new HashSet<>();
             visited.clear();
-            System.out.println(src + " -- " + dst);
+            //System.out.println(src + " -- " + dst);
             AllDirectedPaths2.this.printAllPathsUtil(src, dst, visited, nodes,  getFirst, yield);
         };
     }

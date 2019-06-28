@@ -42,7 +42,7 @@ public class CasusuCikti {
         selectSpecificERTypes.stream().map(x -> {
             String key = x.value.replace("'","");
             String exValue = map.get(key);
-            return new WhereEqValueCondition(x.tableLeft, x.argLeft, "'"+exValue+"'").toString();
+            return new WhereEqValueCondition(x.tableLeft, x.argLeft, "'"+exValue+"'", false).toString();
         }).collect(Collectors.joining(" AND ")));
         // Specifying how to represent the data
         sb.append("\n\t\t\tTHEN ARRAY[");
@@ -55,12 +55,27 @@ public class CasusuCikti {
             ArrayList<String> toReturn = new ArrayList<>();
             arguments.forEach(x -> {
                 if (x.equals(retType)) {
-                    toReturn.add("'"+map.get(newType)+"'");
+                    if (("'"+map.get(newType)+"'").equals("'null'")) {
+                        if (newType.equals("_bot_"))
+                            toReturn.add("'_bot_'");
+                        else
+                            System.err.println("ERROR: type information not found.");
+                    } else
+                        toReturn.add("'"+map.get(newType)+"'");
                 } else {
-                    toReturn.add(map2.get(x));
+                    String got = map2.get(x);
+                    if (got == null)
+                        toReturn.add(properties.getProperty("emptyarray"));
+                    else
+                        toReturn.add(map2.get(x));
                 }
             });
+
+            // Overwriting the arguments with specific needs:
+            // 1) provenance information
             toReturn.set(0, tableRenamings.stream().map(x -> x+".eid").collect(Collectors.joining(" || ")));
+            // 2) weight as the conjunction of all the elements that were combined
+            toReturn.set(2, tableRenamings.stream().map(x -> x+".weight").collect(Collectors.joining(" * ")));
             //map2.put(retType, "'"+map.get(newType)+"'");
             return toReturn.stream().collect(Collectors.joining(", ", "json_build_array(", ")"));
         }).collect(Collectors.joining(",   "))

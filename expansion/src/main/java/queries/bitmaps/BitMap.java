@@ -70,4 +70,16 @@ public class BitMap {
         return  Arrays.stream(bitmap).mapToObj(Integer::toString).collect(Collectors.joining());
     }
 
+    public static BitMap fromString(String element) {
+        if (element.startsWith("B'") && element.endsWith("'")) {
+            return fromString(element.substring(2, element.length()-1));
+        } else {
+            BitMap bm = new BitMap(element.length());
+            for (int i = 0; i<bm.size; i++) {
+                bm.bitmap[i] = (element.charAt(i) == '1') ? 1 : 0;
+            }
+            return bm;
+        }
+    }
+
 }

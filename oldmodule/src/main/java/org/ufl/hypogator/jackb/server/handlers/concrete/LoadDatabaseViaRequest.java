@@ -26,14 +26,23 @@ public class LoadDatabaseViaRequest extends SimplePostRequest {
         StaticDatabaseClass.loadProperties();
         LoadFact lf = new LoadFact();
         Database opt = Database.openOrCreate(StaticDatabaseClass.engine, dbName, StaticDatabaseClass.username, StaticDatabaseClass.password).get();
+        String toBeReturned = "Error on closing the database";
         try {
             File f = File.createTempFile("temporary_database_file", ".tsv");
             Files.write(f.toPath(), content.getBytes());
             lf.loadForcefully(opt, f);
             f.delete(); // explicitely removing the temp file.
-            return "Database " + dbName +" has been created";
-        } catch (IOException e) {
-            return Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n"));
+            toBeReturned = "Database " + dbName +" has been created";
+        } catch (Exception e) {
+            toBeReturned = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n"));
+        } finally {
+            try {
+                opt.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                toBeReturned += ". Also, error on closing the database.";
+            }
         }
+        return toBeReturned;
     }
 }

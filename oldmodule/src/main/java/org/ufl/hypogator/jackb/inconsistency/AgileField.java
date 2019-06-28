@@ -11,9 +11,9 @@ public class AgileField {
     public String fieldString;
     public final boolean typeFromFuzzyMatch;
     public final String mid;
-    public final boolean isNegated;
-    public final boolean isHedged;
-    public final Double score;
+    public boolean isNegated = false;
+    public boolean isHedged = false;
+    public Double score = 1.0;
 
     @JsonCreator
     public AgileField(@JsonProperty("fieldName") String fieldName,
@@ -32,11 +32,17 @@ public class AgileField {
         this.isNegated = isNegated;
         this.isHedged = isHedged;
         this.score = score;
+        if (this.score == null)
+            this.score = 1.0;
     }
 
     @Override
     public String toString() {
         return fieldName+" = "+fieldString+":"+fieldType+" ";
+    }
+
+    public AgileField copyWithDifferentFieldName(String newFieldName, boolean isHedged, boolean isNegated) {
+        return new AgileField(newFieldName, fieldType, fieldString, typeFromFuzzyMatch, mid, isNegated, isHedged, score);
     }
 
     @Override

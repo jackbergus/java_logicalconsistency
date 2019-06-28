@@ -30,16 +30,18 @@ public class WhereEqValueCondition implements CopyConstructor<WhereEqValueCondit
     public String tableLeft;
     public String argLeft;
     public String value;
+    protected boolean vectorIntersection;
 
-    public WhereEqValueCondition(String tableLeft, String argLeft, String value) {
+    public WhereEqValueCondition(String tableLeft, String argLeft, String value, boolean vectorIntersection) {
         this.tableLeft = tableLeft;
         this.argLeft = argLeft;
         this.value = value;
+        this.vectorIntersection = vectorIntersection;
     }
 
     @Override
     public String toString() {
-        return tableLeft + "." + argLeft +" = " + value;
+        return tableLeft + "." + argLeft +" "+(vectorIntersection ? "&&" : "=")+" " + value;
     }
 
     @Override
@@ -59,6 +61,6 @@ public class WhereEqValueCondition implements CopyConstructor<WhereEqValueCondit
 
     @Override
     public WhereEqValueCondition copy() {
-        return new WhereEqValueCondition(tableLeft, argLeft,value);
+        return new WhereEqValueCondition(tableLeft, argLeft,value, vectorIntersection);
     }
 }

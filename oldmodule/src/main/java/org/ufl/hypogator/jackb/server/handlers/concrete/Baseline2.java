@@ -35,12 +35,16 @@ public class Baseline2 extends SimplePostRequest {
     static TtlOntology fringes = new TtlOntology("data/SeedlingOntology.ttl");
 
     public Baseline2() {
-        StaticDatabaseClass.loadProperties();
     }
 
     @Override
     public String handleContent(String content, HashMultimap<String,String> arguments) {
         //TuplesDao dao;
+
+        // Reload the properties from the configuration file, so that I can edit the arguments are re-load them at each new request.
+        StaticDatabaseClass.loadProperties();
+
+
         ObjectReader reader;
         Set<String> dbName_string = arguments.get("dbname");
         if (dbName_string == null || dbName_string.isEmpty()) {
@@ -192,6 +196,14 @@ public class Baseline2 extends SimplePostRequest {
         //setAnswerBody("{}");
         sb.append("}");
         System.out.println(sb.toString());
+
+        // Closing the connection once and for all
+        try {
+            opt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return sb.toString();
     }
 }
