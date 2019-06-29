@@ -19,7 +19,7 @@ public class AllDirectedPaths2 {
         //nodes = new HashSet<>();
     }
 
-    void printAllPathsUtil(String src, String d, Set<String> visited,
+    void printAllPathsUtil(String src, Collection<String> d, Set<String> visited,
                            String[] path, boolean first, YieldDefinition<List<String>> yield)
     {
         Stack<Pair<String, Integer>> nextElements = new Stack<>();
@@ -32,6 +32,9 @@ public class AllDirectedPaths2 {
             Integer path_index = cp.getValue();
             if (!visited.add(u)) {
                 // XXXX: visited.remove(u);
+                if (d.contains(u)) {
+                    addNewPath(path, first, yield, path_index);
+                }
                 nextElements.pop();
                 continue;
             }
@@ -41,15 +44,8 @@ public class AllDirectedPaths2 {
 
             // If current vertex is same as destination, then print
             // current path[]
-            if (u.equals(d)) {
-                List<String> toSet = Arrays.asList(path).subList(0, path_index+1);
-               // System.out.println(toSet);
-                //nodes.add(toSet);
-                yield.returning(toSet);
-                if (first) {
-                    yield.breaking();
-                    return;
-                }
+            if (d.contains(u)) {
+                if (addNewPath(path, first, yield, path_index)) return;
                 // XXX: visited.remove(u);
                 nextElements.pop();
             }
@@ -75,17 +71,29 @@ public class AllDirectedPaths2 {
 
     }
 
+    private boolean addNewPath(String[] path, boolean first, YieldDefinition<List<String>> yield, Integer path_index) {
+        List<String> toSet = new ArrayList<>(Arrays.asList(path).subList(0, path_index+1));
+        // System.out.println(toSet);
+        //nodes.add(toSet);
+        yield.returning(toSet);
+        if (first) {
+            yield.breaking();
+            return true;
+        }
+        return false;
+    }
+
     public Yielderable<List<String>> getAllPaths(Collection<String> source, Collection<String> target, boolean getFirst) {
        // nodes.clear();
         return yield -> {
             String[] nodes = new String[graph.vertexSet().size()];
             Set<String> visited = new HashSet<>();
             for (String src : source) {
-                for (String dst : target) {
-                    visited.clear();
-                    //System.out.println(src+" -- "+dst);
-                    printAllPathsUtil(src, dst, visited, nodes,  getFirst, yield);
-                }
+                if (src.equals("108"))
+                    System.err.println("DEBUG");
+                visited.clear();
+                //System.out.println(src+" -- "+dst);
+                printAllPathsUtil(src, target, visited, nodes,  getFirst, yield);
             }
         };
         //return this.nodes;
@@ -98,7 +106,7 @@ public class AllDirectedPaths2 {
             Set<String> visited = new HashSet<>();
             visited.clear();
             //System.out.println(src + " -- " + dst);
-            AllDirectedPaths2.this.printAllPathsUtil(src, dst, visited, nodes,  getFirst, yield);
+            AllDirectedPaths2.this.printAllPathsUtil(src, Collections.singleton(dst), visited, nodes,  getFirst, yield);
         };
     }
 

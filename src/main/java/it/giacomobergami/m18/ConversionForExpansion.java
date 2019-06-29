@@ -66,6 +66,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
         int arg1Pos = 3;
         String dbName = "p103";
 
+        // TODO: create the expansions table if does not exist already
 
         HashSet<String> variadicArguments = LoadSchemas.variadicArguments();
 

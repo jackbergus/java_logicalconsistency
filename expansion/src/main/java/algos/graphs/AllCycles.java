@@ -56,8 +56,11 @@ public class AllCycles {
 
     public static List<List<String>> removeSubpaths(Iterable<List<String>> collection) {
         List<List<String>> toret;
-        toret = new ArrayList<>();
-        collection.forEach(toret::add);
+        {
+            Set<List<String>> intermediate = new HashSet<>();
+            collection.forEach(intermediate::add);
+            toret = new ArrayList<>(intermediate);
+        }
         toret.sort(Comparator.comparingInt(List::size));
         Set<Integer> posToRemove = new HashSet<>(toret.size());
 
@@ -69,7 +72,7 @@ public class AllCycles {
                 if (posToRemove.contains(j)) continue;
                 // Removing all the cycles that are contained in bigger cycles: we reduce the number of the loops to visit
                 if (Collections.indexOfSubList(curI,(curJ)) != -1) {
-                    posToRemove.remove(j);
+                    posToRemove.add(j);
                 }
             }
         }
@@ -83,8 +86,11 @@ public class AllCycles {
 
     public static List<List<String>> removeSuppaths(Iterable<List<String>> collection) {
         List<List<String>> toret;
-        toret = new ArrayList<>();
-        collection.forEach(toret::add);
+        {
+            Set<List<String>> intermediate = new HashSet<>();
+            collection.forEach(intermediate::add);
+            toret = new ArrayList<>(intermediate);
+        }
         toret.sort(Comparator.comparingInt(List::size));
         Set<Integer> posToRemove = new HashSet<>(toret.size());
 
@@ -95,7 +101,7 @@ public class AllCycles {
                 List<String> curJ = toret.get(j);
                 // Removing all the cycles that are contained in bigger cycles: we reduce the number of the loops to visit
                 if (Collections.indexOfSubList(curI,(curJ)) != -1) {
-                    posToRemove.remove(i);
+                    posToRemove.add(i);
                     break;
                 }
             }
@@ -105,6 +111,7 @@ public class AllCycles {
         return IntStream.range(0, toret.size())
                 .filter(i -> !posToRemove.contains(i))
                 .mapToObj(toret::get)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
