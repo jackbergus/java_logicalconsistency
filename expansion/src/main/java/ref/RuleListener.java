@@ -275,27 +275,36 @@ public class RuleListener implements schemaListener {
 		ArrayList<Clause> clauses_tail = new ArrayList<>();
 		clauses_tail.add(s.asClause());
 		ArrayList<Rule> rules = new ArrayList<>();
+
+		Clause before = s.asClause();
+		for (String sp : space) {
+			for (int i = 0, n = before.prop.args.size(); i<n; i++) {
+				if (before.prop.args.get(i).value.equals(sp)) {
+					before.prop.args.get(i).value = "_before_"+before.prop.args.get(i).value;
+				}
+			}
+		}
+
 		for (String fieldVAr : toHaveFields) {
+			ArrayList<Predicate> isNotNull_joinCond = new ArrayList<>();
+			isNotNull_joinCond.add(new Predicate(fieldVAr));
+
+			// To perform only if I have time information
 			for (String tVar : time) {
-				ArrayList<Predicate> isNotNull_joinCond = new ArrayList<>();
 				isNotNull_joinCond.add(new Predicate(tVar));
-				isNotNull_joinCond.add(new Predicate(fieldVAr));
 				{
 					ArrayList<Clause> inPresentExist_head = new ArrayList<>();
 					inPresentExist_head.add(new Clause("ex", fieldVAr, tVar));
 					rules.add(new Rule(clauses_tail, isNotNull_joinCond, inPresentExist_head));
 				}
+			}
+			// Adding a bogus element if temporal aspect is not specified
+			if (time.isEmpty()) {
+				time.add("\"null\"");
+			}
 
-
-				Clause before = s.asClause();
-				for (String sp : space) {
-					for (int i = 0, n = before.prop.args.size(); i<n; i++) {
-						if (before.prop.args.get(i).value.equals(sp)) {
-							before.prop.args.get(i).value = "_before_"+before.prop.args.get(i).value;
-						}
-					}
-				}
-
+			// Still, iterating over all the possible variables
+			for (String tVar : time) {
 				for (String sp : space) {
 					// Adding place inconsistency detection
 					isNotNull_joinCond.add(new Predicate(sp));
@@ -305,10 +314,10 @@ public class RuleListener implements schemaListener {
 					rules.add(new Rule(clauses_tail, isNotNull_joinCond, inPresentExist_head));
 
 					// Adding the reverse rule, that is expanding the event with the place of the person
-					ArrayList<Clause> newTail = new ArrayList<>();
-					newTail.add(be);
-					newTail.add(before);
-					rules.add(new Rule(clauses_tail, isNotNull_joinCond, clauses_tail));
+					ArrayList<Clause> newBody = new ArrayList<>();
+					newBody.add(be);
+					newBody.add(before);
+					rules.add(new Rule(newBody, isNotNull_joinCond, clauses_tail));
 				}
 			}
 		}

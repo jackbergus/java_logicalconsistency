@@ -2,25 +2,25 @@
 ## TODO: geographical locations are represented in hierarchies, but the hierarchies from GeoNames are not perfectly linked. I need to further reify the ones from GeoNames
 relation be  (val,place,time);
 
-relation beB (val,place,time);
+/*relation beB (val,place,time);
 	rule beB (val,place,time) => be (val,place,time);
 
 relation beC (val,place,time);
-	rule beC (val,place,time) => be (val,place,time);
+	rule beC (val,place,time) => be (val,place,time);*/
 
-relation isA (subtype, suptype);
+/*relation isA (subtype, suptype);
     rule isA(subtype, suptype) isA(suptype, supsuptype) with subtype notnull suptype notnull supsuptype notnull => isA(subtype, supsuptype);
     rule isA(subtype, suptupe) with subtype notnull => isA(subtype, subtype);
-    rule isA(subtype, suptupe) with suptupe notnull => isA(suptupe, suptupe);
+    rule isA(subtype, suptupe) with suptupe notnull => isA(suptupe, suptupe);*/
 
 ## Basic elements required by the formalism
 ## type and isA are the same kind of relationship
-relation type(val,ty);
+/*relation type(val,ty);
 	rule type(val,ty) => isA(val,ty);
 	rule type(val,ty) => isA(val,val);
 
 relation owned (subtype, suptype, T);
-    rule owned(subtype, suptype, T) owned(suptype, supsuptype, T) with subtype notnull suptype notnull supsuptype notnull => owned(subtype, supsuptype,T);
+    rule owned(subtype, suptype, T) owned(suptype, supsuptype, T) with subtype notnull suptype notnull supsuptype notnull => owned(subtype, supsuptype,T);*/
 
 # val is the entity/filler
 relation ex  (val,time);
@@ -28,9 +28,9 @@ relation nex (val,time);
     rule ex(val,time) nex(val,time) => False;
     rule ~ex(val,time) => nex(val,time);
 
-relation beA (val,time);
+/*relation beA (val,time);
 	rule beA (val,time) => ex (val,time);
-	rule ~beA (val,time) => ~ex (val,time);
+	rule ~beA (val,time) => ~ex (val,time);*/
 
 ## Being projection: if an entity x existed at a given place s at time t, it existed at that time
 /* Please note that not being in a spatio-temporal region does not necessairly imply
@@ -41,66 +41,7 @@ rule be(val,place,time) => ex(val,time);
 #macro R(x,y,z,t) as tisaTa, rule R(x,y,z,t) with z notnull => tIsA(x,y,z);
 #macro R(x,y,z,t) as tisaTb, rule R(x,y,z,t) with t notnull => tIsA(x,y,t);
 
-relation Evaluate.Deliberateness.Accidental(Holder, Event);
-relation Evaluate.Deliberateness.Deliberate(Holder, Event);
-    rule Evaluate.Deliberateness.Accidental(Holder, Event) Evaluate.Deliberateness.Deliberate(Holder, Event) with Holder notnull => False;
+relation Physical.LocatedNear(Place,EntityOrFiller);
+    entity exist and space Place;
 
-relation Evaluate.Legitimacy.Illegitimate(Holder,Event);
-relation Evaluate.Legitimacy.Legitimate(Holder,Event);
-    rule Evaluate.Legitimacy.Illegitimate(Holder, Event) Evaluate.Legitimacy.Legitimate(Holder, Event) with Holder notnull => False;
-
-
-relation Evaluate.Sentiment.Negative(Holder,Event);
-relation Evaluate.Sentiment.Positive(Holder,Event);
-    rule Evaluate.Sentiment.Negative(Holder, Event) Evaluate.Sentiment.Positive(Holder, Event) with Holder notnull => False;
-
-rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation(EntityOrFiller,Artifact);
-
-rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.ControlTerritory(Territory,Controller);
-
-rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.NationalityCitizen(Nationality,Artifact);
-
-rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.OwnershipPossession(Owner,Artifact);
-rule GeneralAffiliation.MemberOriginReligionEthnicity(Person,EntityOrFiller);
-rule GeneralAffiliation.MemberOriginReligionEthnicity.Ethnicity(Person,Ethnicity);
-rule GeneralAffiliation.MemberOriginReligionEthnicity.NationalityCitizen(Nationality,Citizen);
-rule GeneralAffiliation.OrganizationPoliticalReligiousAffiliation(Organization,EntityOrFiller);
-rule GeneralAffiliation.OrganizationPoliticalReligiousAffiliation.NationalityCitizen(Organization,Nationality);
-rule GeneralAffiliation.OrganizationWebsite.OrganizationWebsite(Website,Organization);
-rule GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
-rule GeneralAffiliation.Sponsorship.AdvisePlanOrganize(Sponsor,ActorOrEvent);
-rule GeneralAffiliation.Sponsorship.Affiliated(Sponsor,ActorOrEvent);
-rule GeneralAffiliation.Sponsorship.HelpSupport(Sponsor,ActorOrEvent);
-rule Information.Color.Color(EntityOrFiller,Color);
-rule Information.Make.Make(EntityOrFiller,Brand);
-rule Measurement.Size(Measurement,EntityOrFiller);
-rule Measurement.Size.Count(Measurement,EntityOrFiller);
-rule Measurement.Size.HeightLengthWidth(Measurement,EntityOrFiller);
-rule Measurement.Size.Percentage(Measurement,EntityOrFiller);
-rule Measurement.Size.Weight(Measurement,EntityOrFiller);
-rule OrganizationAffiliation.EmploymentMembership(PlaceOfEmploymentMembership,EmployeeMember);
-rule OrganizationAffiliation.EmploymentMembership.Employment(PlaceOfEmployment,Employee);
-rule OrganizationAffiliation.EmploymentMembership.Membership(PlaceOfMembership,Member);
-rule OrganizationAffiliation.Founder.Founder(Organization,Founder);
-rule OrganizationAffiliation.Leadership(Organization,Leader);
-rule OrganizationAffiliation.Leadership.Government(Leader,GovernmentBodyOrGPE);
-rule OrganizationAffiliation.Leadership.HeadOfState(Leader,Country);
-rule OrganizationAffiliation.Leadership.MilitaryPolice(MilitaryPoliceORG,Leader);
-rule PartWhole.Subsidiary(Subsidiary,Parent);
-rule PartWhole.Subsidiary.NationalityCitizen(Subsidiary,Parent);
-rule PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent);
-rule PersonalSocial.Role(Role,Person);
-rule PersonalSocial.Role.ProfessionalRole(Person,JobRole);
-rule PersonalSocial.Role.TitleFormOfAddress(Title,Person);
-rule PersonalSocial.Unspecified(Person);
-rule PersonalSocial.Unspecified.Political(Person);
-rule Physical.LocatedNear(Place,EntityOrFiller);
-rule Physical.LocatedNear.Surround(Place,EntityOrFiller);
-
-rule Physical.OrganizationHeadquarters.OrganizationHeadquarters(Place,Organization);
-
-rule Physical.Resident.Resident(Resident,Place);
-
-rule ResponsibilityBlame.AssignBlame.AssignBlame(Event,EntityResponsible);
-
-rule ResponsibilityBlame.ClaimResponsibility.ClaimResponsibility(Event,EntityResponsible);
+relation Physical.LocatedNeara(Place,EntityOrFiller).

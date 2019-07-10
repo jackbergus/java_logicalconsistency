@@ -71,9 +71,9 @@ public class Main {
         System.out.println("TAB PRINTING (ltd.)");
         System.out.println("===================");
         QueryGenerationConf qgc = new QueryGenerationConf();
-        //classListener.printQueriesFromTabs(qgc);
+        classListener.printQueriesFromTabs(qgc);
         System.out.println("===================\n");
-        //System.exit(1);
+        System.exit(1);
 
         /*for (Map.Entry<Rule, ArrayList<Rule>> x : classListener.ruleTabClassification.entrySet()) {
             System.out.println(x.getKey());
