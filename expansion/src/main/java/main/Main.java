@@ -95,7 +95,7 @@ public class Main {
     }
 
     public static void main(String args[]) throws IOException {
-        parseRule(new FileReader("schema_definition.txt"));
+        parseRule(new FileReader("schema_definition3.txt"));
     }
 
 }

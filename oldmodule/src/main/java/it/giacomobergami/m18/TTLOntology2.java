@@ -42,7 +42,7 @@ public class TTLOntology2 {
     private Ontology self;
 
     private HashMap<String, String> ldcToNist_map, nistToLDC_map;
-    private HashMultimap<String, TypeSubtype> typeResolve;
+    private HashMap<String, TypeSubtype> typeResolve;
     private HashMultimap<String, TypeSubtype> labelAcceptedArgumentResolve;
     private Set<String> entityOrFillers;
     DiGraph<String> top_down_hierarchy;
@@ -51,7 +51,7 @@ public class TTLOntology2 {
         this.model = RDFDataMgr.loadModel(url);
         ldcToNist_map = new HashMap<>();
         nistToLDC_map = new HashMap<>();
-        typeResolve = HashMultimap.create();
+        typeResolve = new HashMap<>();
         labelAcceptedArgumentResolve = HashMultimap.create();
         entityOrFillers = new HashSet<>();
         self = new Ontology();
@@ -150,7 +150,10 @@ public class TTLOntology2 {
                         for (Label labelts : ts.argumentTypes) {
                             if (labelts.allowedLDCTypes != null)
                                 for (String ldc : labelts.allowedLDCTypes) {
-                                    labelAcceptedArgumentResolve.putAll(labelts.nistName, resolveNISTTypes(ldc));
+                                    TypeSubtype type = resolveNISTTypes(ldc);
+                                    if (type != null) {
+                                        labelAcceptedArgumentResolve.put(labelts.nistName, type);
+                                    }
                                 }
                         }
                 }
@@ -224,7 +227,7 @@ public class TTLOntology2 {
         }
     }
 
-    public Set<TypeSubtype> resolveNISTTypes(String nistType) {
+    public TypeSubtype resolveNISTTypes(String nistType) {
         return typeResolve.get(nistType);
     }
 
@@ -232,9 +235,9 @@ public class TTLOntology2 {
         typeResolve.put(nistName, typeSubtype);
     }
 
-    private void addType(String nistName, Collection<TypeSubtype> typeSubtype) {
+    /*private void addType(String nistName, Collection<TypeSubtype> typeSubtype) {
         typeResolve.putAll(nistName, typeSubtype);
-    }
+    }*/
 
     public String resolveLDCToNist(String ldcType) {
         return ldcType;
@@ -263,11 +266,11 @@ public class TTLOntology2 {
     }
 
     public static void main(String args[]) throws IOException {
-
         TTLOntology2 fringes = new TTLOntology2("data/SeedlingOntology2.ttl");
+        //System.out.println(fringes.resolveNISTTypes("ORG"));
         printSchema(fringes.self.relation);
+        System.out.println();
         printSchema(fringes.self.event);
-
         // TODO: move to a dedicated method. Creating a union hierarchy for all those concepts.
         //fringes.extractHierarchy(true);
     }
@@ -311,11 +314,14 @@ public class TTLOntology2 {
 
     private static void printSchema(Sort relation) {
         TypeSubtype[] hasTypes = relation.hasTypes;
+        Set<String> ls = new TreeSet<>();
         for (int i = 0, hasTypesLength = hasTypes.length; i < hasTypesLength; i++) {
             TypeSubtype x = hasTypes[i];
             String relationName = x.nistName+
                     Arrays.stream(x.argumentTypes).map(y -> y.nistName.replace(x.nistName+".","")).collect(Collectors.joining(",","(",")"));
-            System.out.println(relationName);
+            ls.add(relationName);
         }
+        ls.forEach(System.out::println);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
     }
 }

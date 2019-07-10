@@ -241,15 +241,15 @@ public class RuleListener implements schemaListener {
 		}
 		List<String> space = (ctx.inspace() != null && !ctx.inspace().stringlist().angestrengend().isEmpty()) ?
 				ctx.inspace().stringlist().angestrengend().stream().map(RuleContext::getText).collect(Collectors.toList()) : new ArrayList<>();
-		for (String t : time) {
+		/*for (String t : time) {
 			if (!s.arguments.contains(t)) {
 				System.err.println("ERROR: time argument '"+ t +"' required by the rule is not declared in the schema of '"+s.relationName+"' = "+s.arguments);
 				System.exit(1);
 			}
-		}
+		}*/
 		for (String t : space) {
 			if (!s.arguments.contains(t)) {
-				System.err.println("ERROR: time argument '"+ t +"' required by the rule is not declared in the schema of '"+s.relationName+"' = "+s.arguments);
+				System.err.println("ERROR: space argument '"+ t +"' required by the rule is not declared in the schema of '"+s.relationName+"' = "+s.arguments);
 				System.exit(1);
 			}
 		}
@@ -272,25 +272,43 @@ public class RuleListener implements schemaListener {
 			System.exit(1);
 		}
 
-		ArrayList<Clause> clauses = new ArrayList<>();
-		clauses.add(s.asClause());
+		ArrayList<Clause> clauses_tail = new ArrayList<>();
+		clauses_tail.add(s.asClause());
 		ArrayList<Rule> rules = new ArrayList<>();
 		for (String fieldVAr : toHaveFields) {
 			for (String tVar : time) {
-				ArrayList<Predicate> isNotNull = new ArrayList<>();
-				isNotNull.add(new Predicate(tVar));
-				isNotNull.add(new Predicate(fieldVAr));
+				ArrayList<Predicate> isNotNull_joinCond = new ArrayList<>();
+				isNotNull_joinCond.add(new Predicate(tVar));
+				isNotNull_joinCond.add(new Predicate(fieldVAr));
 				{
-					ArrayList<Clause> inPresentExist = new ArrayList<>();
-					inPresentExist.add(new Clause("ex", fieldVAr, tVar));
-					rules.add(new Rule(clauses, isNotNull, inPresentExist));
+					ArrayList<Clause> inPresentExist_head = new ArrayList<>();
+					inPresentExist_head.add(new Clause("ex", fieldVAr, tVar));
+					rules.add(new Rule(clauses_tail, isNotNull_joinCond, inPresentExist_head));
+				}
+
+
+				Clause before = s.asClause();
+				for (String sp : space) {
+					for (int i = 0, n = before.prop.args.size(); i<n; i++) {
+						if (before.prop.args.get(i).value.equals(sp)) {
+							before.prop.args.get(i).value = "_before_"+before.prop.args.get(i).value;
+						}
+					}
 				}
 
 				for (String sp : space) {
-					isNotNull.add(new Predicate(sp));
-					ArrayList<Clause> inPresentExist = new ArrayList<>();
-					inPresentExist.add(new Clause("be", fieldVAr, sp, tVar));
-					rules.add(new Rule(clauses, isNotNull, inPresentExist));
+					// Adding place inconsistency detection
+					isNotNull_joinCond.add(new Predicate(sp));
+					ArrayList<Clause> inPresentExist_head = new ArrayList<>();
+					Clause be = new Clause("be", fieldVAr, sp, tVar);
+					inPresentExist_head.add(be);
+					rules.add(new Rule(clauses_tail, isNotNull_joinCond, inPresentExist_head));
+
+					// Adding the reverse rule, that is expanding the event with the place of the person
+					ArrayList<Clause> newTail = new ArrayList<>();
+					newTail.add(be);
+					newTail.add(before);
+					rules.add(new Rule(clauses_tail, isNotNull_joinCond, clauses_tail));
 				}
 			}
 		}
@@ -299,7 +317,7 @@ public class RuleListener implements schemaListener {
 
 	/**
 	 * A macro is just a rule that is associated to a function, which is the argument to be replaced within the rule.
-	 * The rule will be generated for each application of the function to an existing event/relationship
+	 * The rule will be generated for each application enexistsof the function to an existing event/relationship
 	 *
 	 * @param ctx the parse tree
 	 */
@@ -430,8 +448,8 @@ public class RuleListener implements schemaListener {
 	public void enterBeginend_declare(schemaParser.Beginend_declareContext ctx) {
 	    // Relation describing the event
 		String relName = ctx.STRING().getText();
-		ArrayList<String> relArguments = fromAngestrengend(ctx.orig.angestrengend());
-		ArrayList<String> timeArgs = fromAngestrengend(ctx.intime().stringlist().angestrengend());
+		ArrayList<String> relArguments = (ctx.orig != null && !ctx.orig.angestrengend().isEmpty()) ? fromAngestrengend(ctx.orig.angestrengend()) : new ArrayList<>();
+		ArrayList<String> timeArgs = (ctx.intime() != null && !ctx.intime().stringlist().angestrengend().isEmpty()) ? fromAngestrengend(ctx.intime().stringlist().angestrengend()) : new ArrayList<>();
 
 		// Event describing either the beginning or the end of the relationship
 
@@ -488,9 +506,9 @@ public class RuleListener implements schemaListener {
 
 		// 1) Representing the transfer as the end of an ownership and the begin of a new one.
 		String relName = ctx.STRING().getText();
-		ArrayList<String> relOrigArguments = fromAngestrengend(ctx.orig.angestrengend());
-		ArrayList<String> relDestArguments = fromAngestrengend(ctx.dest.angestrengend());
-		ArrayList<String> timeArgs = fromAngestrengend(ctx.intime().stringlist().angestrengend());
+		ArrayList<String> relOrigArguments = (ctx.orig != null && !ctx.orig.angestrengend().isEmpty()) ? fromAngestrengend(ctx.orig.angestrengend()) : new ArrayList<>();
+		ArrayList<String> relDestArguments = (ctx.dest != null && !ctx.dest.angestrengend().isEmpty()) ? fromAngestrengend(ctx.dest.angestrengend()) : new ArrayList<>();
+		ArrayList<String> timeArgs = (ctx.intime() != null && !ctx.intime().stringlist().angestrengend().isEmpty()) ? fromAngestrengend(ctx.intime().stringlist().angestrengend()) : new ArrayList<>();
 		extractBeginOrEnd(relName, relOrigArguments, timeArgs, false, false, true, true);
 		extractBeginOrEnd(relName, relDestArguments, timeArgs, false, true, false, true);
 

@@ -69,7 +69,7 @@ public class Baseline2 extends SimplePostRequest {
             Hypotheses.Subgraph.Hypothesis_scorer[] hypothesis_scorers = s.hypothesis_scorers;
 
             for (int j = 0, hypothesis_scorersLength = hypothesis_scorers.length; j < 1; j++) {
-                //System.out.println("\t"+j);
+                System.out.println("\n\n\t Hypothesis Id: "+j);
                 Hypotheses.Subgraph.Hypothesis_scorer scorer = hypothesis_scorers[j];
                 Hypotheses.Subgraph.Hypothesis_scorer.Subgraph_plus_neighbor[] subgraph_plus_neighbors = scorer.subgraph_plus_neighbors;
 
@@ -102,6 +102,7 @@ public class Baseline2 extends SimplePostRequest {
                                         e.printStackTrace();
                                     }
                                 }
+                                System.out.println(tup);
                                 up.put(t.getNisttype(), tup);
                             }
                         }

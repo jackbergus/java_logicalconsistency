@@ -15,12 +15,26 @@ public class GraphDissectPaths {
     private Set<String> cycleNodes;
     private Set<String> remainingNodes;
     private DefaultDirectedWeightedGraph<String, DependencyGraph.Edge> graph;
-    public Set<List<String>> fegatelli = new HashSet<>();
 
     // Paths eventually connecting some cycles, starting from the starting nodes but not arriving into zero outgoing degree nodes
+    // These are the paths to be executed for first, up until the terminal node.
     public Set<List<String>> pathFromStartingToCycles = new HashSet<>();
+
+    // Paths that can be evaluated when all the loops are converged, and all the fegatelli covered.
     public Set<List<String>> pathFromCyclesToEnding = new HashSet<>();
+
+    // These paths are the ones that, starting from the beginning nodes, directly terminate on the terminal nodes.
+    // Please note that the final terminal node must be executed only at the end
     public Set<List<String>> pathDirecltyTerminal = new HashSet<>();
+
+    // Fegatelli are the "bitter smaller bites", that are neither loops, not starting point. These are all of these
+    // situations that make the whole execution redundant and unpredictable. These paths must be run whenever one
+    // of the first node of the paths is met, so that the fegatello is immediately run.
+    //
+    // Then, the paths containing the intermediate and terminal nodes must be scheduled immediately for second.
+    public Set<List<String>> fegatelli = new HashSet<>();
+
+    // TODO:when a path can be for sure discarded from computation, or a set of paths? when the path (or all the paths together) produce updates no more.
 
     public GraphDissectPaths(Set<String> startingPoints, Set<String> cycleNodes, Set<String> endingNodes, Set<String> remainingNodes,
                              DefaultDirectedWeightedGraph<String, DependencyGraph.Edge> graph) {

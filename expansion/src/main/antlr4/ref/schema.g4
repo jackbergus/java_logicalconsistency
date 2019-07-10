@@ -5,12 +5,12 @@ program : (commands ';')* commands '.';
 commands : (RELATION|EVENT) STRING LPAR stringlist RPAR                            #rel_delcare
          | FD FOR STRING DECLARE stringlist MARROW stringlist                      #fdep_declare
          | RULE moreClauses (WITH predicates+)? IMPLIES (moreClauses | BOT)        #rule
-         | ENTITY EXIST (stringlist)? except? intime inspace?                      #enexists
+         | ENTITY EXIST (stringlist)? except? intime? inspace?                      #enexists
          | MACRO STRING LPAR stringlist RPAR DECLARE STRING COMMA
            RULE moreClauses (WITH predicates+)? IMPLIES (moreClauses | BOT)        #macro_definition
          | TRYEXPAND stringlist (FOR (RELATION|EVENT))?                            #macro_expand
          | UNIQUE? (BEGIN|END) STRING LPAR orig=stringlist RPAR intime             #beginend_declare
-         | TRANSFER STRING LPAR orig=stringlist RPAR intime DECLARE dest=stringlist  #transfer_macro
+         | TRANSFER STRING LPAR orig=stringlist RPAR intime? DECLARE dest=stringlist  #transfer_macro
          ;
 
 except : EXCEPT stringlist;

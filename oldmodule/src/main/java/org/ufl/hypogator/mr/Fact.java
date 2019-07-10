@@ -2,6 +2,7 @@ package org.ufl.hypogator.mr;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import it.giacomobergami.m18.TTLOntology2;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.model.SQLType;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.model.Table;
 import org.ufl.aida.ldc.dbloader.tmptables.SourceTabLoader;
@@ -15,7 +16,7 @@ import java.io.File;
 @Table(sqlTable = "fact")
 public class Fact extends SourceTabLoader {
 
-    private static final JsonOntologyLoader jol = JsonOntologyLoader.getInstance();
+    private static final TTLOntology2 jol = new TTLOntology2("data/SeedlingOntology2.ttl");
 
     @JsonProperty("mention_id")
     @SQLType(type = "varchar")
@@ -127,9 +128,9 @@ public class Fact extends SourceTabLoader {
     }
 
     public Fact refactor() {
-        nistType = nistTypeLeft+"."+nistTypeRight;
+        nistType = nistTypeLeft/*+"."+nistTypeRight*/;
         nistFullLabel = nistType+"."+partialLabel;
-        TypeSubtype typeInformation = jol.resolveSingleNISTType(argumentNistType);
+        TypeSubtype typeInformation = jol.resolveNISTTypes(argumentNistType);
         rKind = typeInformation.kind;
         rNistName = typeInformation.nistName;
         return this;
@@ -137,7 +138,7 @@ public class Fact extends SourceTabLoader {
 
     public Tuple asTuple() {
         Tuple backwardCompatibility = new Tuple();
-        TypeSubtype typeInformation = jol.resolveSingleNISTType(nistType);
+        TypeSubtype typeInformation = jol.resolveNISTTypes(nistType);
         return backwardCompatibility
                 .putStream("mid2", mid)
                 .putStream("id", id)
@@ -165,7 +166,7 @@ public class Fact extends SourceTabLoader {
                 // Events and relationships have no textual representations*/
 
         // In this case, we want to also retrieve the information belonging to the arguments
-        TypeSubtype typeInformation = jol.resolveSingleNISTType(argumentNistType);
+        TypeSubtype typeInformation = jol.resolveNISTTypes(argumentNistType);
         Tuple argument =  new Tuple()
                 .putStream("kb_id2", argumentClusterId) // kbId is now associated to the argument
                 .putStream("dimension", typeInformation.kind)
@@ -192,7 +193,7 @@ public class Fact extends SourceTabLoader {
         this.partialLabel = fields[5];
         this.argumentId = fields[6];
         this.argumentNistType = fields[7];
-        this.argumentRawString = fields[8];
+        this.argumentRawString = fields[8].replaceAll("\\|#SEP#\\|", "|");
         try {
             this.argumentClusterId = fields[9];
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -200,14 +201,14 @@ public class Fact extends SourceTabLoader {
         }
         try {
             if (fields[10] != null && !fields[10].isEmpty())
-                this.argumentBadlyTranslatedString = fields[10];
+                this.argumentBadlyTranslatedString = fields[10].replaceAll("\\|#SEP#\\|", "|");
             else
                 this.argumentBadlyTranslatedString = "";
         } catch (ArrayIndexOutOfBoundsException e) {
             this.argumentBadlyTranslatedString  = "";
         }
         if (fields.length >= 15) {
-            this.argumentRawString = argumentRawString + "|" + fields[14];
+            this.argumentRawString = argumentRawString + "|" + fields[14].replaceAll("\\|#SEP#\\|", "|");
         }
         try {
             this.isNegated = fields[15].toLowerCase().startsWith("t");
