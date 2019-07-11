@@ -526,7 +526,6 @@ event Personnel.StartPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd);
 event Personnel.StartPosition.Hiring(PlaceOfEmployment,Place,Employee,TStart,TEnd);
     rule Personnel.StartPosition.Hiring(PlaceOfEmployment,Place,Employee,TStart,TEnd) => Personnel.StartPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd);
 
-
 event Transaction.Transaction(Place,Participant,Beneficiary,TStart,TEnd);
     entity exist in time TStart, TEnd and space Place;
 
@@ -537,7 +536,8 @@ event Transaction.Transaction.GiftGrantProvideAid(Recipient,Place,Giver,Benefici
 
 event Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
     entity exist Artifact, Recipient, Giver in time TEnd and space Place;
-    transfer owned(Artifact,Giver,TStart) in time TStart, TEnd as Artifact,Recipient,TEnd;
+    rule Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd) => owned(Artifact,Recipient,TEnd);
+    #transfer owned(Artifact,Giver,TStart) in time TStart, TEnd as Artifact,Recipient,TEnd;
 
 event Transaction.Transaction.TransferControl(TerritoryOrFacility,Recipient,Place,Giver,Beneficiary,TStart,TEnd);
     rule Transaction.Transaction.TransferControl(TerritoryOrFacility,Recipient,Place,Giver,Beneficiary,TStart,TEnd) => Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,TerritoryOrFacility,TStart,TEnd);
