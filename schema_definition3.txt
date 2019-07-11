@@ -1,6 +1,25 @@
-## TODO for time: add time representation as subset of arrays
-## TODO: geographical locations are represented in hierarchies, but the hierarchies from GeoNames are not perfectly linked. I need to further reify the ones from GeoNames
+relation GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.NationalityCitizen(Nationality,Artifact);
+relation GeneralAffiliation.MemberOriginReligionEthnicity.Ethnicity(Person,Ethnicity);
+relation GeneralAffiliation.MemberOriginReligionEthnicity.NationalityCitizen(Nationality,Citizen);
+relation GeneralAffiliation.OrganizationPoliticalReligiousAffiliation(Organization,EntityOrFiller);
+relation GeneralAffiliation.OrganizationPoliticalReligiousAffiliation.NationalityCitizen(Organization,Nationality);
+relation GeneralAffiliation.OrganizationWebsite.OrganizationWebsite(Website,Organization);
+relation Information.Color.Color(EntityOrFiller,Color);
+relation Information.Make.Make(EntityOrFiller,Brand);
+relation Measurement.Size(Measurement,EntityOrFiller);
+relation Measurement.Size.Count(Measurement,EntityOrFiller);
+relation Measurement.Size.HeightLengthWidth(Measurement,EntityOrFiller);
+relation Measurement.Size.Percentage(Measurement,EntityOrFiller);
+relation Measurement.Size.Weight(Measurement,EntityOrFiller);
+relation PartWhole.Subsidiary.NationalityCitizen(Subsidiary,Parent);
+relation OrganizationAffiliation.Founder.Founder(Organization,Founder);
+relation PersonalSocial.Unspecified(Person);
+relation PersonalSocial.Unspecified.Political(Person);
+
 relation be  (val,place,time);
+
+relation owned (subtype, suptype, time);
+    rule owned(subtype, suptype, time) owned(suptype, supsuptype, time) with subtype notnull suptype notnull supsuptype notnull => owned(subtype, supsuptype, time);
 
 /*relation beB (val,place,time);
 	rule beB (val,place,time) => be (val,place,time);
@@ -18,9 +37,7 @@ relation beC (val,place,time);
 /*relation type(val,ty);
 	rule type(val,ty) => isA(val,ty);
 	rule type(val,ty) => isA(val,val);
-
-relation owned (subtype, suptype, T);
-    rule owned(subtype, suptype, T) owned(suptype, supsuptype, T) with subtype notnull suptype notnull supsuptype notnull => owned(subtype, supsuptype,T);*/
+*/
 
 # val is the entity/filler
 relation ex  (val,time);
@@ -41,7 +58,518 @@ rule be(val,place,time) => ex(val,time);
 #macro R(x,y,z,t) as tisaTa, rule R(x,y,z,t) with z notnull => tIsA(x,y,z);
 #macro R(x,y,z,t) as tisaTb, rule R(x,y,z,t) with t notnull => tIsA(x,y,t);
 
+relation PersonalSocial.Role(Person,Role);
+
+relation PersonalSocial.Role.ProfessionalRole(Person,JobRole);
+    rule PersonalSocial.Role.ProfessionalRole(Person,JobRole) => PersonalSocial.Role(Person,JobRole);
+
+relation PersonalSocial.Role.TitleFormOfAddress(Person,Title);
+
+relation Evaluate.Deliberateness.Accidental(Holder,Event);
+relation Evaluate.Deliberateness.Deliberate(Holder,Event);
+    rule Evaluate.Deliberateness.Deliberate(Holder,Event) Evaluate.Deliberateness.Accidental(Holder,Event) => False;
+
+relation Evaluate.Legitimacy.Illegitimate(Holder,Event);
+relation Evaluate.Legitimacy.Legitimate(Holder,Event);
+    rule Evaluate.Legitimacy.Illegitimate(Holder,Event) Evaluate.Legitimacy.Legitimate(Holder,Event) => False;
+
+relation Evaluate.Sentiment.Negative(SentimentTarget,Holder);
+relation Evaluate.Sentiment.Positive(SentimentTarget,Holder);
+    rule Evaluate.Sentiment.Negative(SentimentTarget,Holder) Evaluate.Sentiment.Positive(SentimentTarget,Holder) => False;
+
+relation GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
+
+relation GeneralAffiliation.Sponsorship.AdvisePlanOrganize(Sponsor,ActorOrEvent);
+    rule GeneralAffiliation.Sponsorship.AdvisePlanOrganize(Sponsor,ActorOrEvent) => GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
+
+relation GeneralAffiliation.Sponsorship.Affiliated(Sponsor,ActorOrEvent);
+    rule GeneralAffiliation.Sponsorship.Affiliated(Sponsor,ActorOrEvent) => GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
+
+relation GeneralAffiliation.Sponsorship.HelpSupport(Sponsor,ActorOrEvent);
+    rule GeneralAffiliation.Sponsorship.HelpSupport(Sponsor,ActorOrEvent) => GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
+
+relation OrganizationAffiliation.Leadership(Organization, Leader);
+
+relation OrganizationAffiliation.Leadership.Government(GovernmentBodyOrGPE, Leader);
+    rule OrganizationAffiliation.Leadership.Government(GovernmentBodyOrGPE, Leader) => OrganizationAffiliation.Leadership(GovernmentBodyOrGPE, Leader);
+
+relation OrganizationAffiliation.Leadership.HeadOfState(Country, Leader);
+    rule OrganizationAffiliation.Leadership.HeadOfState(Country, Leader) => OrganizationAffiliation.Leadership(Country, Leader);
+
+relation OrganizationAffiliation.Leadership.MilitaryPolice(MilitaryPoliceORG,Leader);
+    rule OrganizationAffiliation.Leadership.MilitaryPolice(MilitaryPoliceORG,Leader) => OrganizationAffiliation.Leadership(MilitaryPoliceORG, Leader);
+
+relation GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.ControlTerritory(Territory,Controller);
+    rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.ControlTerritory(Territory,Controller) => owned(Territory,Controller,"null");
+
+relation GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.OwnershipPossession(Artifact,EntityOrFiller);
+    rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.OwnershipPossession(Artifact,EntityOrFiller) => owned(Territory,EntityOrFiller,"null");
+
+relation OrganizationAffiliation.EmploymentMembership(EmployeeMember,PlaceOfEmploymentMembership);
+    rule OrganizationAffiliation.EmploymentMembership(EmployeeMember,PlaceOfEmploymentMembership) => owned(EmployeeMember,PlaceOfEmploymentMembership,"null");
+
+relation OrganizationAffiliation.EmploymentMembership.Employment(Employee,PlaceOfEmployment);
+    rule OrganizationAffiliation.EmploymentMembership(Employee,PlaceOfEmployment) => owned(Employee,PlaceOfEmployment,"null");
+
+relation OrganizationAffiliation.EmploymentMembership.Membership(Member,PlaceOfMembership);
+    rule OrganizationAffiliation.EmploymentMembership.Membership(Member,PlaceOfMembership) => owned(Member,PlaceOfMembership,"null");
+
+relation PartWhole.Subsidiary(Subsidiary,Parent);
+    rule PartWhole.Subsidiary(Subsidiary,Parent) => owned(Subsidiary,Parent,"null");
+
+relation PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent);
+    rule PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent) => owned(Subsidiary,Parent,"null");
+
 relation Physical.LocatedNear(Place,EntityOrFiller);
     entity exist and space Place;
 
-relation Physical.LocatedNeara(Place,EntityOrFiller).
+relation Physical.LocatedNear.Surround(Place,EntityOrFiller);
+    entity exist and space Place;
+
+relation Physical.OrganizationHeadquarters.OrganizationHeadquarters(Place,Organization);
+    entity exist and space Place;
+
+event Life.Die(Victim,Place,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Life.Die.DeathCausedByViolentEvents(Victim,Place,Killer,Instrument,TStart,TEnd);
+    entity exist Killer in time TStart, TEnd and space Place;
+    rule Life.Die.DeathCausedByViolentEvents(Victim,Place,Killer,Instrument,TStart,TEnd) => Life.Die(Victim,Place,TStart,TEnd);
+
+event Life.Die.NonviolentDeath(Victim,Place,TStart,TEnd);
+    rule Life.Die.NonviolentDeath(Victim,Place,TStart,TEnd) => Life.Die(Victim,Place,TStart,TEnd);
+
+event Life.Injure(Victim,Place,Injurer,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Life.Injure.IllnessDegradationHungerThirst(Victim,Place,TStart,TEnd);
+    rule Life.Injure.IllnessDegradationHungerThirst(Victim,Place,TStart,TEnd) => Life.Injure(Victim,Place,"null",TStart,TEnd);
+
+event Life.Injure.IllnessDegradationPhysical(Victim,TStart,TEnd);
+    rule Life.Injure.IllnessDegradationPhysical(Victim,TStart,TEnd) => Life.Injure(Victim,"null","null",TStart,TEnd);
+
+event Life.Injure.InjuryCausedByViolentEvents(Victim,Place,Instrument,Injurer,TStart,TEnd);
+    entity exist Injurer in time TStart, TEnd and space Place;
+    rule Life.Injure.InjuryCausedByViolentEvents(Victim,Place,Instrument,Injurer,TStart,TEnd) => Life.Injure(Victim,Place,Injurer,TStart,TEnd);
+
+event ArtifactExistence.DamageDestroy(Place,Instrument,DamagerDestroyer,Artifact,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event ArtifactExistence.DamageDestroy.Damage(Place,Instrument,Damager,Artifact,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule ArtifactExistence.DamageDestroy.Damage(Place,Instrument,Damager,Artifact,TStart,TEnd) => ArtifactExistence.DamageDestroy(Place,Instrument,Damager,Artifact,TStart,TEnd);
+
+event ArtifactExistence.DamageDestroy.Destroy(Place,Instrument,Destroyer,Artifact,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule ArtifactExistence.DamageDestroy.Destroy(Place,Instrument,Destroyer,Artifact,TStart,TEnd) => ArtifactExistence.DamageDestroy(Place,Instrument,Destroyer,Artifact,TStart,TEnd);
+
+event Movement.TransportPerson(Vehicle,Transporter,Origin,Destination,Passenger,TStart,TEnd);
+    entity exist Passenger, Transporter, Vehicle in time TEnd and space Destination;
+    #transfer be(Passenger,Origin,TStart) in time TStart, TEnd as Passenger,Destination,TEnd;
+
+event Movement.TransportPerson.BringCarryUnload(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.BringCarryUnload(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd) => Movement.TransportPerson(Vehicle,Transporter,Origin,Destination,Passenger,TStart,TEnd);
+
+event Movement.TransportPerson.DisperseSeparate(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.DisperseSeparate(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd) => Movement.TransportPerson(Vehicle,Transporter,Origin,Destination,Passenger,TStart,TEnd);
+
+event Movement.TransportPerson.EvacuationRescue(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.EvacuationRescue(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd) => Movement.TransportPerson(Vehicle,Transporter,Origin,Destination,Passenger,TStart,TEnd);
+
+event Movement.TransportPerson.Fall(Passenger,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.Fall(Passenger,Origin,Destination,TStart,TEnd) => Movement.TransportPerson("null","null",Origin,Destination,Passenger,TStart,TEnd);
+
+event Movement.TransportPerson.GrantEntryAsylum(Transporter,Passenger,Origin,Granter,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.GrantEntryAsylum(Transporter,Passenger,Origin,Granter,Destination,TStart,TEnd) => Movement.TransportPerson("null",Transporter,Origin,Destination,Passenger,TStart,TEnd);
+
+event Movement.TransportPerson.Hide(Vehicle,Transporter,Passenger,Origin,HidingPlace,TStart,TEnd);
+    rule Movement.TransportPerson.Hide(Vehicle,Transporter,Passenger,Origin,HidingPlace,TStart,TEnd) => Movement.TransportPerson(Vehicle,Transporter,Origin,HidingPlace,Passenger,TStart,TEnd);
+
+event Movement.TransportPerson.PreventEntry(Transporter,Preventer,Passenger,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.PreventEntry(Transporter,Preventer,Passenger,Origin,Destination,TStart,TEnd) => Movement.TransportPerson("null",Transporter,Origin,Destination,Passenger,TStart,TEnd);
+    rule Movement.TransportPerson.PreventEntry(Transporter,Preventer,Passenger,Origin,Destination,TStart,TEnd) => Evaluate.Sentiment.Negative(Passenger, Preventer);
+
+event Movement.TransportPerson.PreventExit(Transporter,Preventer,Passenger,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.PreventExit(Transporter,Preventer,Passenger,Origin,Destination,TStart,TEnd) => Movement.TransportPerson("null",Transporter,Origin,Destination,Passenger,TStart,TEnd);
+    rule Movement.TransportPerson.PreventExit(Transporter,Preventer,Passenger,Origin,Destination,TStart,TEnd) => Evaluate.Sentiment.Negative(Passenger, Preventer);
+
+event Movement.TransportPerson.SelfMotion(Vehicle,Transporter,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.SelfMotion(Vehicle,Transporter,Origin,Destination,TStart,TEnd) => Movement.TransportPerson("null",Transporter,Origin,Destination,Transporter,TStart,TEnd);
+
+event Movement.TransportPerson.SmuggleExtract(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd);
+    rule Movement.TransportPerson.SmuggleExtract(Vehicle,Transporter,Passenger,Origin,Destination,TStart,TEnd) => Movement.TransportPerson(Vehicle,Transporter,Origin,Destination,Passenger,TStart,TEnd);
+
+event Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    entity exist Artifact, Transporter, Vehicle in time TEnd and space Destination;
+    #transfer be(Artifact,Origin,TStart) in time TStart, TEnd as Passenger,Destination,TEnd;
+
+event Movement.TransportArtifact.BringCarryUnload(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.BringCarryUnload(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+
+event Movement.TransportArtifact.DisperseSeparate(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.DisperseSeparate(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+
+event Movement.TransportArtifact.Fall(Artifact,Origin,Destination,TStart,TEnd);
+
+event Movement.TransportArtifact.GrantEntry(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.GrantEntry(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+
+event Movement.TransportArtifact.Hide(Artifact,Origin,HidingPlace,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.Hide(Artifact,Origin,HidingPlace,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact.Hide(Artifact,Origin,HidingPlace,TStart,TEnd,Transporter,Vehicle);
+
+event Movement.TransportArtifact.NonviolentThrowLaunch(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.NonviolentThrowLaunch(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+
+event Movement.TransportArtifact.PreventEntry(Artifact,Origin,Destination,TStart,TEnd,Transporter,Preventer);
+    rule Movement.TransportArtifact.PreventEntry(Artifact,Origin,Destination,TStart,TEnd,Transporter,Preventer) => Movement.TransportArtifact.Hide(Artifact,Origin,HidingPlace,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportPerson.PreventEntry(Artifact,Origin,Destination,TStart,TEnd,Transporter,Preventer) => Evaluate.Sentiment.Negative(Artifact, Preventer);
+
+event Movement.TransportArtifact.PreventExit(Artifact,Origin,Destination,TStart,TEnd,Transporter,Preventer);
+    rule Movement.TransportArtifact.PreventExit(Artifact,Origin,Destination,TStart,TEnd,Transporter,Preventer) => Movement.TransportArtifact.Hide(Artifact,Origin,HidingPlace,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportPerson.PreventEntry(Artifact,Origin,Destination,TStart,TEnd,Transporter,Preventer) => Evaluate.Sentiment.Negative(Artifact, Preventer);
+
+event Movement.TransportArtifact.ReceiveImport(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.ReceiveImport(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+
+event Movement.TransportArtifact.SendSupplyExport(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.SendSupplyExport(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+
+event Movement.TransportArtifact.SmuggleExtract(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+    rule Movement.TransportArtifact.SmuggleExtract(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle) => Movement.TransportArtifact(Artifact,Origin,Destination,TStart,TEnd,Transporter,Vehicle);
+
+event Justice.ArrestJailDetain.ArrestJailDetain(Place,Jailer,Detainee,Crime,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd and space Place;
+
+event Justice.InitiateJudicialProcess(Prosecutor,Place,JudgeCourt,Defendant,Crime,TStart,TEnd);
+    entity exist Defendant in time TStart, TEnd and space Place;
+
+event Justice.InitiateJudicialProcess.ChargeIndict(Prosecutor,Place,JudgeCourt,Defendant,Crime,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd and space Place;
+
+event Justice.InitiateJudicialProcess.TrialHearing(Prosecutor,Place,JudgeCourt,Defendant,Crime,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd and space Place;
+
+event Justice.Investigate(Place,Investigator,Defendant,TStart,TEnd);
+    entity exist Defendant in time TStart, TEnd and space Place;
+
+event Justice.Investigate.InvestigateCrime(Place,Investigator,Defendant,Crime,TStart,TEnd);
+    entity exist Defendant in time TStart, TEnd and space Place;
+    rule Justice.Investigate.InvestigateCrime(Place,Investigator,Defendant,Crime,TStart,TEnd) => Justice.Investigate(Place,Investigator,Defendant,TStart,TEnd);
+
+event Justice.JudicialConsequences(Place,JudgeCourt,Defendant,Crime,TStart,TEnd);
+    entity exist except Crime in time TStart, TEnd;
+
+event Justice.JudicialConsequences.Convict(Place,JudgeCourt,Defendant,Crime,TStart,TEnd);
+    entity exist Defendant in time TStart, TEnd and space Place;
+
+event Justice.JudicialConsequences.Execute(Place,Executioner,Defendant,Crime,TStart,TEnd);
+    rule Justice.JudicialConsequences.Execute(Place,Executioner,Defendant,Crime,TStart,TEnd) => Life.Die.DeathCausedByViolentEvents(Defendant,Place,Executioner,"null",TStart,TEnd);
+
+event Justice.JudicialConsequences.Extradite(Origin,Extraditer,Destination,Defendant,Crime,TStart,TEnd);
+    entity exist except Defendant, Crime in time TStart, TEnd;
+    entity exist Defendant in time TEnd and space Destination;
+    rule Justice.JudicialConsequences.Extradite(Origin,Extraditer,Destination,Defendant,Crime,TStart,TEnd) => Movement.TransportPerson("null","null",Origin,Destination,Defendant,TStart,TEnd);
+
+event Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+    rule Life.Die.DeathCausedByViolentEvents(Victim,Place,Killer,Instrument,TStart,TEnd) => Conflict.Attack(Victim,Place,Instrument,Killer,TStart,TEnd);
+    rule Life.Injure.InjuryCausedByViolentEvents(Victim,Place,Instrument,Injurer,TStart,TEnd) => Conflict.Attack(Victim,Place,Instrument,Killer,TStart,TEnd);
+
+event Conflict.Attack.AirstrikeMissileStrike(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.AirstrikeMissileStrike(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.BiologicalChemicalPoisonAttack(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.BiologicalChemicalPoisonAttack(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.Bombing(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.Bombing(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.FirearmAttack(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.FirearmAttack(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.Hanging(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.Hanging(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.Invade(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.Invade(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.SelfDirectedBattle(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.SelfDirectedBattle(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.SetFire(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.SetFire(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.Stabbing(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.Stabbing(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.StealRobHijack(Target,Place,Instrument,Artifact,Attacker,TStart,TEnd);
+    rule Conflict.Attack.StealRobHijack(Target,Place,Instrument,Artifact,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Attack.Strangling(Target,Place,Instrument,Attacker,TStart,TEnd);
+    rule Conflict.Attack.Strangling(Target,Place,Instrument,Attacker,TStart,TEnd) => Conflict.Attack(Target,Place,Instrument,Attacker,TStart,TEnd);
+
+event Conflict.Yield(Yielder,Recipient,Place,TStart,TEnd);
+    entity exist Yielder in time TStart, TEnd and space Place;
+
+event Conflict.Yield.Retreat(Retreater,Origin,Destination,TStart,TEnd);
+    rule Conflict.Yield.Retreat(Retreater,Origin,Destination,TStart,TEnd) => Conflict.Yield(Retreater,"null",Origin,TStart,TEnd);
+    rule Conflict.Yield.Retreat(Retreater,Origin,Destination,TStart,TEnd) => Movement.TransportPerson.SelfMotion("null",Retreater,Origin,Destination,TStart,TEnd);
+
+event Conflict.Yield.Surrender(Surrenderer,Recipient,Place,TStart,TEnd);
+    rule Conflict.Yield.Surrender(Surrenderer,Recipient,Place,TStart,TEnd) => Conflict.Yield(Surrenderer,Recipient,Place,TStart,TEnd);
+
+event Conflict.Demonstrate(Place,Demonstrator,TStart,TEnd);
+    entity exist Demonstrator in time TStart, TEnd and space Place;
+
+event Conflict.Demonstrate.MarchProtestPoliticalGathering(Place,Demonstrator,TStart,TEnd);
+    rule Conflict.Demonstrate.MarchProtestPoliticalGathering(Place,Demonstrator,TStart,TEnd) => Conflict.Demonstrate(Place,Demonstrator,TStart,TEnd);
+
+event Contact.Collaborate(Place,Participant,TStart,TEnd);
+    entity exist Participant in time TStart, TEnd and space Place;
+
+event Contact.Collaborate.Correspondence(Place,Participant,TStart,TEnd);
+    rule Contact.Collaborate.Correspondence(Place,Participant,TStart,TEnd) => Contact.Collaborate(Place,Participant,TStart,TEnd);
+
+event Contact.Collaborate.Meet(Place,Participant,TStart,TEnd);
+    rule Contact.Collaborate.Meet(Place,Participant,TStart,TEnd) => Contact.Collaborate(Place,Participant,TStart,TEnd);
+
+event Contact.CommandOrder(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Communicator in time TStart, TEnd and space Place;
+
+event Contact.CommandOrder.Broadcast(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.CommandOrder.Broadcast(Place,Communicator,TStart,TEnd,Recipient) => Contact.CommandOrder(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.CommandOrder.Correspondence(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.CommandOrder.Correspondence(Place,Communicator,TStart,TEnd,Recipient) => Contact.CommandOrder(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.CommandOrder.Meet(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Recipient in time TStart, TEnd and space Place;
+    rule  Contact.CommandOrder.Meet(Place,Communicator,TStart,TEnd,Recipient) => Contact.CommandOrder(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.CommitmentPromiseExpressIntent(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Communicator in time TStart, TEnd and space Place;
+
+event Contact.CommitmentPromiseExpressIntent.Broadcast(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.CommitmentPromiseExpressIntent.Broadcast(Place,Communicator,TStart,TEnd,Recipient) => Contact.CommitmentPromiseExpressIntent(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.CommitmentPromiseExpressIntent.Correspondence(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.CommitmentPromiseExpressIntent.Correspondence(Place,Communicator,TStart,TEnd,Recipient) => Contact.CommitmentPromiseExpressIntent(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.CommitmentPromiseExpressIntent.Meet(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Recipient in time TStart, TEnd and space Place;
+    rule  Contact.CommitmentPromiseExpressIntent.Meet(Place,Communicator,TStart,TEnd,Recipient) => Contact.CommitmentPromiseExpressIntent(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.Discussion(Place,Participant,TStart,TEnd);
+    entity exist Participant in time TStart, TEnd and space Place;
+
+event Contact.Discussion.Correspondence(Place,Participant,TStart,TEnd);
+    rule Contact.Discussion.Correspondence(Place,Participant,TStart,TEnd) => Contact.Discussion(Place,Participant,TStart,TEnd);
+
+event Contact.Discussion.Meet(Place,Participant,TStart,TEnd);
+    rule Contact.Discussion.Meet(Place,Participant,TStart,TEnd) => Contact.Discussion(Place,Participant,TStart,TEnd);
+
+event Contact.Negotiate(Place,Participant,TStart,TEnd);
+    entity exist Participant in time TStart, TEnd and space Place;
+
+event Contact.Negotiate.Correspondence(Place,Participant,TStart,TEnd);
+    rule Contact.Negotiate.Correspondence(Place,Participant,TStart,TEnd) => Contact.Negotiate(Place,Participant,TStart,TEnd);
+
+event Contact.Negotiate.Meet(Place,Participant,TStart,TEnd);
+    rule Contact.Negotiate.Meet(Place,Participant,TStart,TEnd) => Contact.Negotiate(Place,Participant,TStart,TEnd);
+
+event Contact.ThreatenCoerce(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Communicator in time TStart, TEnd and space Place;
+
+event Contact.ThreatenCoerce.Broadcast(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.ThreatenCoerce.Broadcast(Place,Communicator,TStart,TEnd,Recipient) => Contact.ThreatenCoerce(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.ThreatenCoerce.Correspondence(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.ThreatenCoerce.Correspondence(Place,Communicator,TStart,TEnd,Recipient) => Contact.ThreatenCoerce(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.ThreatenCoerce.Meet(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Recipient in time TStart, TEnd and space Place;
+    rule  Contact.ThreatenCoerce.Meet(Place,Communicator,TStart,TEnd,Recipient) => Contact.ThreatenCoerce(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.RequestAdvise(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Communicator in time TStart, TEnd and space Place;
+
+event Contact.RequestAdvise.Broadcast(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.RequestAdvise.Broadcast(Place,Communicator,TStart,TEnd,Recipient) => Contact.RequestAdvise(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.RequestAdvise.Correspondence(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.RequestAdvise.Correspondence(Place,Communicator,TStart,TEnd,Recipient) => Contact.RequestAdvise(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.RequestAdvise.Meet(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Communicator in time TStart, TEnd and space Place;
+    rule  Contact.RequestAdvise.Meet(Place,Communicator,TStart,TEnd,Recipient) => Contact.RequestAdvise(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.Prevarication(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Communicator in time TStart, TEnd and space Place;
+
+event Contact.Prevarication.Broadcast(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.Prevarication.Broadcast(Place,Communicator,TStart,TEnd,Recipient) => Contact.Prevarication(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.Prevarication.Correspondence(Place,Communicator,TStart,TEnd,Recipient);
+    rule  Contact.Prevarication.Correspondence(Place,Communicator,TStart,TEnd,Recipient) => Contact.Prevarication(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.Prevarication.Meet(Place,Communicator,TStart,TEnd,Recipient);
+    entity exist Recipient in time TStart, TEnd and space Place;
+    rule  Contact.Prevarication.Meet(Place,Communicator,TStart,TEnd,Recipient) => Contact.Prevarication(Place,Communicator,TStart,TEnd,Recipient);
+
+event Contact.FuneralVigil(Place,Participant,Deceased,TStart,TEnd);
+    entity exist Participant in time TStart, TEnd and space Place;
+
+event Contact.FuneralVigil.Meet(Place,Participant,Deceased,TStart,TEnd);
+    rule Contact.FuneralVigil.Meet(Place,Participant,Deceased,TStart,TEnd) => Contact.FuneralVigil(Place,Participant,Deceased,TStart,TEnd);
+
+event Contact.MediaStatement(Recipient,Place,Communicator,TStart,TEnd);
+    entity exist Communicator in time TStart, TEnd and space Place;
+
+event Contact.MediaStatement.Broadcast(Recipient,Place,Communicator,TStart,TEnd);
+    rule  Contact.MediaStatement.Broadcast(Recipient,Place,Communicator,TStart,TEnd) => Contact.MediaStatement(Recipient,Place,Communicator,TStart,TEnd);
+
+event Contact.PublicStatementInPerson(Recipient,Place,Communicator,TStart,TEnd);
+    entity exist Communicator in time TStart, TEnd and space Place;
+
+event Contact.PublicStatementInPerson.Broadcast(Recipient,Place,Communicator,TStart,TEnd);
+    rule  Contact.PublicStatementInPerson.Broadcast(Recipient,Place,Communicator,TStart,TEnd) => Contact.PublicStatementInPerson(Recipient,Place,Communicator,TStart,TEnd);
+
+event Disaster.AccidentCrash.AccidentCrash(Vehicle,Place,DriverPassenger,CrashObject,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Disaster.FireExplosion.FireExplosion(Place,Instrument,FireExplosionObject,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Government.Agreements(Place,Participant,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Government.Agreements.AcceptAgreementContractCeasefire(Place,Participant,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Government.Agreements.RejectNullifyAgreementContractCeasefire(RejecterNullifier,Place,OtherParticipant,TStart,TEnd);
+    entity exist RejecterNullifier in time TStart, TEnd and space Place;
+
+event Government.Agreements.ViolateAgreement(Violator,Place,OtherParticipant,TStart,TEnd);
+    entity exist Violator in time TStart, TEnd and space Place;
+
+event Government.Formation(Place,GPE,Founder,TStart,TEnd);
+    entity exist Founder in time TStart, TEnd and space Place;
+    rule Government.Formation(Place,GPE,Founder,TStart,TEnd) => OrganizationAffiliation.Leadership(GPE, Founder);
+
+event Government.Formation.MergeGPE(Place,Participant,TStart,TEnd);
+    entity exist Participant in time TStart, TEnd and space Place;
+
+event Government.Formation.StartGPE(Place,GPE,Founder,TStart,TEnd);
+    entity exist Founder in time TStart, TEnd and space Place;
+    rule Government.Formation.StartGPE(Place,GPE,Founder,TStart,TEnd) => OrganizationAffiliation.Leadership(GPE, Founder);
+
+event Government.Legislate.Legislate(Place,Law,GovernmentBody,TStart,TEnd);
+    entity exist GovernmentBody in time TStart, TEnd and space Place;
+
+event Government.Spy.Spy(Spy,Place,ObservedEntity,Beneficiary,TStart,TEnd);
+    entity exist except Beneficiary in time TStart, TEnd and space Place;
+    rule Government.Spy.Spy(Spy,Place,ObservedEntity,Beneficiary,TStart,TEnd) => GeneralAffiliation.Sponsorship(Spy,Beneficiary);
+
+event Government.Vote(Voter,Result,Place,Candidate,Ballot,TStart,TEnd);
+    entity exist Voter in time TStart, TEnd and space Place;
+
+event Government.Vote.CastVote(Voter,Result,Place,Candidate,Ballot,TStart,TEnd);
+    rule Government.Vote.CastVote(Voter,Result,Place,Candidate,Ballot,TStart,TEnd) => Government.Vote(Voter,Result,Place,Candidate,Ballot,TStart,TEnd);
+
+event Personnel.Elect(Voter,Place,Candidate,TStart,TEnd);
+    entity exist Voter in time TStart, TEnd and space Place;
+
+event Personnel.Elect.WinElection(Voter,Place,Candidate,TStart,TEnd);
+    entity exist Voter in time TStart, TEnd and space Place;
+
+event Government.Vote.ViolationsPreventVote(Voter,Preventer,Place,Candidate,Ballot,TStart,TEnd);
+    entity exist Voter,Preventer in time TStart, TEnd and space Place;
+    rule Government.Vote.ViolationsPreventVote(Voter,Preventer,Place,Candidate,Ballot,TStart,TEnd) => Evaluate.Sentiment.Negative(Candidate, Preventer);
+
+event Inspection.SensoryObserve(Place,Observer,ObservedEntity,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Inspection.SensoryObserve.InspectPeopleOrganization(Place,Inspector,InspectedEntity,TStart,TEnd);
+    rule Inspection.SensoryObserve.InspectPeopleOrganization(Place,Inspector,InspectedEntity,TStart,TEnd) => Inspection.SensoryObserve(Place,Inspector,InspectedEntity,TStart,TEnd);
+
+event Inspection.SensoryObserve.MonitorElection(Place,Monitor,MonitoredEntity,TStart,TEnd);
+    rule Inspection.SensoryObserve.MonitorElection(Place,Monitor,MonitoredEntity,TStart,TEnd) => Inspection.SensoryObserve(Place,Monitor,MonitoredEntity,TStart,TEnd);
+
+event Inspection.SensoryObserve.PhysicalInvestigateInspect(Place,Inspector,InspectedEntity,TStart,TEnd);
+    rule Inspection.SensoryObserve.PhysicalInvestigateInspect(Place,Inspector,InspectedEntity,TStart,TEnd) => Inspection.SensoryObserve(Place,Inspector,InspectedEntity,TStart,TEnd);
+
+event Manufacture.Artifact(Place,Manufacturer,Instrument,Artifact,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Manufacture.Artifact.Build(Place,Manufacturer,Instrument,Artifact,TStart,TEnd);
+    rule Manufacture.Artifact.Build(Place,Manufacturer,Instrument,Artifact,TStart,TEnd) => Manufacture.Artifact(Place,Manufacturer,Instrument,Artifact,TStart,TEnd);
+
+event Manufacture.Artifact.CreateIntellectualProperty(Place,Manufacturer,Instrument,Artifact,TStart,TEnd);
+    rule Manufacture.Artifact.CreateIntellectualProperty(Place,Manufacturer,Instrument,Artifact,TStart,TEnd) => Manufacture.Artifact(Place,Manufacturer,Instrument,Artifact,TStart,TEnd);
+
+event Manufacture.Artifact.CreateManufacture(Place,Manufacturer,Instrument,Artifact,TStart,TEnd);
+    rule Manufacture.Artifact.CreateManufacture(Place,Manufacturer,Instrument,Artifact,TStart,TEnd) => Manufacture.Artifact(Place,Manufacturer,Instrument,Artifact,TStart,TEnd);
+
+event Personnel.EndPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+    rule Personnel.EndPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd) => ~OrganizationAffiliation.EmploymentMembership(Employee,PlaceOfEmployment);
+
+event Personnel.EndPosition.FiringLayoff(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+    rule Personnel.EndPosition.FiringLayoff(PlaceOfEmployment,Place,Employee,TStart,TEnd) => Personnel.EndPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+
+event Personnel.EndPosition.QuitRetire(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+    rule Personnel.EndPosition.QuitRetire(PlaceOfEmployment,Place,Employee,TStart,TEnd) => Personnel.EndPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+
+event Personnel.StartPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+    entity exist Employee in time TStart, TEnd and space Place;
+    rule Personnel.StartPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd) => OrganizationAffiliation.EmploymentMembership(Employee,PlaceOfEmployment);
+
+event Personnel.StartPosition.Hiring(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+    rule Personnel.StartPosition.Hiring(PlaceOfEmployment,Place,Employee,TStart,TEnd) => Personnel.StartPosition(PlaceOfEmployment,Place,Employee,TStart,TEnd);
+
+
+event Transaction.Transaction(Place,Participant,Beneficiary,TStart,TEnd);
+    entity exist in time TStart, TEnd and space Place;
+
+event Transaction.Transaction.EmbargoSanction(Recipient,Preventer,Place,ArtifactMoney,Giver,TStart,TEnd);
+    rule Transaction.Transaction.EmbargoSanction(Recipient,Preventer,Place,ArtifactMoney,Giver,TStart,TEnd) => Evaluate.Sentiment.Negative(Recipient, Preventer);
+
+event Transaction.Transaction.GiftGrantProvideAid(Recipient,Place,Giver,Beneficiary,TStart,TEnd);
+
+event Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
+    entity exist Artifact, Recipient, Giver in time TEnd and space Place;
+    transfer owned(Artifact,Giver,TStart) in time TStart, TEnd as Artifact,Recipient,TEnd;
+
+event Transaction.Transaction.TransferControl(TerritoryOrFacility,Recipient,Place,Giver,Beneficiary,TStart,TEnd);
+    rule Transaction.Transaction.TransferControl(TerritoryOrFacility,Recipient,Place,Giver,Beneficiary,TStart,TEnd) => Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,TerritoryOrFacility,TStart,TEnd);
+
+event Transaction.TransferOwnership.BorrowLend(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
+    rule Transaction.TransferOwnership.BorrowLend(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd) => Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
+
+event Transaction.TransferOwnership.EmbargoSanction(Recipient,Place,Giver,Preventer,Artifact,TStart,TEnd);
+    rule Transaction.TransferOwnership.EmbargoSanction(Recipient,Place,Giver,Preventer,Artifact,TStart,TEnd) => Evaluate.Sentiment.Negative(Recipient, Preventer);
+    rule Transaction.TransferOwnership.EmbargoSanction(Recipient,Place,Giver,Preventer,Artifact,TStart,TEnd) => Transaction.TransferOwnership(Recipient,Place,Giver,"null",Artifact,TStart,TEnd);
+
+event Transaction.TransferOwnership.GiftGrantProvideAid(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
+    rule Transaction.TransferOwnership.GiftGrantProvideAid(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd) => Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
+
+event Transaction.TransferOwnership.Purchase(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
+    rule Transaction.TransferOwnership.Purchase(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd) => Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,Artifact,TStart,TEnd);
+
+event Transaction.TransferMoney(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+    rule Transaction.TransferMoney(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd) => Transaction.TransferOwnership(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+
+event Transaction.TransferMoney.BorrowLend(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+    rule Transaction.TransferMoney.BorrowLend(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd) => Transaction.TransferMoney(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+
+event Transaction.TransferMoney.EmbargoSanction(Recipient,Place,Giver,Preventer,Money,TStart,TEnd);
+    rule Transaction.TransferMoney.EmbargoSanction(Recipient,Place,Giver,Preventer,Money,TStart,TEnd) => Evaluate.Sentiment.Negative(Recipient, Preventer);
+    rule Transaction.TransferMoney.EmbargoSanction(Recipient,Place,Giver,Preventer,Money,TStart,TEnd) => Transaction.TransferMoney(Recipient,Place,Giver,"null",Artifact,TStart,TEnd);
+
+event Transaction.TransferMoney.GiftGrantProvideAid(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+    rule Transaction.TransferMoney.GiftGrantProvideAid(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd)  => Transaction.TransferMoney(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+
+event Transaction.TransferMoney.PayForService(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+    rule Transaction.TransferMoney.PayForService(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd)  => Transaction.TransferMoney(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+
+event Transaction.TransferMoney.Purchase(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd);
+    rule Transaction.TransferMoney.Purchase(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd)  => Transaction.TransferMoney(Recipient,Place,Giver,Beneficiary,Money,TStart,TEnd).
