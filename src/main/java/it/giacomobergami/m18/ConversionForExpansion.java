@@ -1,11 +1,8 @@
 package it.giacomobergami.m18;
 
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import it.giacomobergami.m18.concrete.Baseline3;
-import it.giacomobergami.m18.schemas.LoadSchemas;
+import it.giacomobergami.m18.configuration.QueryGenerationConfiguration;
 import org.jooq.DSLContext;
 import org.jooq.InsertValuesStepN;
 import org.jooq.RecordMapper;
@@ -27,9 +24,9 @@ import java.util.stream.Collectors;
 
 public class ConversionForExpansion extends StaticDatabaseClass {
 
-
-    static int max_inference_tuple_arguments = 7;
-    private static ObjectReader reader2 = new ObjectMapper().readerFor(new TypeReference<Map<String, List<AgileField>>>() {});
+    private static QueryGenerationConfiguration qgc = QueryGenerationConfiguration.getInstance();
+    static int max_inference_tuple_arguments = qgc.getMaxInferenceTupleArguments();
+    //private static ObjectReader reader2 = new ObjectMapper().readerFor(new TypeReference<Map<String, List<AgileField>>>() {});
 
     /**
      * Performs the batch insertion of the transformed elements provided by the iterator, and creates directly the database
@@ -66,54 +63,11 @@ public class ConversionForExpansion extends StaticDatabaseClass {
     public static void main(String args[]) throws Exception {
         int arg1Pos = 3;
         String dbName = "p103";
-
-        // TODO: create the expansions table if does not exist already
-
-        /*HashSet<String> variadicArguments = LoadSchemas.variadicArguments();
-
-        // Reloading the configuration file properties
-        StaticDatabaseClass.loadProperties();
-
-        // Loading the relational database
-        Database opt = Database.openOrCreate(StaticDatabaseClass.engine, dbName, StaticDatabaseClass.username, StaticDatabaseClass.password).get();
-
-        Iterator<Optional<InsertValuesStepN<?>>> it = opt.jooq()
-                .selectFrom(Tuples2.TUPLES2)
-                // Not considering for the expansion all the elements that
-                .where(DSL.field("array_upper((array_agg),1)").ge(0))
-                .fetch((RecordMapper<Tuples2Record, Optional<InsertValuesStepN<?>>>) tuples2Record -> {
-                    // Getting the associated type
-                    String type = tuples2Record.getNisttype();
-                    Optional<Schema> associatedSchema = LoadSchemas.getSchemaDefinition(type);
-
-                    if (!associatedSchema.isPresent()) {
-                        System.err.println("ERROR: no schema associated to " + type);
-                        System.exit(1);
-                        // Ignoring the current record if it has a wrong type description
-                        return Optional.empty();
-                    }
-
-                    AgileRecord ar = Utils.asAgileRecord(tuples2Record);
-                    if (ar == null) return null;
-                    //AgileRecord ar = tup.asAgileRecord(type);
-
-                    if (ar.schema.isEmpty()) {
-                        // Ignoring the current record (do not expand it) if it has no relevant arguments to expand
-                        return Optional.empty();
-                    }
-                    InsertValuesStepN<?> arg = convertAgileRecordToDatabaseInsertion(variadicArguments, opt, tuples2Record, type, associatedSchema.get(), ar);
-                    return Optional.of(arg);
-                }).iterator();
-
-        batchInsertion(opt.jooq(), it, 100);
-
-        // End
-        opt.close();*/
         expand(dbName, null);
     }
 
     public static void expand(java.lang.String dbName, java.lang.String[] idList) throws Exception {
-        HashSet<java.lang.String> variadicArguments = LoadSchemas.variadicArguments();
+        HashSet<java.lang.String> variadicArguments = qgc.variadicArguments();
 
         // Reloading the configuration file properties
         StaticDatabaseClass.loadProperties();
@@ -124,7 +78,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
         SelectConditionStep<Tuples2Record> untilWhere = opt.jooq()
                 .selectFrom(Tuples2.TUPLES2)
                 // Not considering for the expansion all the elements that
-                .where(DSL.field("array_upper((array_agg),1)").ge(0));
+                .where(DSL.field("array_upper((constituent),1)").ge(0));
 
         if (idList != null && idList.length != 0) {
             untilWhere = untilWhere.and(Tuples2.TUPLES2.MID.eq(DSL.any(idList)));
@@ -134,7 +88,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
                 .fetch((RecordMapper<Tuples2Record, Optional<InsertValuesStepN<?>>>) tuples2Record -> {
                     // Getting the associated type
                     String type = tuples2Record.getNisttype();
-                    Optional<Schema> associatedSchema = LoadSchemas.getSchemaDefinition(type);
+                    Optional<Schema> associatedSchema = qgc.getSchemaDefinition(type);
 
                     if (!associatedSchema.isPresent()) {
                         System.err.println("ERROR: no schema associated to " + type);
@@ -220,7 +174,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
 
                 // If there are no arguments for time information, try to backup with a single time information, with no interval associated to it
                 if (k == null || k.isEmpty()) {
-                    if (substringForVariadic.equals(LoadSchemas.startTimeName()) || substringForVariadic.equals(LoadSchemas.endTimeName())) {
+                    if (substringForVariadic.equals(qgc.startTimeName()) || substringForVariadic.equals(qgc.endTimeName())) {
                         k = ar.fieldList.get("Time");
                     }
                 }
@@ -274,7 +228,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
      */
     public static AgileRecord reconstructRecordFromExpansions(DSLContext jooq, ExpansionsRecord expansionsRecord) {
         String typeEvent = expansionsRecord.getTypeEvent();
-        Optional<Schema> associatedSchema = LoadSchemas.getSchemaDefinition(typeEvent);
+        Optional<Schema> associatedSchema = qgc.getSchemaDefinition(typeEvent);
 
         // Returning the elements that are only having reliable type schema
         if (!associatedSchema.isPresent())
@@ -334,7 +288,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
             String dbName = "p103";
 
 
-            HashSet<String> variadicArguments = LoadSchemas.variadicArguments();
+            HashSet<String> variadicArguments = qgc.variadicArguments();
 
             // Reloading the configuration file properties
             StaticDatabaseClass.loadProperties();

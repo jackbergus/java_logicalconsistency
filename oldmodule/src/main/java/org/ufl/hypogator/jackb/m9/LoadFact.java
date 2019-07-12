@@ -71,6 +71,7 @@ public class LoadFact extends StaticDatabaseClass {
 
         Double d;
         if (true) {
+            database.rawSqlCommand("DROP TABLE IF EXISTS fact");
             // Loading the ta2 database as a table of rows
             System.out.println("Generating the tables and loading the data");
             d = new Benchmark<Object, Object>() {
@@ -115,6 +116,7 @@ public class LoadFact extends StaticDatabaseClass {
         // UPDATE: alternative
         if (true) {
             System.out.println("Generating the table of the most frequent term associated within the cluster");
+            database.rawSqlCommand("DROP TABLE IF EXISTS mentions_for_update");
             d = new Benchmark<Object, Object>() {
                 @Override
                 public Object function(Object input) {
@@ -389,14 +391,15 @@ public class LoadFact extends StaticDatabaseClass {
             // Grouping all the elements by tuple id, tree and type
             if (true) {
                 long start = System.currentTimeMillis();
+                database.rawSqlCommand("DROP TABLE IF EXISTS tuples");
                 database.rawSqlStatement(new File("sql/TA203_createdTuples.sql"));
-                database.rawSqlStatement(" create unique index on tuples (mid);");
                 database.rawSqlStatement("alter table tuples ADD CONSTRAINT PK_tuples PRIMARY KEY USING INDEX tuples_mid_idx;");
                 long end = System.currentTimeMillis();
                 System.out.println("Creating tuples in Postgres = " + ((end - start) / 1000));
             }
 
             long start = System.currentTimeMillis();
+            database.rawSqlCommand("DROP VIEW IF EXISTS tuples2");
             database.rawSqlStatement(new File("sql/TA301_tuples2.sql"));
             database.rawSqlStatement(" create unique index on tuples2 (mid);");
             long end = System.currentTimeMillis();

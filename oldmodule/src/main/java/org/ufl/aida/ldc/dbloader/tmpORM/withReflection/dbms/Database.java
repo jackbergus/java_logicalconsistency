@@ -281,6 +281,15 @@ public class Database implements AutoCloseable {
         return null;
     }
 
+    public boolean rawSqlCommand(String query) {
+        try (Statement s = connection.createStatement()) {
+            return s.execute(query);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public int rawSqlUpdate(String query) {
         try (Statement s = connection.createStatement()) {
             return s.executeUpdate(query);

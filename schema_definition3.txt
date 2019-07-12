@@ -1,20 +1,20 @@
-relation GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.NationalityCitizen(Nationality,Artifact);
-relation GeneralAffiliation.MemberOriginReligionEthnicity.Ethnicity(Person,Ethnicity);
-relation GeneralAffiliation.MemberOriginReligionEthnicity.NationalityCitizen(Nationality,Citizen);
-relation GeneralAffiliation.OrganizationPoliticalReligiousAffiliation(Organization,EntityOrFiller);
-relation GeneralAffiliation.OrganizationPoliticalReligiousAffiliation.NationalityCitizen(Organization,Nationality);
-relation GeneralAffiliation.OrganizationWebsite.OrganizationWebsite(Website,Organization);
-relation Information.Color.Color(EntityOrFiller,Color);
-relation Information.Make.Make(EntityOrFiller,Brand);
-relation Measurement.Size(Measurement,EntityOrFiller);
-relation Measurement.Size.Count(Measurement,EntityOrFiller);
-relation Measurement.Size.HeightLengthWidth(Measurement,EntityOrFiller);
-relation Measurement.Size.Percentage(Measurement,EntityOrFiller);
-relation Measurement.Size.Weight(Measurement,EntityOrFiller);
-relation PartWhole.Subsidiary.NationalityCitizen(Subsidiary,Parent);
-relation OrganizationAffiliation.Founder.Founder(Organization,Founder);
-relation PersonalSocial.Unspecified(Person);
-relation PersonalSocial.Unspecified.Political(Person);
+event GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.NationalityCitizen(Nationality,Artifact);
+event GeneralAffiliation.MemberOriginReligionEthnicity.Ethnicity(Person,Ethnicity);
+event GeneralAffiliation.MemberOriginReligionEthnicity.NationalityCitizen(Nationality,Citizen);
+event GeneralAffiliation.OrganizationPoliticalReligiousAffiliation(Organization,EntityOrFiller);
+event GeneralAffiliation.OrganizationPoliticalReligiousAffiliation.NationalityCitizen(Organization,Nationality);
+event GeneralAffiliation.OrganizationWebsite.OrganizationWebsite(Website,Organization);
+event Information.Color.Color(EntityOrFiller,Color);
+event Information.Make.Make(EntityOrFiller,Brand);
+event Measurement.Size(Measurement,EntityOrFiller);
+event Measurement.Size.Count(Measurement,EntityOrFiller);
+event Measurement.Size.HeightLengthWidth(Measurement,EntityOrFiller);
+event Measurement.Size.Percentage(Measurement,EntityOrFiller);
+event Measurement.Size.Weight(Measurement,EntityOrFiller);
+event PartWhole.Subsidiary.NationalityCitizen(Subsidiary,Parent);
+event OrganizationAffiliation.Founder.Founder(Organization,Founder);
+event PersonalSocial.Unspecified(Person);
+event PersonalSocial.Unspecified.Political(Person);
 
 relation be  (val,place,time);
 
@@ -58,75 +58,75 @@ rule be(val,place,time) => ex(val,time);
 #macro R(x,y,z,t) as tisaTa, rule R(x,y,z,t) with z notnull => tIsA(x,y,z);
 #macro R(x,y,z,t) as tisaTb, rule R(x,y,z,t) with t notnull => tIsA(x,y,t);
 
-relation PersonalSocial.Role(Person,Role);
+event PersonalSocial.Role(Person,Role);
 
-relation PersonalSocial.Role.ProfessionalRole(Person,JobRole);
+event PersonalSocial.Role.ProfessionalRole(Person,JobRole);
     rule PersonalSocial.Role.ProfessionalRole(Person,JobRole) => PersonalSocial.Role(Person,JobRole);
 
-relation PersonalSocial.Role.TitleFormOfAddress(Person,Title);
+event PersonalSocial.Role.TitleFormOfAddress(Person,Title);
 
-relation Evaluate.Deliberateness.Accidental(Holder,Event);
-relation Evaluate.Deliberateness.Deliberate(Holder,Event);
+event Evaluate.Deliberateness.Accidental(Holder,Event);
+event Evaluate.Deliberateness.Deliberate(Holder,Event);
     rule Evaluate.Deliberateness.Deliberate(Holder,Event) Evaluate.Deliberateness.Accidental(Holder,Event) => False;
 
-relation Evaluate.Legitimacy.Illegitimate(Holder,Event);
-relation Evaluate.Legitimacy.Legitimate(Holder,Event);
+event Evaluate.Legitimacy.Illegitimate(Holder,Event);
+event Evaluate.Legitimacy.Legitimate(Holder,Event);
     rule Evaluate.Legitimacy.Illegitimate(Holder,Event) Evaluate.Legitimacy.Legitimate(Holder,Event) => False;
 
-relation Evaluate.Sentiment.Negative(SentimentTarget,Holder);
-relation Evaluate.Sentiment.Positive(SentimentTarget,Holder);
+event Evaluate.Sentiment.Negative(SentimentTarget,Holder);
+event Evaluate.Sentiment.Positive(SentimentTarget,Holder);
     rule Evaluate.Sentiment.Negative(SentimentTarget,Holder) Evaluate.Sentiment.Positive(SentimentTarget,Holder) => False;
 
-relation GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
+event GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
 
-relation GeneralAffiliation.Sponsorship.AdvisePlanOrganize(Sponsor,ActorOrEvent);
+event GeneralAffiliation.Sponsorship.AdvisePlanOrganize(Sponsor,ActorOrEvent);
     rule GeneralAffiliation.Sponsorship.AdvisePlanOrganize(Sponsor,ActorOrEvent) => GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
 
-relation GeneralAffiliation.Sponsorship.Affiliated(Sponsor,ActorOrEvent);
+event GeneralAffiliation.Sponsorship.Affiliated(Sponsor,ActorOrEvent);
     rule GeneralAffiliation.Sponsorship.Affiliated(Sponsor,ActorOrEvent) => GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
 
-relation GeneralAffiliation.Sponsorship.HelpSupport(Sponsor,ActorOrEvent);
+event GeneralAffiliation.Sponsorship.HelpSupport(Sponsor,ActorOrEvent);
     rule GeneralAffiliation.Sponsorship.HelpSupport(Sponsor,ActorOrEvent) => GeneralAffiliation.Sponsorship(Sponsor,ActorOrEvent);
 
-relation OrganizationAffiliation.Leadership(Organization, Leader);
+event OrganizationAffiliation.Leadership(Organization, Leader);
 
-relation OrganizationAffiliation.Leadership.Government(GovernmentBodyOrGPE, Leader);
+event OrganizationAffiliation.Leadership.Government(GovernmentBodyOrGPE, Leader);
     rule OrganizationAffiliation.Leadership.Government(GovernmentBodyOrGPE, Leader) => OrganizationAffiliation.Leadership(GovernmentBodyOrGPE, Leader);
 
-relation OrganizationAffiliation.Leadership.HeadOfState(Country, Leader);
+event OrganizationAffiliation.Leadership.HeadOfState(Country, Leader);
     rule OrganizationAffiliation.Leadership.HeadOfState(Country, Leader) => OrganizationAffiliation.Leadership(Country, Leader);
 
-relation OrganizationAffiliation.Leadership.MilitaryPolice(MilitaryPoliceORG,Leader);
+event OrganizationAffiliation.Leadership.MilitaryPolice(MilitaryPoliceORG,Leader);
     rule OrganizationAffiliation.Leadership.MilitaryPolice(MilitaryPoliceORG,Leader) => OrganizationAffiliation.Leadership(MilitaryPoliceORG, Leader);
 
-relation GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.ControlTerritory(Territory,Controller);
+event GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.ControlTerritory(Territory,Controller);
     rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.ControlTerritory(Territory,Controller) => owned(Territory,Controller,"null");
 
-relation GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.OwnershipPossession(Artifact,EntityOrFiller);
+event GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.OwnershipPossession(Artifact,EntityOrFiller);
     rule GeneralAffiliation.ArtifactPoliticalOrganizationReligiousAffiliation.OwnershipPossession(Artifact,EntityOrFiller) => owned(Territory,EntityOrFiller,"null");
 
-relation OrganizationAffiliation.EmploymentMembership(EmployeeMember,PlaceOfEmploymentMembership);
+event OrganizationAffiliation.EmploymentMembership(EmployeeMember,PlaceOfEmploymentMembership);
     rule OrganizationAffiliation.EmploymentMembership(EmployeeMember,PlaceOfEmploymentMembership) => owned(EmployeeMember,PlaceOfEmploymentMembership,"null");
 
-relation OrganizationAffiliation.EmploymentMembership.Employment(Employee,PlaceOfEmployment);
+event OrganizationAffiliation.EmploymentMembership.Employment(Employee,PlaceOfEmployment);
     rule OrganizationAffiliation.EmploymentMembership(Employee,PlaceOfEmployment) => owned(Employee,PlaceOfEmployment,"null");
 
-relation OrganizationAffiliation.EmploymentMembership.Membership(Member,PlaceOfMembership);
+event OrganizationAffiliation.EmploymentMembership.Membership(Member,PlaceOfMembership);
     rule OrganizationAffiliation.EmploymentMembership.Membership(Member,PlaceOfMembership) => owned(Member,PlaceOfMembership,"null");
 
-relation PartWhole.Subsidiary(Subsidiary,Parent);
+event PartWhole.Subsidiary(Subsidiary,Parent);
     rule PartWhole.Subsidiary(Subsidiary,Parent) => owned(Subsidiary,Parent,"null");
 
-relation PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent);
+event PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent);
     rule PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent) => owned(Subsidiary,Parent,"null");
 
-relation Physical.LocatedNear(Place,EntityOrFiller);
+event Physical.LocatedNear(Place,EntityOrFiller);
     entity exist and space Place;
 
-relation Physical.LocatedNear.Surround(Place,EntityOrFiller);
+event Physical.LocatedNear.Surround(Place,EntityOrFiller);
     entity exist and space Place;
 
-relation Physical.OrganizationHeadquarters.OrganizationHeadquarters(Place,Organization);
+event Physical.OrganizationHeadquarters.OrganizationHeadquarters(Place,Organization);
     entity exist and space Place;
 
 event Life.Die(Victim,Place,TStart,TEnd);

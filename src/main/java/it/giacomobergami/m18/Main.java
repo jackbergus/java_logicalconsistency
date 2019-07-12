@@ -41,6 +41,7 @@ package it.giacomobergami.m18;/*
  */
 
 import com.sun.net.httpserver.HttpServer;
+import it.giacomobergami.m18.concrete.Baseline3;
 import org.ufl.hypogator.jackb.server.handlers.concrete.Baseline2;
 import org.ufl.hypogator.jackb.server.handlers.concrete.LoadDatabaseViaRequest;
 
@@ -70,7 +71,7 @@ public class Main {
 
     public static void main(final String... args) throws IOException {
         final HttpServer server = HttpServer.create(new InetSocketAddress(HOSTNAME, PORT), BACKLOG);
-        server.createContext("/kbAllInconsistency", new Baseline2());
+        server.createContext("/kbAllInconsistency", new Baseline3());
         server.createContext("/factLoad", new LoadDatabaseViaRequest());
 
         // TODO: the old version required expressively an algorithm to make the disambiguation work. Now, this thing

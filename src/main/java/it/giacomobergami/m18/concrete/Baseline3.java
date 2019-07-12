@@ -7,6 +7,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.gson.Gson;
 import it.giacomobergami.m18.ConversionForExpansion;
 import it.giacomobergami.m18.TTLOntology2;
+import it.giacomobergami.m18.configuration.QueryGenerationConfiguration;
 import it.giacomobergami.m18.graph_run.RunQuery;
 import org.jooq.DSLContext;
 import org.postgresql.util.PGobject;
@@ -37,16 +38,8 @@ import static org.ufl.hypogator.jackb.m9.endm9.HypoAnalyse.longestRepeatedSubstr
 public class Baseline3 extends SimplePostRequest {
 
     public static Gson jsonSerializer = new Gson();
-    static TTLOntology2 fringes = new TTLOntology2("data/SeedlingOntology2.ttl");
+    private static QueryGenerationConfiguration qgc = QueryGenerationConfiguration.getInstance();
     static ObjectReader reader = new ObjectMapper().readerFor(new TypeReference<AgileField>() {});
-    static RunQuery expansionRunner;
-    static {
-        try {
-            expansionRunner = new RunQuery(new FileReader("schema_definition3.txt"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public static List<AgileRecord> fetchAgileRecordsByExpansionId(DSLContext jooq, String[] id) {
         return jooq.selectFrom(Expansions.EXPANSIONS)
@@ -116,16 +109,17 @@ public class Baseline3 extends SimplePostRequest {
         ArrayList<Hypotheses.Subgraph.Hypothesis_scorer.Subgraph_plus_neighbor[]> lis = new ArrayList<>();
         for (int i = 0, subgraphsLength = subgraphs.length; i < subgraphsLength; i++) {
             System.gc();
+            //
             Hypotheses.Subgraph s = subgraphs[i];
             //System.out.println(i+" "+Arrays.toString(subgraphs[i].scorers));
             Hypotheses.Subgraph.Hypothesis_scorer[] hypothesis_scorers = s.hypothesis_scorers;
             for (int j = 0, hypothesis_scorersLength = hypothesis_scorers.length; j < 1; j++) {
-                System.out.println("\n\n\t Hypothesis Id: " + j);
                 Hypotheses.Subgraph.Hypothesis_scorer scorer = hypothesis_scorers[j];
                 Hypotheses.Subgraph.Hypothesis_scorer.Subgraph_plus_neighbor[] subgraph_plus_neighbors = scorer.subgraph_plus_neighbors;
                 lis.add(subgraph_plus_neighbors);
             }
         }
+        System.out.println("Returning #" + subgraphs.length +" hypotheses.");
         return lis;
     }
 
@@ -164,7 +158,8 @@ public class Baseline3 extends SimplePostRequest {
         }
 
         // Clearing all the results
-        opt.jooq().dropTableIfExists(Expansions.EXPANSIONS);
+        //opt.jooq().dropTableIfExists(Expansions.EXPANSIONS); -- Doesn't work
+        opt.rawSqlCommand("DROP TABLE IF EXISTS EXPANSIONS");
 
         // Creating the table, before loading the results
         opt.rawSqlStatement(new File("sql/TA401_create_expansions_table.sql"));
@@ -182,6 +177,7 @@ public class Baseline3 extends SimplePostRequest {
         }
 
         // 2. Prforming the actual expansion
+        qgc.getExpansionRunner().doExpansion(opt);
 
         // 3. As before, loading the elements from the subgraphs
         int i = 0, M = hypotheses.size();
@@ -220,7 +216,7 @@ public class Baseline3 extends SimplePostRequest {
 
                     //boolean incoDetected = false;
                     for (AgileRecord rec : te.getValue()) {
-                        double x = rec.getDegreeTypeInconsistency(fringes);
+                        double x = rec.getDegreeTypeInconsistency(qgc.getOntology2());
                         if (x > 0) {
                             typeInconsistencyScore += x;
                             //incoDetected = true;

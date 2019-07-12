@@ -31,7 +31,7 @@ public class RunQuery {
     QueryGenerationConf qgc;
 
 
-    RuleListener classListener;
+    public RuleListener classListener;
 
     public RunQuery(final Reader code) throws IOException {
         final org.antlr.v4.runtime.CharStream input = new ANTLRInputStream(code);
@@ -113,7 +113,7 @@ public class RunQuery {
         return lsOfList.stream().mapToInt(x -> runQueryPath(db, x)).sum();
     }
 
-    void doExpansion(Database db) {
+    public void doExpansion(Database db) {
         GraphDissectPaths paths = dependencyGraph.generatePathsForExpansionModule();
 
         // First, run the rules directly pointing to the cycles
