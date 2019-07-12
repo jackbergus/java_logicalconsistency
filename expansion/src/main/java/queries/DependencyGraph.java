@@ -29,6 +29,7 @@ import org.graphstream.graph.implementations.MultiGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import queries.graph.GraphDissectPaths;
 import queries.sql.v1.QueryGenerationConf;
+import queries.sql.v1.SelectFromWhere;
 import ref.RuleListener;
 import types.Rule;
 
@@ -40,6 +41,8 @@ import java.util.*;
 public class DependencyGraph {
 
     public static String staring_nodes = "";
+    private final RuleListener l;
+    private final QueryGenerationConf qgc;
     public Collection<String> getPredicates;
     public Set<List<String>> cycles = new HashSet<>();
 
@@ -56,7 +59,7 @@ public class DependencyGraph {
     public Set<String> startingNodes = new HashSet<>();
 
     // This set contains all the paths where the starting node has inDegree as zero and where the nodes belong to the starting nodes
-    public Set<List<String>> pathsBeforeFixPointsWithNoInput = new HashSet<>();
+    //public Set<List<String>> pathsBeforeFixPointsWithNoInput = new HashSet<>();
 
 
     public Set<List<String>> pathFromStartingToCycles;
@@ -88,6 +91,12 @@ public class DependencyGraph {
     private Set<List<String>> fegatelli;
 
     public DependencyGraph(RuleListener l, QueryGenerationConf qgc) throws IOException {
+        this.l = l;
+        this.qgc = qgc;
+        generatePathsForExpansionModule();
+    }
+
+    public GraphDissectPaths generatePathsForExpansionModule() {
         System.err.println("INFO -  Creating the graph");
         graph = new DefaultDirectedWeightedGraph<>(Edge.class);
         // Inconsistency will be another node.
@@ -97,7 +106,8 @@ public class DependencyGraph {
         Map<Integer, Pair<Set<String>, Set<String>>> map = new HashMap<>();
 
         l.ruleTabClassification4DB.forEach((key, value) -> {
-            if (qgc.compileQuery(l.idToRuleTab.get(key)) != null) {
+            SelectFromWhere compiledQuery = qgc.compileQuery(l.idToRuleTab.get(key));
+            if (compiledQuery != null) {
                 createHyperedge(key, value, map);
                 remainingNodes.add(key.toString());
                 graph.addVertex(key.toString());
@@ -204,6 +214,7 @@ public class DependencyGraph {
         this.pathFromStartingToCycles = algorithm.pathFromStartingToCycles;
         this.fegatelli = algorithm.fegatelli;
         this.pathDirectlyTerminal = algorithm.pathDirecltyTerminal;
+        return algorithm;
     }
 
     private static List<List<String>> generateAllPaths(DefaultDirectedWeightedGraph<String, Edge> graph, Collection<String> sources, Collection<String> sinks) {

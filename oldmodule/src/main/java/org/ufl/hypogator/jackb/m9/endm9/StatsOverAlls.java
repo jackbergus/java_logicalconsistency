@@ -1,23 +1,16 @@
 package org.ufl.hypogator.jackb.m9.endm9;
 
 import au.com.bytecode.opencsv.CSVReader;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.gson.Gson;
-import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 //import org.ufl.aida.ta2.tables.daos.TuplesDao;
-import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.legacy.TupleComparator;
-import org.ufl.hypogator.jackb.m9.Hypotheses;
-import org.ufl.hypogator.jackb.m9.StaticDatabaseClass;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.ontology.TtlOntology;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;

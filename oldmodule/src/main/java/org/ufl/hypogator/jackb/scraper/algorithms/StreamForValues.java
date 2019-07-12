@@ -21,7 +21,7 @@
 
 package org.ufl.hypogator.jackb.scraper.algorithms;
 
-import org.ufl.hypogator.jackb.traversers.conceptnet.Concept5ClientConfigurations;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.TraverseConceptNet;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_1.SemanticEdge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_2.CoarsenedHierarchicalType;

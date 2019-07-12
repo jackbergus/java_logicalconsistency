@@ -1,15 +1,11 @@
 package org.ufl.hypogator.jackb.m9;
 
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.ontology.TtlOntology;
-import org.ufl.hypogator.jackb.traversers.conceptnet.Concept5ClientConfigurations;
-import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.file.Files;
-import java.util.Scanner;
 
 public class SeparateMemoizationForConcepts extends StaticDatabaseClass {
 

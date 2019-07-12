@@ -9,7 +9,7 @@ import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.legacy.TupleComparator;
 import org.ufl.hypogator.jackb.m9.Hypotheses;
-import org.ufl.hypogator.jackb.m9.StaticDatabaseClass;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.ontology.TtlOntology;
 
 import java.io.File;
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class StatsOverOuts extends StaticDatabaseClass {
 

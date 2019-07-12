@@ -3,6 +3,7 @@ package org.ufl.hypogator.jackb.traversers.conceptnet;
 import com.google.common.collect.HashMultimap;
 import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetDimensionDisambiguationOperations;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.scraper.ScraperSources;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.ConceptNet5Interface;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;

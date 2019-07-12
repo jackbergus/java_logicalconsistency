@@ -23,7 +23,6 @@ package ref;// Generated from schema.g4 by ANTLR 4.7.1
 
 import algos.Substitute;
 import algos.VariableGenerator;
-import main.PlotRemainingPathsInGraph;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -653,10 +652,12 @@ public class RuleListener implements schemaListener {
         }
     }
 
-    public static String underP = PlotRemainingPathsInGraph.isLatex ? "\\_p" : "_p";
-	public static String underPT = PlotRemainingPathsInGraph.isLatex ? "\\_p\\_t" : "_p_t";
-	public static String under = PlotRemainingPathsInGraph.isLatex ? "\\_" : "_";
-	public static String underT = PlotRemainingPathsInGraph.isLatex ? "\\_t" : "_t";
+
+	public static boolean isLatex = true;
+    public static String underP = isLatex ? "\\_p" : "_p";
+	public static String underPT = isLatex ? "\\_p\\_t" : "_p_t";
+	public static String under = isLatex ? "\\_" : "_";
+	public static String underT = isLatex ? "\\_t" : "_t";
 
 
 	/**

@@ -29,7 +29,7 @@ import org.ufl.hypogator.jackb.disambiguation.DisambiguatorForDimension;
 import org.ufl.hypogator.jackb.disambiguation.dimension.Direction;
 import org.ufl.hypogator.jackb.fuzzymatching.MultiWordSimilarity;
 import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
-import org.ufl.hypogator.jackb.traversers.conceptnet.Concept5ClientConfigurations;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
 

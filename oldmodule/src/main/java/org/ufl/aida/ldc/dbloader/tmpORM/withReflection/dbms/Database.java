@@ -281,6 +281,15 @@ public class Database implements AutoCloseable {
         return null;
     }
 
+    public int rawSqlUpdate(String query) {
+        try (Statement s = connection.createStatement()) {
+            return s.executeUpdate(query);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     /**
      * Runs a sql statement from string directly using the connection (no jooq)
      * @param query

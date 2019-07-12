@@ -24,6 +24,7 @@ package org.ufl.hypogator.jackb.traversers.conceptnet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
 import org.ufl.hypogator.jackb.fuzzymatching.FuzzyMatcher;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
 import org.ufl.hypogator.jackb.scraper.adt.SemanticNetworkTraversers;
 import org.ufl.hypogator.jackb.streamutils.data.ArraySupport;

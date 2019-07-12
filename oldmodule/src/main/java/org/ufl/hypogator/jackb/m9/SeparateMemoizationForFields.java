@@ -1,8 +1,6 @@
 package org.ufl.hypogator.jackb.m9;
 
-import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
-
-import java.util.Scanner;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 
 public class SeparateMemoizationForFields extends StaticDatabaseClass {
 

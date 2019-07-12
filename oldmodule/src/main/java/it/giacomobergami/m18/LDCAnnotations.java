@@ -9,7 +9,6 @@ import org.jooq.Record2;
 import org.postgresql.util.PGobject;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 import org.ufl.aida.ldc.jOOQ.model.Tables;
-import org.ufl.aida.ta2.tables.pojos.Tuples;
 import org.ufl.aida.ta2.tables.pojos.Tuples2;
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
 import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
@@ -17,8 +16,7 @@ import org.ufl.hypogator.jackb.fuzzymatching.ldc.LDCMatching;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.m9.LoadFact;
-import org.ufl.hypogator.jackb.m9.SQLTuples;
-import org.ufl.hypogator.jackb.m9.StaticDatabaseClass;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 
 import java.io.IOException;
 import java.util.*;

@@ -23,7 +23,7 @@ package org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.qu
 
 import com.google.common.collect.Streams;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
-import org.ufl.hypogator.jackb.traversers.conceptnet.Concept5ClientConfigurations;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.BatchAnswerIterator;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.Edge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.FirstBatchAnswer;

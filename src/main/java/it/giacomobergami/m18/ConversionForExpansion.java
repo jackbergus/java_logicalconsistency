@@ -18,7 +18,7 @@ import org.ufl.aida.ta2.tables.records.ExpansionsRecord;
 import org.ufl.aida.ta2.tables.records.Tuples2Record;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
-import org.ufl.hypogator.jackb.m9.StaticDatabaseClass;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import queries.bitmaps.BitMap;
 import types.Schema;
 

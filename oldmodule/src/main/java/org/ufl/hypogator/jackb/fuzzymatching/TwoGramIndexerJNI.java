@@ -1,17 +1,15 @@
 package org.ufl.hypogator.jackb.fuzzymatching;
 
-import com.google.common.collect.TreeMultimap;
 import cz.adamh.utils.NativeUtils;
 import javafx.util.Pair;
 import org.ufl.hypogator.jackb.scraper.adt.DiGraphEquivalenceClass;
-import org.ufl.hypogator.jackb.traversers.conceptnet.Concept5ClientConfigurations;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Dump;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**

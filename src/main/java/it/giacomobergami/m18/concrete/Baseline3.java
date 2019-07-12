@@ -7,8 +7,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.gson.Gson;
 import it.giacomobergami.m18.ConversionForExpansion;
 import it.giacomobergami.m18.TTLOntology2;
-import it.giacomobergami.m18.Utils;
-import javafx.util.Pair;
+import it.giacomobergami.m18.graph_run.RunQuery;
 import org.jooq.DSLContext;
 import org.postgresql.util.PGobject;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
@@ -21,11 +20,11 @@ import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.m9.Hypotheses;
 import org.ufl.hypogator.jackb.m9.LoadFact;
 import org.ufl.hypogator.jackb.m9.SQLTuples;
-import org.ufl.hypogator.jackb.m9.StaticDatabaseClass;
-import org.ufl.hypogator.jackb.ontology.TtlOntology;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.server.handlers.abstracts.SimplePostRequest;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -40,6 +39,14 @@ public class Baseline3 extends SimplePostRequest {
     public static Gson jsonSerializer = new Gson();
     static TTLOntology2 fringes = new TTLOntology2("data/SeedlingOntology2.ttl");
     static ObjectReader reader = new ObjectMapper().readerFor(new TypeReference<AgileField>() {});
+    static RunQuery expansionRunner;
+    static {
+        try {
+            expansionRunner = new RunQuery(new FileReader("schema_definition3.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static List<AgileRecord> fetchAgileRecordsByExpansionId(DSLContext jooq, String[] id) {
         return jooq.selectFrom(Expansions.EXPANSIONS)
@@ -174,7 +181,7 @@ public class Baseline3 extends SimplePostRequest {
             return sb.toString();
         }
 
-        // 2. TODO: performing the actual expansion
+        // 2. Prforming the actual expansion
 
         // 3. As before, loading the elements from the subgraphs
         int i = 0, M = hypotheses.size();

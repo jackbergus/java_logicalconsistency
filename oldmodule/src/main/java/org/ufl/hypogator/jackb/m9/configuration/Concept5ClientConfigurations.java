@@ -19,13 +19,13 @@
  *
  */
 
-package org.ufl.hypogator.jackb.traversers.conceptnet;
+package org.ufl.hypogator.jackb.m9.configuration;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
-import org.ufl.hypogator.jackb.ontology.JsonOntologyLoader;
 import org.ufl.hypogator.jackb.ontology.TtlOntology;
+import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.queries.JsonQuery;
 
@@ -36,7 +36,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Concept5ClientConfigurations {
 

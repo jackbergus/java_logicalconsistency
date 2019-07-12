@@ -32,7 +32,7 @@ import org.ufl.hypogator.jackb.disambiguation.dimension.time.DimTime;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.inconsistency.fieldgrouping.FieldGroupingPolicy;
 import org.ufl.hypogator.jackb.inconsistency.fieldgrouping.FieldGroupingPolicyFactory;
-import org.ufl.hypogator.jackb.traversers.conceptnet.Concept5ClientConfigurations;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 
 import java.io.File;
 import java.util.*;

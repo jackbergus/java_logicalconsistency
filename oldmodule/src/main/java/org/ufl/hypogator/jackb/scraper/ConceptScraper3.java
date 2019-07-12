@@ -26,7 +26,7 @@ import org.ufl.hypogator.jackb.fuzzymatching.FuzzyMatcher;
 import org.ufl.hypogator.jackb.fuzzymatching.TwoGramIndexerJNI;
 import org.ufl.hypogator.jackb.logger.Logger;
 import org.ufl.hypogator.jackb.logger.LoggerFactory;
-import org.ufl.hypogator.jackb.traversers.conceptnet.Concept5ClientConfigurations;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.Edge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;

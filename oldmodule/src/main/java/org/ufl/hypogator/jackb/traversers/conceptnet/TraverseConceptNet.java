@@ -21,6 +21,7 @@
 
 package org.ufl.hypogator.jackb.traversers.conceptnet;
 
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.queries.JsonQuery;
 
 import java.util.function.BiFunction;

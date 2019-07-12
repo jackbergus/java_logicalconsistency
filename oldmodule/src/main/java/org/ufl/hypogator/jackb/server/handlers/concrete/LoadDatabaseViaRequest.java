@@ -3,17 +3,14 @@ package org.ufl.hypogator.jackb.server.handlers.concrete;
 import com.google.common.collect.HashMultimap;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 import org.ufl.hypogator.jackb.m9.LoadFact;
-import org.ufl.hypogator.jackb.m9.StaticDatabaseClass;
+import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.server.handlers.abstracts.SimplePostRequest;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LoadDatabaseViaRequest extends SimplePostRequest {

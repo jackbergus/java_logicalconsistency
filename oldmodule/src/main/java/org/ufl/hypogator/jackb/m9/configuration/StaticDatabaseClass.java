@@ -1,4 +1,4 @@
-package org.ufl.hypogator.jackb.m9;
+package org.ufl.hypogator.jackb.m9.configuration;
 
 import com.google.common.collect.HashMultimap;
 import javafx.util.Pair;
@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class StaticDatabaseClass {
-
 
     public static Properties properties = new Properties();
     public static final TupleComparator comparator = TupleComparator.getDefaultTupleComparator();

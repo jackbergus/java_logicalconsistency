@@ -23,6 +23,7 @@ package org.ufl.hypogator.jackb.traversers.conceptnet;
 
 import com.google.common.collect.Streams;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
+import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.Edge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_1.SemanticEdge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_2.CoarsenedHierarchicalType;
