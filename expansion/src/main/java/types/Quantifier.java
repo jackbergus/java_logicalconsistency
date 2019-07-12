@@ -25,7 +25,7 @@ import algos.ConformityCheck;
 import algos.CopyConstructor;
 import algos.Substitutable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import main.Main;
+import main.PlotRemainingPathsInGraph;
 import ref.schemaParser;
 
 import java.util.*;
@@ -45,21 +45,21 @@ public class Quantifier implements Substitutable<String>, ConformityCheck, CopyC
             sb.append(" : ");
             sb.append(varType);
         }
-        if (Main.isLatex)
+        if (PlotRemainingPathsInGraph.isLatex)
             sb.append(".");
         if (predicates != null && !predicates.isEmpty()) {
-            if (Main.isLatex)
+            if (PlotRemainingPathsInGraph.isLatex)
                 sb.append(" \\wedge ");
             else
                 sb.append(" with ");
             for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext(); ) {
                 Predicate p = iterator.next();
                 sb.append(p.toString());
-                if (Main.isLatex && iterator.hasNext())
+                if (PlotRemainingPathsInGraph.isLatex && iterator.hasNext())
                     sb.append(" \\wedge ");
             }
         }
-        if (!Main.isLatex) sb.append('.');
+        if (!PlotRemainingPathsInGraph.isLatex) sb.append('.');
         return sb.toString();
     }
 

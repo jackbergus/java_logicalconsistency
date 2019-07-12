@@ -49,7 +49,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class JsonServer {
+public class Main {
     private static final String HOSTNAME = "localhost";
     private static final int PORT = 9999;
     private static final int BACKLOG = 1;

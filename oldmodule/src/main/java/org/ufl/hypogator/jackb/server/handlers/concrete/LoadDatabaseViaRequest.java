@@ -8,6 +8,8 @@ import org.ufl.hypogator.jackb.server.handlers.abstracts.SimplePostRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Set;
@@ -29,7 +31,10 @@ public class LoadDatabaseViaRequest extends SimplePostRequest {
         String toBeReturned = "Error on closing the database";
         try {
             File f = File.createTempFile("temporary_database_file", ".tsv");
-            Files.write(f.toPath(), content.getBytes());
+            PrintWriter pw = new PrintWriter(f, StandardCharsets.UTF_8.toString());
+            pw.print(content);
+            pw.flush();
+            pw.close();
             lf.loadForcefully(opt, f);
             f.delete(); // explicitely removing the temp file.
             toBeReturned = "Database " + dbName +" has been created";

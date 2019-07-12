@@ -23,7 +23,7 @@ package types;
 
 import algos.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import main.Main;
+import main.PlotRemainingPathsInGraph;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,34 +42,34 @@ public class Rule implements Substitutable<String>, ConformityCheck, CopyConstru
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(Main.isLatex ? "\\begin{multline}\n" : "rule ");
+        StringBuilder sb = new StringBuilder(PlotRemainingPathsInGraph.isLatex ? "\\begin{multline}\n" : "rule ");
         for (Iterator<Clause> iterator = body.iterator(); iterator.hasNext(); ) {
             Clause clause = iterator.next();
             sb.append(clause).append(" ");
-            if (Main.isLatex /*&& iterator.hasNext()*/)
+            if (PlotRemainingPathsInGraph.isLatex /*&& iterator.hasNext()*/)
                 sb.append("\\wedge \\\\\n");
         }
         if (joinPredicates!= null && !joinPredicates.isEmpty()) {
-            sb.append(Main.isLatex ? " \\wedge " : " with ");
+            sb.append(PlotRemainingPathsInGraph.isLatex ? " \\wedge " : " with ");
             for (Iterator<Predicate> iterator = joinPredicates.iterator(); iterator.hasNext(); ) {
                 Predicate x = iterator.next();
                 sb.append(x).append(" ");
-                if (Main.isLatex && iterator.hasNext())
+                if (PlotRemainingPathsInGraph.isLatex && iterator.hasNext())
                     sb.append("\\wedge ");
             }
         }
-        sb.append(Main.isLatex ? "\\\\\n \\Rightarrow " : " => ");
+        sb.append(PlotRemainingPathsInGraph.isLatex ? "\\\\\n \\Rightarrow " : " => ");
         if (isFinalBottom) {
-            sb.append(Main.isLatex ? "\\bot" : "False");
+            sb.append(PlotRemainingPathsInGraph.isLatex ? "\\bot" : "False");
         } else {
             for (Iterator<Clause> iterator = head.iterator(); iterator.hasNext(); ) {
                 Clause x = iterator.next();
                 sb.append(x).append(" ");
-                if (Main.isLatex && iterator.hasNext())
+                if (PlotRemainingPathsInGraph.isLatex && iterator.hasNext())
                     sb.append("\\vee \\\\\n\\quad");
             }
         }
-        if (Main.isLatex) sb.append("\n\\end{multline}\n\n");
+        if (PlotRemainingPathsInGraph.isLatex) sb.append("\n\\end{multline}\n\n");
         return sb.toString();
     }
 

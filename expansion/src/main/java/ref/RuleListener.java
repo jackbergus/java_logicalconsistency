@@ -23,21 +23,18 @@ package ref;// Generated from schema.g4 by ANTLR 4.7.1
 
 import algos.Substitute;
 import algos.VariableGenerator;
-import main.Main;
+import main.PlotRemainingPathsInGraph;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import queries.sql.v1.QueryGenerationConf;
-import queries.sql.v1.QueryCollection;
 import queries.sql.v1.SelectFromWhere;
-import queries.sql.v1.SetOperations;
 import types.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class provides an empty implementation of {@link schemaListener},
@@ -656,10 +653,10 @@ public class RuleListener implements schemaListener {
         }
     }
 
-    public static String underP = Main.isLatex ? "\\_p" : "_p";
-	public static String underPT = Main.isLatex ? "\\_p\\_t" : "_p_t";
-	public static String under = Main.isLatex ? "\\_" : "_";
-	public static String underT = Main.isLatex ? "\\_t" : "_t";
+    public static String underP = PlotRemainingPathsInGraph.isLatex ? "\\_p" : "_p";
+	public static String underPT = PlotRemainingPathsInGraph.isLatex ? "\\_p\\_t" : "_p_t";
+	public static String under = PlotRemainingPathsInGraph.isLatex ? "\\_" : "_";
+	public static String underT = PlotRemainingPathsInGraph.isLatex ? "\\_t" : "_t";
 
 
 	/**

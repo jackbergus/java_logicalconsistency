@@ -2,10 +2,8 @@ package org.ufl.aida.ldc.dbloader.tmptables;
 
 import org.ufl.aida.ldc.dbloader.MapIterator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 public abstract class SourceTabLoader {
@@ -39,7 +37,7 @@ public abstract class SourceTabLoader {
      * @throws IOException  The file is not present
      */
     public static <T extends SourceTabLoader> Iterator<T> loadFromFolder(final T self, File parentFolder) throws IOException {
-        final BufferedReader br = new BufferedReader(new FileReader(self.getFile(parentFolder)));
+        final BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(parentFolder), StandardCharsets.UTF_8));
 
         // Removing the header;
         br.readLine();
