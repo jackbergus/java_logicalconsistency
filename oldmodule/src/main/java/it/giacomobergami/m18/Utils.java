@@ -7,12 +7,15 @@ import com.google.common.collect.HashMultimap;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.RecordMapper;
 import org.jooq.impl.DSL;
 import org.jooq.util.postgres.PostgresDSL;
 import org.postgresql.util.PGobject;
 import org.ufl.aida.ta2.Tables;
+import org.ufl.aida.ta2.tables.Expansions;
 import org.ufl.aida.ta2.tables.pojos.Tuples;
 import org.ufl.aida.ta2.tables.pojos.Tuples2;
+import org.ufl.aida.ta2.tables.records.ExpansionsRecord;
 import org.ufl.aida.ta2.tables.records.Tuples2Record;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
@@ -52,7 +55,7 @@ public class Utils {
         return jooq.selectFrom(Tables.TUPLES2).where(isContainedBy(Tables.TUPLES2.CONSTITUENT, id)).fetchInto(Tuples2.class);
     }
 
-    public static List<AgileRecord> fetchAgileRecordsByExpansionId(DSLContext jooq, String[] id) {
+    public static List<AgileRecord> fetchAgileRecordsByTuples2Id(DSLContext jooq, String[] id) {
         return jooq.selectFrom(Tables.TUPLES2).where(isContainedBy(Tables.TUPLES2.CONSTITUENT, id))
                 .stream()
                 .map(Utils::asAgileRecord)

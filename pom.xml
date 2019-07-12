@@ -24,7 +24,20 @@
         <module>oldmodule</module>
         <module>expansion</module>
     </modules>
-
+    <dependencies>
+        <dependency>
+            <groupId>it.giacomobergami</groupId>
+            <artifactId>expansion</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>it.giacomobergami</groupId>
+            <artifactId>oldmodule</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 
 </project>

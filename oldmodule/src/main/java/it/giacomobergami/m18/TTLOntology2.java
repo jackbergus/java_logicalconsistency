@@ -45,6 +45,7 @@ public class TTLOntology2 {
     private HashMap<String, TypeSubtype> typeResolve;
     private HashMultimap<String, TypeSubtype> labelAcceptedArgumentResolve;
     private Set<String> entityOrFillers;
+    private Set<String> eventOrRelationship;
     DiGraph<String> top_down_hierarchy;
 
     public TTLOntology2(String url) {
@@ -52,6 +53,7 @@ public class TTLOntology2 {
         ldcToNist_map = new HashMap<>();
         nistToLDC_map = new HashMap<>();
         typeResolve = new HashMap<>();
+        eventOrRelationship = new HashSet<>();
         labelAcceptedArgumentResolve = HashMultimap.create();
         entityOrFillers = new HashSet<>();
         self = new Ontology();
@@ -129,6 +131,8 @@ public class TTLOntology2 {
                 for (TypeSubtype ts : s.hasTypes) {
                     if (isEntityOrFiller) {
                         entityOrFillers.add(ts.nistName);
+                    } else {
+                        eventOrRelationship.add(ts.nistName);
                     }
                     addType(ts.nistName, ts);
                     addType(s.name, ts);
@@ -243,6 +247,10 @@ public class TTLOntology2 {
         return ldcType;
     }
 
+    public boolean isAllowedEventRel(String x) {
+        return eventOrRelationship.contains(x);
+    }
+
     public Set<String> getEntityOrFillers() {
         return entityOrFillers;
     }
@@ -268,9 +276,9 @@ public class TTLOntology2 {
     public static void main(String args[]) throws IOException {
         TTLOntology2 fringes = new TTLOntology2("data/SeedlingOntology2.ttl");
         //System.out.println(fringes.resolveNISTTypes("ORG"));
-        printSchema(fringes.self.relation);
+        printSchema(fringes.self.entity);
         System.out.println();
-        printSchema(fringes.self.event);
+        printSchema(fringes.self.filler);
         // TODO: move to a dedicated method. Creating a union hierarchy for all those concepts.
         //fringes.extractHierarchy(true);
     }

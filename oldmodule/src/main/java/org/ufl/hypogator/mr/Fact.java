@@ -208,7 +208,7 @@ public class Fact extends SourceTabLoader {
             this.argumentBadlyTranslatedString  = "";
         }
         if (fields.length >= 15) {
-            this.argumentRawString = argumentRawString + "|" + fields[14].replaceAll("\\|#SEP#\\|", "|");
+            this.argumentRawString = (!argumentRawString.isEmpty() ? argumentRawString + "|" : "") + fields[14].replaceAll("\\|#SEP#\\|", "|");
         }
         try {
             this.isNegated = fields[15].toLowerCase().startsWith("t");

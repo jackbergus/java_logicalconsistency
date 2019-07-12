@@ -1,7 +1,9 @@
 package org.ufl.hypogator.jackb.inconsistency;
 
 import com.google.common.collect.HashMultimap;
+import it.giacomobergami.m18.TTLOntology2;
 import javafx.util.Pair;
+import org.ufl.hypogator.jackb.m9.endm9.HypoAnalyse;
 import org.ufl.hypogator.jackb.ontology.TtlOntology;
 import org.ufl.hypogator.jackb.ontology.data.TypedValue;
 
@@ -35,6 +37,17 @@ public class AgileRecord {
         } else {
             this.allowedIdsPerField = null;
         }
+    }
+
+    public void updateWithSelectedArguments(Collection<String> allowedArguments) {
+        HashMultimap<String, AgileField> fields = HashMultimap.create();
+        fieldList.entries().forEach(x -> {
+            if (allowedArguments.contains(x.getValue().mid)) {
+                x.getValue().fieldString = HypoAnalyse.longestRepeatedSubstring(x.getValue().fieldString);
+                fields.put(x.getKey(), x.getValue());
+            }
+        });
+        fieldList = fields;
     }
 
     public AgileRecord(String nistType) {
@@ -117,10 +130,27 @@ public class AgileRecord {
         double count = 0;
         for (int i = 0, n = size(); i<n; i++) {
             for (AgileField field : ith(i)) {
+
                 if (!ontology.isTypeAllowedInField(this.nistType, field)) {
                     count++;
                     // System.out.println("Mention Id " + tupleId + " of type = " + this.nistType + ", wrong field= "+field);
                     //System.out.println(this.nistType + " =/> "+field);
+                }
+            }
+        }
+        return count == 0 ? 0 : 1.0/(count);
+    }
+
+    public double getDegreeTypeInconsistency(TTLOntology2 ontology) {
+        double count = 0;
+        if (ontology.isAllowedEventRel(this.nistType)) {
+            for (int i = 0, n = size(); i < n; i++) {
+                for (AgileField field : ith(i)) {
+                    if (!ontology.isTypeAllowedInField(this.nistType, field)) {
+                        count++;
+                        // System.out.println("Mention Id " + tupleId + " of type = " + this.nistType + ", wrong field= "+field);
+                        //System.out.println(this.nistType + " =/> "+field);
+                    }
                 }
             }
         }

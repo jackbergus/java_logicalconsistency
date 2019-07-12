@@ -19,8 +19,8 @@
  *
  */
 
-package org.ufl.hypogator.jackb.main;/*
- * org.ufl.hypogator.jackb.main.JsonServer.java
+package it.giacomobergami.m18;/*
+ * it.giacomobergami.m18.JsonServer.java
  * This file is part of aida_scraper
  *
  * Copyright (C) 2018 giacomo

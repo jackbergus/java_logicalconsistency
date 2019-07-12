@@ -1,14 +1,15 @@
 package it.giacomobergami.m18;
 
 
-import cc.mallet.types.StringKernel;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import it.giacomobergami.m18.concrete.Baseline3;
 import it.giacomobergami.m18.schemas.LoadSchemas;
 import org.jooq.DSLContext;
 import org.jooq.InsertValuesStepN;
 import org.jooq.RecordMapper;
+import org.jooq.SelectConditionStep;
 import org.jooq.impl.DSL;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 import org.ufl.aida.ta2.tables.Expansions;
@@ -68,7 +69,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
 
         // TODO: create the expansions table if does not exist already
 
-        HashSet<String> variadicArguments = LoadSchemas.variadicArguments();
+        /*HashSet<String> variadicArguments = LoadSchemas.variadicArguments();
 
         // Reloading the configuration file properties
         StaticDatabaseClass.loadProperties();
@@ -80,6 +81,56 @@ public class ConversionForExpansion extends StaticDatabaseClass {
                 .selectFrom(Tuples2.TUPLES2)
                 // Not considering for the expansion all the elements that
                 .where(DSL.field("array_upper((array_agg),1)").ge(0))
+                .fetch((RecordMapper<Tuples2Record, Optional<InsertValuesStepN<?>>>) tuples2Record -> {
+                    // Getting the associated type
+                    String type = tuples2Record.getNisttype();
+                    Optional<Schema> associatedSchema = LoadSchemas.getSchemaDefinition(type);
+
+                    if (!associatedSchema.isPresent()) {
+                        System.err.println("ERROR: no schema associated to " + type);
+                        System.exit(1);
+                        // Ignoring the current record if it has a wrong type description
+                        return Optional.empty();
+                    }
+
+                    AgileRecord ar = Utils.asAgileRecord(tuples2Record);
+                    if (ar == null) return null;
+                    //AgileRecord ar = tup.asAgileRecord(type);
+
+                    if (ar.schema.isEmpty()) {
+                        // Ignoring the current record (do not expand it) if it has no relevant arguments to expand
+                        return Optional.empty();
+                    }
+                    InsertValuesStepN<?> arg = convertAgileRecordToDatabaseInsertion(variadicArguments, opt, tuples2Record, type, associatedSchema.get(), ar);
+                    return Optional.of(arg);
+                }).iterator();
+
+        batchInsertion(opt.jooq(), it, 100);
+
+        // End
+        opt.close();*/
+        expand(dbName, null);
+    }
+
+    public static void expand(java.lang.String dbName, java.lang.String[] idList) throws Exception {
+        HashSet<java.lang.String> variadicArguments = LoadSchemas.variadicArguments();
+
+        // Reloading the configuration file properties
+        StaticDatabaseClass.loadProperties();
+
+        // Loading the relational database
+        Database opt = Database.openOrCreate(StaticDatabaseClass.engine, dbName, StaticDatabaseClass.username, StaticDatabaseClass.password).get();
+
+        SelectConditionStep<Tuples2Record> untilWhere = opt.jooq()
+                .selectFrom(Tuples2.TUPLES2)
+                // Not considering for the expansion all the elements that
+                .where(DSL.field("array_upper((array_agg),1)").ge(0));
+
+        if (idList != null && idList.length != 0) {
+            untilWhere = untilWhere.and(Tuples2.TUPLES2.MID.eq(DSL.any(idList)));
+        }
+
+        Iterator<Optional<InsertValuesStepN<?>>> it = untilWhere
                 .fetch((RecordMapper<Tuples2Record, Optional<InsertValuesStepN<?>>>) tuples2Record -> {
                     // Getting the associated type
                     String type = tuples2Record.getNisttype();
@@ -235,7 +286,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
         BitMap hedged = BitMap.fromString(expansionsRecord.getBitmapHed());
         BitMap negate = BitMap.fromString(expansionsRecord.getBitmapNeg());
         String[] possibleRecordId = expansionsRecord.getEid();
-        List<AgileRecord> possibleAssociatedRecords = Utils.fetchAgileRecordsByExpansionId(jooq, possibleRecordId);
+        List<AgileRecord> possibleAssociatedRecords = Baseline3.fetchAgileRecordsByExpansionId(jooq, possibleRecordId);
 
         List<List<String>> toScanOver = Arrays.asList(reconstructList(expansionsRecord.getArg1()), reconstructList(expansionsRecord.getArg2()), reconstructList(expansionsRecord.getArg3()), reconstructList(expansionsRecord.getArg4()), reconstructList(expansionsRecord.getArg5()), reconstructList(expansionsRecord.getArg6()), reconstructList(expansionsRecord.getArg7()));
         AgileRecord ar = new AgileRecord(typeEvent);
