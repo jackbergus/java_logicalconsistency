@@ -101,26 +101,10 @@ public class GraphDissectPaths {
 
             // 3) Getting all the paths from the starting nodes towards the ending nodes, but avoiding other intermediate cycle nodes
             generateShortestPaths(cycleNodes, graph, startingPoints, endingNodes, pathDirecltyTerminal);
-            removeEdges(pathFromCyclesToEnding, graph);
+            removeEdges(pathDirecltyTerminal, graph);
 
             // 4) Temporairly removing all the nodes that have no more connected edges
-            Set<String> toBeremovedNodes = new HashSet<>();
-            for (String vertex : graph.vertexSet()) {
-                if (vertex.equals("126"))
-                    System.err.println("DEBUG");
-                if (graph.degreeOf(vertex) == 0) {
-                    toBeremovedNodes.add(vertex);
-                }
-            }
-            toBeremovedNodes.forEach(graph::removeVertex);
-            endingNodes.removeAll(toBeremovedNodes);
-            startingPoints.removeAll(toBeremovedNodes);
-            remainingNodes.removeAll(toBeremovedNodes);
-            cycleNodes.removeAll(toBeremovedNodes);
-            endingNodes.retainAll(graph.vertexSet());
-            startingPoints.retainAll(graph.vertexSet());
-            remainingNodes.retainAll(graph.vertexSet());
-            cycleNodes.retainAll(graph.vertexSet());
+            clearEmptyNodes();
 
             // 5) Now, getting all the fegatelli
             // a. edges among remaining loop nodes
@@ -144,8 +128,28 @@ public class GraphDissectPaths {
             removeEdges(fegatelli, graph);
             removeEdges(pathFromCyclesToEnding, graph);
 
+            // 4) Temporairly removing all the nodes that have no more connected edges
+            clearEmptyNodes();
         } while (graphSizeVPrev != graph.vertexSet().size() && graphSizeEPrev != graph.edgeSet().size());
 
 
+    }
+
+    private void clearEmptyNodes() {
+        Set<String> toBeremovedNodes = new HashSet<>();
+        for (String vertex : graph.vertexSet()) {
+            if (graph.degreeOf(vertex) == 0) {
+                toBeremovedNodes.add(vertex);
+            }
+        }
+        toBeremovedNodes.forEach(graph::removeVertex);
+        endingNodes.removeAll(toBeremovedNodes);
+        startingPoints.removeAll(toBeremovedNodes);
+        remainingNodes.removeAll(toBeremovedNodes);
+        cycleNodes.removeAll(toBeremovedNodes);
+        endingNodes.retainAll(graph.vertexSet());
+        startingPoints.retainAll(graph.vertexSet());
+        remainingNodes.retainAll(graph.vertexSet());
+        cycleNodes.retainAll(graph.vertexSet());
     }
 }

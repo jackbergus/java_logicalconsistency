@@ -253,7 +253,7 @@ public class DependencyGraph {
         System.out.println("INFO: Generating all the paths going directly from the beginning to the terminal nodes, and not passing through the cycleNodes");
 
         //generateShortestPaths(cycleNodes, graph, startingNodes, endingNodes, pathFromCyclesToEnding);
-        GraphDissectPaths algorithm = new GraphDissectPaths(startingPoints, cycleNodes, endingNodes, remainingNodes, graph);
+        GraphDissectPaths algorithm = new GraphDissectPaths(startingNodes, cycleNodes, endingNodes, remainingNodes, graph);
         algorithm.invoke();
         this.pathFromCyclesToEnding = algorithm.pathFromCyclesToEnding;
         this.pathFromStartingToCycles = algorithm.pathFromStartingToCycles;

@@ -161,6 +161,7 @@ public class Baseline3 extends SimplePostRequest {
 
         // Creating the table, before loading the results
         opt.rawSqlStatement(new File("sql/TA401_create_expansions_table.sql"));
+        opt.rawSqlStatement(new File("sql/TA402_create_table_constraint.sql"));
 
         // Performing the expansions over these ids for all the hypotheses
         // 1. Loading the elements to the expansion module
