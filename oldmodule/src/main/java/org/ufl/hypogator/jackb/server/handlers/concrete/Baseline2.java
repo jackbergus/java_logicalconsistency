@@ -102,7 +102,6 @@ public class Baseline2 extends SimplePostRequest {
                                         e.printStackTrace();
                                     }
                                 }
-                                System.out.println(tup);
                                 up.put(t.getNisttype(), tup);
                             }
                         }
@@ -133,6 +132,7 @@ public class Baseline2 extends SimplePostRequest {
                         //boolean incoDetected = false;
                         for (SQLTuples tup : te.getValue()) {
                             AgileRecord rec = tup.asAgileRecord(type, associatedFieldsToER.get(tup.tupleId));
+                            System.out.println(rec);
                             double x = rec.getDegreeTypeInconsistency(fringes, tup.tupleId);
                             if (x > 0) {
                                 typeInconsistencyScore += x;

@@ -25,7 +25,6 @@ import algos.ConformityCheck;
 import algos.CopyConstructor;
 import algos.Substitutable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import main.PlotRemainingPathsInGraph;
 import ref.schemaParser;
 
 import java.util.*;
@@ -49,7 +48,7 @@ public class Clause implements Substitutable<String>, ConformityCheck, CopyConst
             sb.append(x.toString()).append(" ");
         }
         if (isNegated)
-            sb.append(PlotRemainingPathsInGraph.isLatex ? " \\neg " : "¬");
+            sb.append(ref.RuleListener.isLatex ? " \\neg " : "¬");
         sb.append(prop.toString());
         return sb.toString();
     }

@@ -24,7 +24,6 @@ package types;
 import algos.CopyConstructor;
 import algos.Substitutable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import main.PlotRemainingPathsInGraph;
 import ref.schemaParser;
 
 import java.util.Collections;
@@ -44,16 +43,16 @@ public class Predicate implements CopyConstructor<Predicate>, Substitutable<Stri
     @Override
     public String toString() {
         if (mustNotNull) {
-            return varName+(PlotRemainingPathsInGraph.isLatex ? " \\neq\\texttt{NULL} " : " notnull");
+            return varName+(ref.RuleListener.isLatex ? " \\neq\\texttt{NULL} " : " notnull");
         } else {
             StringBuilder sb = new StringBuilder();
             if (lowerBoundVarName != null) {
                 sb.append(lowerBoundVarName);
-                sb.append(lowerBoundInclusive ? (PlotRemainingPathsInGraph.isLatex ? " \\leq " : "<=") : "<");
+                sb.append(lowerBoundInclusive ? (ref.RuleListener.isLatex ? " \\leq " : "<=") : "<");
             }
             sb.append(varName);
             if (upperBoundVarName != null) {
-                sb.append(upperBoundInclusive ? (PlotRemainingPathsInGraph.isLatex ? " \\leq " : "<=") : "<");
+                sb.append(upperBoundInclusive ? (ref.RuleListener.isLatex ? " \\leq " : "<=") : "<");
                 sb.append(upperBoundVarName);
             }
             return sb.toString();
