@@ -240,7 +240,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
         BitMap hedged = BitMap.fromString(expansionsRecord.getBitmapHed());
         BitMap negate = BitMap.fromString(expansionsRecord.getBitmapNeg());
         String[] possibleRecordId = expansionsRecord.getEid();
-        List<AgileRecord> possibleAssociatedRecords = Baseline3.fetchAgileRecordsByExpansionId(jooq, possibleRecordId);
+        List<AgileRecord> possibleAssociatedRecords = Utils.fetchAgileRecordsByTuples2Id(jooq, possibleRecordId);
 
         List<List<String>> toScanOver = Arrays.asList(reconstructList(expansionsRecord.getArg1()), reconstructList(expansionsRecord.getArg2()), reconstructList(expansionsRecord.getArg3()), reconstructList(expansionsRecord.getArg4()), reconstructList(expansionsRecord.getArg5()), reconstructList(expansionsRecord.getArg6()), reconstructList(expansionsRecord.getArg7()));
         AgileRecord ar = new AgileRecord(typeEvent);
