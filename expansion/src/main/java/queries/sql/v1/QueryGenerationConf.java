@@ -18,7 +18,7 @@
  * along with KnowledgeBaseExpansion. If not, see <http://www.gnu.org/licenses/>.
  */
 
- 
+
 package queries.sql.v1;
 
 import algos.Substitute;
@@ -101,6 +101,24 @@ public class QueryGenerationConf {
                 String current_step = component.next();
                 while (component.hasNext()) {
                     current_step = "array_intersect("+current_step+", "+component.next()+")";
+                }
+                return current_step;
+            }
+        }
+    }
+
+    public static String union_elements(Collection<String> elements) {
+        if (elements.isEmpty())
+            return "";
+        else {
+            int n = elements.size();
+            if (n == 1) {
+                return elements.iterator().next();
+            } else {
+                Iterator<String> component = elements.iterator();
+                String current_step = component.next();
+                while (component.hasNext()) {
+                    current_step = "array_union("+current_step+", "+component.next()+")";
                 }
                 return current_step;
             }
@@ -230,17 +248,23 @@ public class QueryGenerationConf {
         for (List<CompPair<String, Integer>> ls : map.values()) {
             //int N = ls.size();
             //if (N >= 2) {
-                List<CompPair<String, Integer>> toJoin = new ArrayList<>(ls);
-                List<CompPair<String, Integer>> inSelect = ls.stream().filter(x -> x.key.equals(r.head.get(0).prop.relName)).collect(Collectors.toList());
-                toJoin.removeAll(inSelect);
+            List<CompPair<String, Integer>> toJoin = new ArrayList<>(ls);
+            List<CompPair<String, Integer>> inSelect = ls.stream().filter(x -> x.key.equals(r.head.get(0).prop.relName)).collect(Collectors.toList());
+            toJoin.removeAll(inSelect);
             if (!inSelect.isEmpty()) {
                 toJoin.add(inSelect.get(0));
             }
 
-                CompPair<String, Integer> getSelectElementRaw = toJoin.get(0);
-                CompPair<String, String> getSelectArgument = getJoinConditionForSQL(getSelectElementRaw);
-                CompPair<String, String> getSelectType = getArgTypeForSQL(getSelectElementRaw);
-                HashMultimap<String, String> hmm2 = HashMultimap.create();
+            CompPair<String, Integer> getSelectElementRaw = null;
+            try {
+                getSelectElementRaw = toJoin.get(0);
+            } catch (RuntimeException re) {
+                System.out.println(r);
+                re.printStackTrace();
+            }
+            CompPair<String, String> getSelectArgument = getJoinConditionForSQL(getSelectElementRaw);
+            CompPair<String, String> getSelectType = getArgTypeForSQL(getSelectElementRaw);
+            HashMultimap<String, String> hmm2 = HashMultimap.create();
 
             int N = toJoin.size();
             for (int i = 0; i < N-1; i++) {
@@ -257,17 +281,17 @@ public class QueryGenerationConf {
                 }
             }
 
-                for (CompPair<String, Integer> getSelectPosition : inSelect) {
-                    resultMapForNullCheck.put(getSelectPosition.val, getTableName(getSelectArgument.key) + "." + getSelectArgument.val);
-                    String toArg = getTableName(getSelectArgument.key) + "." + getSelectArgument.val;
-                    toArg = intersect_elements(hmm2.get(toArg));
-                    selectionMap.put(getArgumentName(getSelectPosition.val), toArg);
-                    //selectionMap.put(getArgumentType(getSelectPosition.val), getTableName(getSelectType.key) + "." + getSelectType.val);
-                }
+            for (CompPair<String, Integer> getSelectPosition : inSelect) {
+                resultMapForNullCheck.put(getSelectPosition.val, getTableName(getSelectArgument.key) + "." + getSelectArgument.val);
+                String toArg = getTableName(getSelectArgument.key) + "." + getSelectArgument.val;
+                toArg = intersect_elements(hmm2.get(toArg));
+                selectionMap.put(getArgumentName(getSelectPosition.val), toArg);
+                //selectionMap.put(getArgumentType(getSelectPosition.val), getTableName(getSelectType.key) + "." + getSelectType.val);
+            }
 
-                //if (N>2) {
+            //if (N>2) {
 
-                //}
+            //}
             //}
 
         }
@@ -295,10 +319,10 @@ public class QueryGenerationConf {
 
 
         return new SelectFromWhere(selectionMap,
-                                   fromTables,
-                                    tableRenamings,
-                                   wjcLsAND, selectSpecificERTypes, notNullMaps, negatedMaps,
-                    0);
+                fromTables,
+                tableRenamings,
+                wjcLsAND, selectSpecificERTypes, notNullMaps, negatedMaps,
+                0);
     }
 
     Substitute<String, Clause> cl = new Substitute<>(null);

@@ -17,6 +17,7 @@ import java.io.Reader;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.ToIntFunction;
 
 public class RunQuery {
 
@@ -67,7 +68,7 @@ public class RunQuery {
      * @return
      */
     public String returnAssociatedQuery(Integer nodeId) {
-        SelectFromWhere compiledQuery = qgc.compileQuery(classListener.idToRuleTab.get(nodeId));
+        SelectFromWhere compiledQuery = dependencyGraph.mappa.get(nodeId);
         return compiledQuery.transformFromLegacy().toString(classListener.ruleTabClassification4DB.get(nodeId).keySet().stream().map(classListener.ruleToResolvedPredicates::get));
     }
 
@@ -84,6 +85,10 @@ public class RunQuery {
                 "\non conflict (eid,type_event,weight,arg1,arg2,arg3,arg4,arg5,arg6,arg7,bitmap_null,bitmap_neg,bitmap_hed) do nothing";
         int numberOfUpdates = 0;
         int numberOfIterations = -1;
+        if (query.contains("t1.null")) {
+            returnAssociatedQuery(nodeId);
+            System.err.println("DEBUG");
+        }
         do {
             numberOfUpdates = db.rawSqlUpdate(query);
             numberOfIterations++;
@@ -110,11 +115,23 @@ public class RunQuery {
      * @return              Returns zero if all the paths had no success, and else non-zero value
      */
     int runMultiplePaths(Database db, Set<List<String>> lsOfList) {
-        return lsOfList.stream().mapToInt(x -> runQueryPath(db, x)).sum();
+        return lsOfList.stream().mapToInt(new ToIntFunction<List<String>>() {
+            int i = 0;
+            @Override
+            public int applyAsInt(List<String> x) {
+                System.out.println(i++);
+                return RunQuery.this.runQueryPath(db, x);
+            }
+        }).sum();
     }
 
+
+    GraphDissectPaths paths = null;
+
     public void doExpansion(Database db) {
-        GraphDissectPaths paths = dependencyGraph.generatePathsForExpansionModule();
+        if (paths == null) {
+            paths = dependencyGraph.generatePathsForExpansionModule();
+        }
 
         // First, run the rules directly pointing to the cycles
         runMultiplePaths(db, paths.pathFromStartingToCycles);

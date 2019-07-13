@@ -95,6 +95,16 @@ public class LoadFact extends StaticDatabaseClass {
                 "        SELECT UNNEST($2)\n" +
                 "    );\n" +
                 "$FUNCTION$;");
+        database.rawSqlStatement("CREATE FUNCTION array_union(anyarray, anyarray)\n" +
+                "  RETURNS anyarray\n" +
+                "  language sql\n" +
+                "as $FUNCTION$\n" +
+                "    SELECT ARRAY(\n" +
+                "        SELECT UNNEST($1)\n" +
+                "        UNION\n" +
+                "        SELECT UNNEST($2)\n" +
+                "    );\n" +
+                "$FUNCTION$;");
 
         /*if (true) {
             // associating to each clusterId the element that has more occurences. Therefore, we're going to

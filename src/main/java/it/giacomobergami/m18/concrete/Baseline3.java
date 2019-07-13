@@ -108,8 +108,6 @@ public class Baseline3 extends SimplePostRequest {
         Hypotheses.Subgraph[] subgraphs = cls.subgraphs;
         ArrayList<Hypotheses.Subgraph.Hypothesis_scorer.Subgraph_plus_neighbor[]> lis = new ArrayList<>();
         for (int i = 0, subgraphsLength = subgraphs.length; i < subgraphsLength; i++) {
-            System.gc();
-            //
             Hypotheses.Subgraph s = subgraphs[i];
             //System.out.println(i+" "+Arrays.toString(subgraphs[i].scorers));
             Hypotheses.Subgraph.Hypothesis_scorer[] hypothesis_scorers = s.hypothesis_scorers;

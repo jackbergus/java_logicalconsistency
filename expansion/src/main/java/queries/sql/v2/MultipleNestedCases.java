@@ -21,6 +21,7 @@ public class MultipleNestedCases {
     private final  List<WhereJoinCondition> clauseJoins;
     private final  CasusuCikti cc;
     private final  List<String> tablesWithRenaming;
+    Properties properties = new Properties();
 
 
     public MultipleNestedCases(HashMap<String, String> selectionMap,
@@ -36,6 +37,11 @@ public class MultipleNestedCases {
         this.negatedMaps = negatedMaps;
         this.cc = new CasusuCikti(selectSpecificERTypes, new ArrayList<HashMap<String, String>>(){{add(selectionMap);}}, tableRenamings);
         this.generateIfNotExists = generateIfNotExists;
+        try {
+            properties.load(new FileReader("query_generation.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*
@@ -55,36 +61,28 @@ public class MultipleNestedCases {
     }*/
 
     public String toString(Stream<HashMap<String, String>> shm) {
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileReader("query_generation.properties"));
-            StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
+        // Starting the inner E table, providing the rewriting rules.
+        sb.append("SELECT CASE\n");
+        // Getting all the cases from the stream
+        shm.forEach(map -> sb.append(cc.toStringBuilder(map)));
+        sb
+                // If none of the cases is matched, provide no expansion
+                .append("\t\tELSE ARRAY[]::json[]\n")
+                // Closing all the cases, and creating the one element
+                .append("\tEND AS ").append(properties.getProperty("array_of_jsonarray_fieldname"));
 
-            // Starting the inner E table, providing the rewriting rules.
-            sb.append("SELECT CASE\n");
-            // Getting all the cases from the stream
-            shm.forEach(map -> sb.append(cc.toStringBuilder(map)));
-            sb
-                    // If none of the cases is matched, provide no expansion
-                    .append("\t\tELSE ARRAY[]::json[]\n")
-                    // Closing all the cases, and creating the one element
-                    .append("\tEND AS ").append(properties.getProperty("array_of_jsonarray_fieldname"));
+        // Getting all the tables to be joined
+        sb.append("\nFROM ").append(String.join(",", tablesWithRenaming));
+        // Getting the actual join conditions
 
-            // Getting all the tables to be joined
-            sb.append("\nFROM ").append(String.join(",", tablesWithRenaming));
-            // Getting the actual join conditions
-
-            List<String> whereJoinAndConditions = SqlUtils.getWhereJoinAndConditions(properties, notNullMaps, negatedMaps, clauseJoins, generateIfNotExists);
-            if (!whereJoinAndConditions.isEmpty()) {
-                sb.append("\nWHERE ").append(String.join("\n\t  AND ", whereJoinAndConditions));
-            }
-
-            return SqlUtils.globalV2(sb);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+        List<String> whereJoinAndConditions = SqlUtils.getWhereJoinAndConditions(properties, notNullMaps, negatedMaps, clauseJoins, generateIfNotExists);
+        if (!whereJoinAndConditions.isEmpty()) {
+            sb.append("\nWHERE ").append(String.join("\n\t  AND ", whereJoinAndConditions));
         }
+
+        return SqlUtils.globalV2(sb);
     }
 
 

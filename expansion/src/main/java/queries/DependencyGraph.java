@@ -90,11 +90,12 @@ public class DependencyGraph {
     Set<String> remainingNodes = new HashSet<>();
     private Set<List<String>> fegatelli;
 
-    public DependencyGraph(RuleListener l, QueryGenerationConf qgc) throws IOException {
+    public DependencyGraph(RuleListener l, QueryGenerationConf qgc) {
         this.l = l;
         this.qgc = qgc;
-        generatePathsForExpansionModule();
     }
+
+    public HashMap<Integer, SelectFromWhere> mappa;
 
     public GraphDissectPaths generatePathsForExpansionModule() {
         System.err.println("INFO -  Creating the graph");
@@ -104,10 +105,12 @@ public class DependencyGraph {
 
         // Creating the map for all the high-level rule connected to the element
         Map<Integer, Pair<Set<String>, Set<String>>> map = new HashMap<>();
+        mappa = new HashMap<>();
 
         l.ruleTabClassification4DB.forEach((key, value) -> {
             SelectFromWhere compiledQuery = qgc.compileQuery(l.idToRuleTab.get(key));
             if (compiledQuery != null) {
+                mappa.put(key, compiledQuery);
                 createHyperedge(key, value, map);
                 remainingNodes.add(key.toString());
                 graph.addVertex(key.toString());
@@ -328,8 +331,8 @@ public class DependencyGraph {
         }
 
         for (List<String> x : pathFromStartingToCycles) {
-            System.out.println("PathsBefore");
-            System.out.println(x);
+            //System.out.println("PathsBefore");
+            //System.out.println(x);
             for (int i = 0, N = x.size(); i < N - 1; i++) {
                 Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
                 org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst);
@@ -338,8 +341,8 @@ public class DependencyGraph {
         }
 
         for (List<String> x : pathDirectlyTerminal) {
-            System.out.println("PathsBefore");
-            System.out.println(x);
+            //System.out.println("PathsBefore");
+            //System.out.println(x);
             for (int i = 0, N = x.size(); i < N - 1; i++) {
                 Edge e = this.graph.getEdge(x.get(i), x.get(i + 1));
                 org.graphstream.graph.Edge ep = graph.getEdge(e.src + "_" + e.dst);

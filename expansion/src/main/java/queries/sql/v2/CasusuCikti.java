@@ -1,5 +1,6 @@
 package queries.sql.v2;
 
+import queries.sql.v1.QueryGenerationConf;
 import queries.sql.v1.WhereEqValueCondition;
 
 import java.io.FileReader;
@@ -73,7 +74,7 @@ public class CasusuCikti {
 
             // Overwriting the arguments with specific needs:
             // 1) provenance information
-            toReturn.set(0, tableRenamings.stream().map(x -> x+".eid").collect(Collectors.joining(" || ")));
+            toReturn.set(0, QueryGenerationConf.union_elements(tableRenamings.stream().map(x -> x+".eid").collect(Collectors.toSet())));
             // 2) weight as the conjunction of all the elements that were combined
             toReturn.set(2, tableRenamings.stream().map(x -> x+".weight").collect(Collectors.joining(" * ")));
             //map2.put(retType, "'"+map.get(newType)+"'");

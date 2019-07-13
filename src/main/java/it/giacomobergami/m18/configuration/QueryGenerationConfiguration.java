@@ -19,6 +19,7 @@ public class QueryGenerationConfiguration {
     private RunQuery expansionRunner;
 
     private QueryGenerationConfiguration(FileReader propertiesFile) throws IOException {
+        properties = new Properties();
         properties.load(propertiesFile);
 
         System.err.println("Loading the ontology file");
