@@ -16,12 +16,12 @@ event OrganizationAffiliation.Founder.Founder(Organization,Founder);
 event PersonalSocial.Unspecified(Person);
 event PersonalSocial.Unspecified.Political(Person);
 
-relation be  (val,place,time);
+relation be  (val,Place,Time);
 
 relation owned (subtype, suptype, time);
     rule owned(subtype, suptype, time) owned(suptype, supsuptype, time) with subtype notnull suptype notnull supsuptype notnull => owned(subtype, supsuptype, time);
 
-/*relation beB (val,place,time);
+/*relation beB (val,Place,Time);
 	rule beB (val,place,time) => be (val,place,time);
 
 relation beC (val,place,time);

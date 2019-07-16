@@ -71,7 +71,7 @@ public class LoadFact extends StaticDatabaseClass {
 
         Double d;
         if (true) {
-            database.rawSqlCommand("DROP TABLE IF EXISTS fact");
+            database.rawSqlCommand("DROP TABLE IF EXISTS fact CASCADE");
             // Loading the ta2 database as a table of rows
             System.out.println("Generating the tables and loading the data");
             d = new Benchmark<Object, Object>() {

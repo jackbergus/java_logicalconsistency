@@ -3,8 +3,12 @@ package it.giacomobergami.m18.concrete;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.github.jsonldjava.utils.Obj;
 import com.google.common.collect.HashMultimap;
-import com.google.gson.Gson;
+import com.google.common.collect.Multimap;
+import com.google.common.reflect.TypeParameter;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.*;
 import it.giacomobergami.m18.ConversionForExpansion;
 import it.giacomobergami.m18.TTLOntology2;
 import it.giacomobergami.m18.configuration.QueryGenerationConfiguration;
@@ -27,6 +31,8 @@ import org.ufl.hypogator.jackb.server.handlers.abstracts.SimplePostRequest;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import static it.giacomobergami.m18.Utils.isContainedBy;
@@ -37,7 +43,9 @@ import static org.ufl.hypogator.jackb.m9.endm9.HypoAnalyse.longestRepeatedSubstr
  */
 public class Baseline3 extends SimplePostRequest {
 
-    public static Gson jsonSerializer = new Gson();
+    final static MultimapAdapter multimapAdapter = new MultimapAdapter();
+    final static Type type = new TypeToken<HashMultimap<String, Obj>>() {}.getType();
+    public static Gson jsonSerializer = new GsonBuilder().registerTypeAdapter(HashMultimap.class, multimapAdapter).create();
     private static QueryGenerationConfiguration qgc = QueryGenerationConfiguration.getInstance();
     static ObjectReader reader = new ObjectMapper().readerFor(new TypeReference<AgileField>() {});
 
@@ -45,6 +53,33 @@ public class Baseline3 extends SimplePostRequest {
         return jooq.selectFrom(Expansions.EXPANSIONS)
                 .where(isContainedBy(Expansions.EXPANSIONS.EID, id))
                 .fetch(expansionsRecord -> ConversionForExpansion.reconstructRecordFromExpansions(jooq, expansionsRecord));
+    }
+
+    static class MultimapAdapter implements JsonDeserializer<Multimap<String, ?>>, JsonSerializer<Multimap<String, ?>> {
+        @Override public Multimap<String, ?> deserialize(JsonElement json, Type type,
+                                                         JsonDeserializationContext context) throws JsonParseException {
+            final HashMultimap<String, Object> result = HashMultimap.create();
+            final Map<String, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
+            for (final Map.Entry<String, ?> e : map.entrySet()) {
+                final Collection<?> value = (Collection<?>) e.getValue();
+                result.putAll(e.getKey(), value);
+            }
+            return result;
+        }
+
+        @Override public JsonElement serialize(Multimap<String, ?> src, Type type, JsonSerializationContext context) {
+            final Map<?, ?> map = src.asMap();
+            return context.serialize(map);
+        }
+
+        private <V> Type multimapTypeToMapType(Type type) {
+            final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
+            assert typeArguments.length == 2;
+            @SuppressWarnings("unchecked")
+            final TypeToken<Map<String, Collection<V>>> mapTypeToken = new TypeToken<Map<String, Collection<V>>>() {}
+                    .where(new TypeParameter<V>() {}, (TypeToken<V>) TypeToken.of(typeArguments[1]));
+            return mapTypeToken.getType();
+        }
     }
 
     public Baseline3() {
@@ -176,11 +211,13 @@ public class Baseline3 extends SimplePostRequest {
 
         // 2. Prforming the actual expansion
         qgc.getExpansionRunner().doExpansion(opt);
+        HashMap<Integer, HashMultimap<String, String>> jsonMap = new HashMap<>();
 
         // 3. As before, loading the elements from the subgraphs
         int i = 0, M = hypotheses.size();
         for (Hypotheses.Subgraph.Hypothesis_scorer.Subgraph_plus_neighbor[] subgraph_plus_neighbors : hypotheses) {
             String[] strings;
+            jsonMap.put(i, HashMultimap.create());
             HashMultimap<String, String> associatedFieldsToER = HashMultimap.create();
             {
                 Set<String> elements = getEventRelationshipIdFromHypothesis(subgraph_plus_neighbors, associatedFieldsToER);
@@ -249,8 +286,14 @@ public class Baseline3 extends SimplePostRequest {
                         AgileRecord arj = records.get(j1);
                         PartialOrderComparison cmp = LoadFact.comparator.compare(ari, arj);
                         if (cmp.t.equals(POCType.Uncomparable)) {
-                            System.out.println("INCO == " + ari + " vs. " + arj);
-                            tupleInconsistencyScore += ari.mentionsId.size() * arj.mentionsId.size() * 2;
+                            for (String x : ari.mentionsId) {
+                                jsonMap.get(i).putAll(x, arj.mentionsId);
+                            }
+                            for (String x : arj.mentionsId) {
+                                jsonMap.get(i).putAll(x, ari.mentionsId);
+                            }
+                            //System.out.println("INCO == " + ari + " vs. " + arj);
+                            tupleInconsistencyScore += 1.0 / (ari.mentionsId.size() * arj.mentionsId.size() * 2.0);
                             //incoDetected = false;
                         }
                     }
@@ -258,7 +301,7 @@ public class Baseline3 extends SimplePostRequest {
 
             }
 
-            sb.append("\""+i+"\" : "+(typeInconsistencyScore+(tupleInconsistencyScore/2.0)));
+            sb.append("\""+i+"\" : "+(typeInconsistencyScore+(tupleInconsistencyScore*-2.0)));
             if (i != M -1) sb.append(", ");
             i++;
         }
@@ -269,7 +312,7 @@ public class Baseline3 extends SimplePostRequest {
 
         //setAnswerBody("{}");
         sb.append("}");
-        System.out.println(sb.toString());
+        System.out.println(jsonSerializer.toJson(jsonMap));
 
         // Closing the connection once and for all
         try {

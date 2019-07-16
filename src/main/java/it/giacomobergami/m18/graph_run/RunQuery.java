@@ -119,7 +119,7 @@ public class RunQuery {
             int i = 0;
             @Override
             public int applyAsInt(List<String> x) {
-                System.out.println(i++);
+                //System.out.println(i++);
                 return RunQuery.this.runQueryPath(db, x);
             }
         }).sum();

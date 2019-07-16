@@ -66,8 +66,8 @@ public class FunctionalDependency implements FieldGroupingPolicy {
     public double fieldGroupingPolicy(AgileRecord left, AgileRecord right, HashSet<POCType> types) {
         if (left.nistType.equals(right.nistType)) {
             Set<FDep> deps = file.get(left.nistType);
-            if (left.nistType.equals("Life.Die") && left.schema.contains("Agent") && left.schema.contains("Victim"))
-                System.out.println("DEBUG");
+            /*if (left.nistType.equals("Life.Die") && left.schema.contains("Agent") && left.schema.contains("Victim"))
+                System.out.println("DEBUG");*/
             if (!deps.isEmpty()) {
                 // Checking that all the functional dependencies must be satisfied for the given schema
                 for (FDep dep : deps) {
