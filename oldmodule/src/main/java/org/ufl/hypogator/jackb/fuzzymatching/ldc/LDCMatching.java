@@ -218,12 +218,12 @@ public class LDCMatching {
 
     public LDCResult bestFuzzyMatch(String query) {
         if (query.trim().isEmpty())
-            return new LDCResult(null, query, 1.0, null);
+            return new LDCResult( query);
         LDCResult t;
         if ((t = memoization.get(query)) == null) {
             List<LDCResult> ls = fuzzyMatch(query);
             if (ls == null || ls.isEmpty()) {
-                t = new LDCResult(null, query, 1.0, null);
+                t = new LDCResult( query);
                 memoization.put(query, t);
             } else {
                 t = Collections.max(ls, Comparator.comparing(LDCResult::score));
@@ -232,7 +232,7 @@ public class LDCMatching {
                         t = t.copyExceptResolved(query);
                     }
                 } else {
-                    t = new LDCResult(null, query, 1.0, null);
+                    t = new LDCResult(query);
                 }
                 memoization.put(query, t);
             }

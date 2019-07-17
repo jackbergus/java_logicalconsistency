@@ -5,12 +5,8 @@ import javafx.util.Pair;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.rdbms.DBMSInterface;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.rdbms.DBMSInterfaceFactory;
-import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
 import org.ufl.hypogator.jackb.fuzzymatching.MultiWordSimilarity;
 import org.ufl.hypogator.jackb.inconsistency.legacy.TupleComparator;
-import org.ufl.hypogator.jackb.inconsistency.typecomparisonpolicy.FieldComparisonPolicyFactory;
-import org.ufl.hypogator.jackb.logger.LoggerFactory;
-import org.ufl.hypogator.jackb.server.handlers.concrete.InconsistencyDetection;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,13 +21,13 @@ public class StaticDatabaseClass {
     public static String dbname, username, password;
     public static Integer batchSize;
     public static DBMSInterface engine;
+    public static boolean doExpansionFromTA2;
     //private HashMultimap<String, String> dictionary_ToKBID;
     public HashMap<String, String> kbidToHandle;
     public HashMultimap<String, String> kbidToTerms;
     public HashMap<String, Pair<Long, String>> kbtoNistType;
     public static MultiWordSimilarity sim = new MultiWordSimilarity();
     //private static JsonOntologyLoader ontologyEntrypoint = JsonOntologyLoader.getInstance();
-    public final static org.ufl.hypogator.jackb.logger.Logger LOGGER = LoggerFactory.getLogger(InconsistencyDetection.class);
     //public final static boolean doMemoization = FieldComparisonPolicyFactory.getInstance().doesFieldComparisonPolicyRequireDimensionMemoization(ConfigurationEntrypoint.getInstance().typingPolicy);
 
     public static boolean loadProperties() {
@@ -42,6 +38,7 @@ public class StaticDatabaseClass {
             username = properties.getProperty("ta2username", System.getProperty("user.name"));
             password = properties.getProperty("ta2password", "password");
             batchSize = Integer.valueOf(properties.getProperty("batchSize", "1000"));
+            doExpansionFromTA2 = Boolean.valueOf(properties.getProperty("doExpansionFromTA2", "false"));
             return true;
         } catch (IOException e) {
             e.printStackTrace();

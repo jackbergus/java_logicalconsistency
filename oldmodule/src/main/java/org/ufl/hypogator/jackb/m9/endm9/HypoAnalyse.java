@@ -16,7 +16,7 @@ import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.inconsistency.legacy.TupleComparator;
 import org.ufl.hypogator.jackb.m9.Hypotheses;
-import org.ufl.hypogator.jackb.m9.LoadFact;
+import org.ufl.hypogator.jackb.m18.LoadFact;
 import org.ufl.hypogator.jackb.m9.SQLTuples;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.ontology.TtlOntology;

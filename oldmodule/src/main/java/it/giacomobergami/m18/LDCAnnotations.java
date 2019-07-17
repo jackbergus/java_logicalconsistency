@@ -15,7 +15,7 @@ import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
 import org.ufl.hypogator.jackb.fuzzymatching.ldc.LDCMatching;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
-import org.ufl.hypogator.jackb.m9.LoadFact;
+import org.ufl.hypogator.jackb.m18.LoadFact;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 
 import java.io.IOException;

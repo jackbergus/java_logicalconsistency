@@ -22,7 +22,7 @@ import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.m9.Hypotheses;
-import org.ufl.hypogator.jackb.m9.LoadFact;
+import org.ufl.hypogator.jackb.m18.LoadFact;
 import org.ufl.hypogator.jackb.m9.SQLTuples;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.server.handlers.abstracts.SimplePostRequest;
@@ -291,7 +291,7 @@ public class Baseline3 extends SimplePostRequest {
                         AgileRecord ari = records.get(i1);
                         for (int j1 = 0; j1 < i1; j1++) {
                             AgileRecord arj = records.get(j1);
-                            PartialOrderComparison cmp = LoadFact.comparator.compare(ari, arj);
+                            PartialOrderComparison cmp = StaticDatabaseClass.comparator.compare(ari, arj);
                             if (cmp.t.equals(POCType.Uncomparable)) {
                                 for (String x : ari.mentionsId) {
                                     jsonMap.get(i).putAll(x, arj.mentionsId);

@@ -25,8 +25,11 @@ import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
 import org.ufl.hypogator.jackb.comparators.partialOrders.InformationPreservingComparator;
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
 import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
+import org.ufl.hypogator.jackb.disambiguation.dimension.Dimension;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConcepts;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConceptsUnion;
+import org.ufl.hypogator.jackb.disambiguation.dimension.concept.InformativeConcept;
+import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ResolvedConcept;
 import org.ufl.hypogator.jackb.disambiguation.dimension.space.DimLocation;
 import org.ufl.hypogator.jackb.disambiguation.dimension.time.DimTime;
 import org.ufl.hypogator.jackb.disambiguation.disambiguationFromKB;
@@ -87,12 +90,10 @@ public class TupleComparator extends InformationPreservingComparator<AgileRecord
             l.algorithm.setExpansionDisambiguation(expandedKBBaseline);
             return l;
         } else {
-            DimConceptsUnion concept = conceptFieldMap.get(field);
-            if (concept == null) {
-                concept = new DimConceptsUnion(field);
-                conceptFieldMap.put(field, concept);
+            Dimension<ResolvedConcept, InformativeConcept> concept = ConfigurationEntrypoint.generateConceptComparatorFromFieldName(field);
+            if (concept.algorithm != null) {
+                concept.algorithm.setExpansionDisambiguation(expandedKBBaseline);
             }
-            //System.err.println("TODO: concept.algorithm.setExpansionDisambiguation(expandedKBBaseline); ");
             return concept;
         }
     }

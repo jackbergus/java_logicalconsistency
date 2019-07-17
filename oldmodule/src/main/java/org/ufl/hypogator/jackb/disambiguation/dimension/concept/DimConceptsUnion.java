@@ -27,12 +27,15 @@ public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeCon
         super(null, null);
         this.fieldName = fieldName;
         concepts = new HashSet<>();
-        for (TypeSubtype x : l.getTypesForLabel(fieldName)) {
-            if (availableTypes.contains(x.nistName))
-                concepts.add(new DimConcepts(x.nistName));
-        }
         if (forceUnion) {
             concepts.add(new DimConcepts("Union"));
+        } else {
+            // Deprecated behaviour
+            // Loading all the types associated to the label
+            for (TypeSubtype x : l.getTypesForLabel(fieldName)) {
+                if (availableTypes.contains(x.nistName))
+                    concepts.add(new DimConcepts(x.nistName));
+            }
         }
     }
 

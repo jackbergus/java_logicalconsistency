@@ -15,7 +15,7 @@ import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.m9.Hypotheses;
-import org.ufl.hypogator.jackb.m9.LoadFact;
+import org.ufl.hypogator.jackb.m18.LoadFact;
 import org.ufl.hypogator.jackb.m9.SQLTuples;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.ontology.TtlOntology;
@@ -30,6 +30,7 @@ import static org.ufl.hypogator.jackb.m9.endm9.HypoAnalyse.longestRepeatedSubstr
 /**
  * TODO: URGENT. Change with the new specs.
  */
+@Deprecated
 public class Baseline extends SimplePostRequest {
 
     public static Gson jsonSerializer = new Gson();

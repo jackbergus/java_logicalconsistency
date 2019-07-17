@@ -1,12 +1,19 @@
 package org.ufl.hypogator.jackb;
 
+import org.ufl.hypogator.jackb.comparators.partialOrders.InformationPreservingComparator;
+import org.ufl.hypogator.jackb.disambiguation.dimension.Dimension;
+import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConceptFactory;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConcepts;
+import org.ufl.hypogator.jackb.disambiguation.dimension.concept.InformativeConcept;
+import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ResolvedConcept;
 import org.ufl.hypogator.jackb.ontology.JsonOntologyLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 
 public class ConfigurationEntrypoint {
 
@@ -28,6 +35,7 @@ public class ConfigurationEntrypoint {
     public final String typingPolicy;
     public final String groupingPolicy;
     public final File functionalDependencyFile;
+    public final Function<String, Dimension<ResolvedConcept, InformativeConcept>> dimConceptFactory;
 
     private static ConfigurationEntrypoint self;
     private ConfigurationEntrypoint() throws IOException {
@@ -50,6 +58,7 @@ public class ConfigurationEntrypoint {
         disambiguationPolicy = p.getProperty("disambiguationPolicy", "MaximumDisambiguationComparator");
         forceUnion = Boolean.valueOf(p.getProperty("forceUnion", "false"));
         postgresDump = new File(p.getProperty("pgDump", "data/postgres"));
+        dimConceptFactory = DimConceptFactory.getInstance(Boolean.valueOf(p.getProperty("DimConceptsWithUnion", "false")));
     }
 
     public static ConfigurationEntrypoint getInstance() {
@@ -61,6 +70,10 @@ public class ConfigurationEntrypoint {
             }
         }
         return self;
+    }
+
+    public static Dimension<ResolvedConcept, InformativeConcept>  generateConceptComparatorFromFieldName(String fieldName) {
+        return Objects.requireNonNull(getInstance()).dimConceptFactory.apply(fieldName);
     }
 
     public JsonOntologyLoader getOntology() {

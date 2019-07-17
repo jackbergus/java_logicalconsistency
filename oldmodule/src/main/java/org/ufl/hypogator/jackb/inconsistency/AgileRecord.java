@@ -126,6 +126,7 @@ public class AgileRecord {
         return fieldList.get(schema.get(j));
     }
 
+    @Deprecated
     public double getDegreeTypeInconsistency(TtlOntology ontology, String tupleId) {
         double count = 0;
         for (int i = 0, n = size(); i<n; i++) {

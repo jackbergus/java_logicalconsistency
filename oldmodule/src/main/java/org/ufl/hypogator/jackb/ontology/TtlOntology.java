@@ -20,6 +20,7 @@ import scala.reflect.internal.Names;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class TtlOntology {
     private static final String sparql = "SELECT * { ?s ?p ?o }";
     private Model model;

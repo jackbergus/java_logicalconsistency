@@ -9,8 +9,8 @@ public class LDCResult {
     public LDCResult(String resolved) {
         this.kbId = null;
         this.nistType = null;
-        this.resolved = resolved;
-        this.score = score;
+        this.resolved = resolved.trim();
+        this.score = 1.0;
     }
 
     public LDCResult(String kbId, String resolved, double score, String nistType) {
