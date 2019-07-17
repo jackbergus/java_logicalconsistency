@@ -34,4 +34,6 @@ public abstract class Dimension<T extends Resolved, K extends DisambiguatedValue
     public Dimension(InformationPreservingComparator<T> comparator, DisambiguatorForDimension<T, K> disambiguator) {
         super(comparator, disambiguator);
     }
+
+    public abstract String[] allowedKBTypesForTypingExpansion();
 }

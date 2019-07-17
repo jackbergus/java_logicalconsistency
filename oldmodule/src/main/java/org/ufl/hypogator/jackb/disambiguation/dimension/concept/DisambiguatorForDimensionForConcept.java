@@ -56,14 +56,17 @@ public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisa
      */
 
     private static final double threshold = Concept5ClientConfigurations.instantiate().threshold;
+    private String[] argumentsForPartof;
 
     /**
      * The disambiguator has always to be associated to a dimension
      *
      * @param dim LegacyDimension associated
+     * @param argumentsForPartof
      */
-    public DisambiguatorForDimensionForConcept(String dim) {
+    public DisambiguatorForDimensionForConcept(String dim, String[] argumentsForPartof) {
         super(dim);
+        this.argumentsForPartof = argumentsForPartof;
     }
 
     private static final MultiWordSimilarity mws = new MultiWordSimilarity();
@@ -147,7 +150,17 @@ public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisa
 
     @Override
     public DisambiguationAlgorithm<ResolvedConcept, InformativeConcept> getAlgorithm(double threshold) {
-        return new DisambiguationAlgorithm<>(this, threshold);
+        return new DisambiguationAlgorithm<>(this, threshold, argumentsForPartof, allowReflexiveExpansion());
+    }
+
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return argumentsForPartof;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return false;
     }
 
     @Override

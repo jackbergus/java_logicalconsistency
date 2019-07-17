@@ -32,7 +32,8 @@ import java.io.File;
  * a continent to each state, where all the continents belong to the Earth. Therefore,
  */
 public class DimLocation extends Dimension<ResolvedSpace, DisambiguatedSpace> {
-    public static final DisambiguatorForSpace dfs = DisambiguatorForSpace.getInstance();
+    public static String[] locationElements = new String[]{"Physical.LocatedNear"};
+    public static final DisambiguatorForSpace dfs = DisambiguatorForSpace.getInstance(locationElements);
     public static final ComparingPlaceResolutions cpr = new ComparingPlaceResolutions();
 
     public DimLocation() {
@@ -67,9 +68,13 @@ public class DimLocation extends Dimension<ResolvedSpace, DisambiguatedSpace> {
 
     }
 
-    public static void main(String args[]) {
-        System.out.println(new DimLocation().compare("kremlin", "russia"));
-        System.out.println(new DimLocation().compare("kremlin", "moscow"));
-        System.out.println(new DimLocation().compare("russia", "moscow"));
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return locationElements;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return true;
     }
 }

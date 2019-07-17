@@ -1,6 +1,7 @@
 package org.ufl.hypogator.jackb.inconsistency.fieldgrouping;
 
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
+import org.ufl.hypogator.jackb.disambiguation.disambiguationFromKB;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.inconsistency.typecomparisonpolicy.FieldComparisonPolicy;
@@ -13,6 +14,8 @@ import java.util.Set;
  * elements within it. Therefore,
  */
 public class NoFunctionalDependency implements FieldGroupingPolicy {
+
+    private disambiguationFromKB expandedKBBaseline;
 
     @Override
     public double fieldGroupingPolicy(AgileRecord left, AgileRecord right, HashSet<POCType> types) {
@@ -35,5 +38,10 @@ public class NoFunctionalDependency implements FieldGroupingPolicy {
     @Override
     public boolean doesPolicyNotRequireExtendedComparison() {
         return true;
+    }
+
+    @Override
+    public void setExpandedKBBaseline(disambiguationFromKB expandedKBBaseline) {
+        this.expandedKBBaseline = expandedKBBaseline;
     }
 }

@@ -65,7 +65,7 @@ public class ComparingPlaceResolutions extends InformationPreservingComparator<R
         }
     }
 
-    private static final DisambiguatorForSpace res = DisambiguatorForSpace.getInstance();
+    private static final DisambiguatorForSpace res = DisambiguatorForSpace.getInstance(DimLocation.locationElements);
 
     //private final static HashMap<Pair<ResolvedSpace, ResolvedSpace>, PartialOrderComparison> memoize = new HashMap<>();
 

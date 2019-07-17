@@ -29,6 +29,7 @@ import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConcepts;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConceptsUnion;
 import org.ufl.hypogator.jackb.disambiguation.dimension.space.DimLocation;
 import org.ufl.hypogator.jackb.disambiguation.dimension.time.DimTime;
+import org.ufl.hypogator.jackb.disambiguation.disambiguationFromKB;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.inconsistency.fieldgrouping.FieldGroupingPolicy;
 import org.ufl.hypogator.jackb.inconsistency.fieldgrouping.FieldGroupingPolicyFactory;
@@ -51,6 +52,7 @@ public class TupleComparator extends InformationPreservingComparator<AgileRecord
     private final static Collection<String> availableTypes = Concept5ClientConfigurations.instantiate().conceptnetResolvableTypes();
     public final static String[] relevantFields = new String[]{TIME, LOCATION, PLACE, "Origin", "Destination"};
     private final FieldGroupingPolicy groupingPolicy;
+    private static disambiguationFromKB expandedKBBaseline;
 
     public boolean doesInternalPolicyNotRequireExtendedComparison() {
         return groupingPolicy.doesPolicyNotRequireExtendedComparison();
@@ -78,9 +80,11 @@ public class TupleComparator extends InformationPreservingComparator<AgileRecord
     public static InformationPreservingComparator<String> generateFromField(String field) {
         if (field.endsWith(TIME)) {
             if (t == null) t = new DimTime();
+            t.algorithm.setExpansionDisambiguation(expandedKBBaseline);
             return t;
         } else if (field.endsWith(LOCATION) || field.endsWith(PLACE) || field.endsWith("Origin") || field.endsWith("Destination")) {
             if (l == null) l = new DimLocation();
+            l.algorithm.setExpansionDisambiguation(expandedKBBaseline);
             return l;
         } else {
             DimConceptsUnion concept = conceptFieldMap.get(field);
@@ -88,6 +92,7 @@ public class TupleComparator extends InformationPreservingComparator<AgileRecord
                 concept = new DimConceptsUnion(field);
                 conceptFieldMap.put(field, concept);
             }
+            //System.err.println("TODO: concept.algorithm.setExpansionDisambiguation(expandedKBBaseline); ");
             return concept;
         }
     }
@@ -117,7 +122,7 @@ public class TupleComparator extends InformationPreservingComparator<AgileRecord
         }
     }
 
-    public static  InformationPreservingComparator<String> generateFromTypeAndField(String label, String type) {
+    public static InformationPreservingComparator<String> generateFromTypeAndField(String label, String type) {
         return isFieldSaferThanType(label) ? generateFromField(label) : generateFromType(type);
     }
 
@@ -198,5 +203,16 @@ public class TupleComparator extends InformationPreservingComparator<AgileRecord
 
     public void close() {
         conceptTypeMap.values().forEach(DimConcepts::close);
+    }
+
+    public void setExpandedKBBaseline(disambiguationFromKB expandedKBBaseline) {
+        if (expandedKBBaseline != null)
+        this.expandedKBBaseline = expandedKBBaseline;
+        //groupingPolicy.setExpandedKBBaseline(expandedKBBaseline);
+    }
+
+    public static void setGlobalExpandedKBBaseline(disambiguationFromKB ex) {
+        if (ex != null)
+        expandedKBBaseline = ex;
     }
 }

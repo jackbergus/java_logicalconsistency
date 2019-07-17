@@ -101,4 +101,15 @@ public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeCon
             throw new RuntimeException("The expected folder for dimension "+fieldName+" does not exists: "+unionFolder);
         }
     }
+
+    String[] argumentsForPartof = new String[]{"partOf"};
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return argumentsForPartof;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return false;
+    }
 }

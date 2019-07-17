@@ -56,7 +56,7 @@ public class SqlUtils {
     public static List<String> getWhereJoinAndConditions(Properties properties, List<WhereEqValueCondition> selectSpecificERTypes, HashMap<String, BitMap> notNullMaps, HashMap<String, BitMap> negatedMaps, List<WhereJoinCondition> clauseJoins, QueryCollection generateIfNotExists) {
         List<String> whereJoinAndConditions = new ArrayList<>();
         selectSpecificERTypes.forEach(x -> whereJoinAndConditions.add(x.toString()));
-        notNullMaps.forEach((x,y)-> whereJoinAndConditions.add("((~"+x+"."+ properties.getProperty("null", "bitmap_null")+") & "+y.toString()+") = "+y.toString()));
+        //notNullMaps.forEach((x,y)-> whereJoinAndConditions.add("((~"+x+"."+ properties.getProperty("null", "bitmap_null")+") & "+y.toString()+") = "+y.toString()));
         negatedMaps.forEach((x,y)-> whereJoinAndConditions.add("(("+x+"."+ properties.getProperty("neg", "bitmap_neg")+") & "+y.toString()+") = "+y.toString()));
         clauseJoins.forEach(x -> whereJoinAndConditions.add(x.toString()));
         if (!generateIfNotExists.isEmpty()) {

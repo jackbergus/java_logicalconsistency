@@ -120,11 +120,14 @@ event PartWhole.Subsidiary(Subsidiary,Parent);
 event PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent);
     rule PartWhole.Subsidiary.OrganizationSubsidiary(Subsidiary,Parent) => owned(Subsidiary,Parent,"null");
 
-event Physical.LocatedNear(Place,EntityOrFiller);
-    entity exist and space Place;
+event Physical.LocatedNear(EntityOrFiller,Place);
+#    rule Physical.LocatedNear(EntityOrFiller,Place) => Physical.LocatedNear(Place, EntityOrFiller); --> This is only required for the disambiguation: in order to fasten up the expansion part, I preferred to keep this commented, and make the disambiguation do explicitely the reflexivity
+    rule Physical.LocatedNear(PlaceA,PlaceB) Physical.LocatedNear(PlaceB,PlaceC) =>  Physical.LocatedNear(PlaceA,PlaceC);
+#    entity exist and space Place;
 
 event Physical.LocatedNear.Surround(Place,EntityOrFiller);
-    entity exist and space Place;
+    rule Physical.LocatedNear.Surround(Place,EntityOrFiller) => Physical.LocatedNear(Place,EntityOrFiller);
+#    entity exist and space Place;
 
 event Physical.OrganizationHeadquarters.OrganizationHeadquarters(Place,Organization);
     entity exist and space Place;

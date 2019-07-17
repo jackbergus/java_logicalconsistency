@@ -83,6 +83,10 @@ public abstract class DisambiguatedValue<T extends Resolved> implements Iterable
         this.disambiguation.add(new Triple<>(matchedPart, disambiguation, score));
     }
 
+    public void expandWith(DisambiguatedValue<T> outer) {
+        this.disambiguation.addAll(outer.disambiguation);
+    }
+
     public abstract void setDisambiguations(Collection<T> disambiguation);
 
     /**

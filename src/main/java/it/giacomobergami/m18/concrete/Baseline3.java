@@ -10,9 +10,8 @@ import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
 import it.giacomobergami.m18.ConversionForExpansion;
-import it.giacomobergami.m18.TTLOntology2;
 import it.giacomobergami.m18.configuration.QueryGenerationConfiguration;
-import it.giacomobergami.m18.graph_run.RunQuery;
+import it.giacomobergami.m18.graph_run.ExpansionForApproximation;
 import org.jooq.DSLContext;
 import org.postgresql.util.PGobject;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
@@ -29,7 +28,6 @@ import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
 import org.ufl.hypogator.jackb.server.handlers.abstracts.SimplePostRequest;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -44,10 +42,12 @@ import static org.ufl.hypogator.jackb.m9.endm9.HypoAnalyse.longestRepeatedSubstr
 public class Baseline3 extends SimplePostRequest {
 
     final static MultimapAdapter multimapAdapter = new MultimapAdapter();
-    final static Type type = new TypeToken<HashMultimap<String, Obj>>() {}.getType();
+    final static Type type = new TypeToken<HashMultimap<String, Obj>>() {
+    }.getType();
     public static Gson jsonSerializer = new GsonBuilder().registerTypeAdapter(HashMultimap.class, multimapAdapter).create();
     private static QueryGenerationConfiguration qgc = QueryGenerationConfiguration.getInstance();
-    static ObjectReader reader = new ObjectMapper().readerFor(new TypeReference<AgileField>() {});
+    static ObjectReader reader = new ObjectMapper().readerFor(new TypeReference<AgileField>() {
+    });
 
     public static List<AgileRecord> fetchAgileRecordsByExpansionId(DSLContext jooq, String[] id) {
         return jooq.selectFrom(Expansions.EXPANSIONS)
@@ -56,8 +56,9 @@ public class Baseline3 extends SimplePostRequest {
     }
 
     static class MultimapAdapter implements JsonDeserializer<Multimap<String, ?>>, JsonSerializer<Multimap<String, ?>> {
-        @Override public Multimap<String, ?> deserialize(JsonElement json, Type type,
-                                                         JsonDeserializationContext context) throws JsonParseException {
+        @Override
+        public Multimap<String, ?> deserialize(JsonElement json, Type type,
+                                               JsonDeserializationContext context) throws JsonParseException {
             final HashMultimap<String, Object> result = HashMultimap.create();
             final Map<String, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
             for (final Map.Entry<String, ?> e : map.entrySet()) {
@@ -67,7 +68,8 @@ public class Baseline3 extends SimplePostRequest {
             return result;
         }
 
-        @Override public JsonElement serialize(Multimap<String, ?> src, Type type, JsonSerializationContext context) {
+        @Override
+        public JsonElement serialize(Multimap<String, ?> src, Type type, JsonSerializationContext context) {
             final Map<?, ?> map = src.asMap();
             return context.serialize(map);
         }
@@ -75,9 +77,10 @@ public class Baseline3 extends SimplePostRequest {
         private <V> Type multimapTypeToMapType(Type type) {
             final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
             assert typeArguments.length == 2;
-            @SuppressWarnings("unchecked")
-            final TypeToken<Map<String, Collection<V>>> mapTypeToken = new TypeToken<Map<String, Collection<V>>>() {}
-                    .where(new TypeParameter<V>() {}, (TypeToken<V>) TypeToken.of(typeArguments[1]));
+            @SuppressWarnings("unchecked") final TypeToken<Map<String, Collection<V>>> mapTypeToken = new TypeToken<Map<String, Collection<V>>>() {
+            }
+                    .where(new TypeParameter<V>() {
+                    }, (TypeToken<V>) TypeToken.of(typeArguments[1]));
             return mapTypeToken.getType();
         }
     }
@@ -88,8 +91,8 @@ public class Baseline3 extends SimplePostRequest {
     /**
      * Returns a set of event and relationship id that must undergo the expansion phase
      *
-     * @param subgraph_plus_neighbors       Current hypothesis
-     * @return                              Set of Ids of events and relationships that
+     * @param subgraph_plus_neighbors Current hypothesis
+     * @return Set of Ids of events and relationships that
      */
     public static HashSet<String> getEventRelationshipIdFromHypothesis(Hypotheses.Subgraph.Hypothesis_scorer.Subgraph_plus_neighbor[] subgraph_plus_neighbors,
                                                                        HashMultimap<String, String> associatedFieldsToER) {
@@ -103,8 +106,7 @@ public class Baseline3 extends SimplePostRequest {
             if (neigh.node_text_1.trim().isEmpty()) {
                 tp.add(neigh.node_id_1);
                 if (associatedFieldsToER != null) associatedFieldsToER.put(neigh.node_id_1, neigh.node_id_2);
-            }
-            else if (neigh.node_text_2.trim().isEmpty()) {
+            } else if (neigh.node_text_2.trim().isEmpty()) {
                 tp.add(neigh.node_id_2);
                 if (associatedFieldsToER != null) associatedFieldsToER.put(neigh.node_id_2, neigh.node_id_1);
             }
@@ -115,8 +117,8 @@ public class Baseline3 extends SimplePostRequest {
     /**
      * Given a collection of tuples, performs the final data cleaning before performing the inconsistency detection among all the hypotheses
      *
-     * @param target        Where to store all the elements sorted by event/relationship type
-     * @param tuple         All the tuples pertaining to one hypothesis after conversion
+     * @param target Where to store all the elements sorted by event/relationship type
+     * @param tuple  All the tuples pertaining to one hypothesis after conversion
      */
     public static void uploadByTupleList(HashMultimap<String, SQLTuples> target, Collection<Tuples> tuple) {
         for (Tuples t : tuple) {
@@ -152,12 +154,12 @@ public class Baseline3 extends SimplePostRequest {
                 lis.add(subgraph_plus_neighbors);
             }
         }
-        System.out.println("Returning #" + subgraphs.length +" hypotheses.");
+        System.out.println("Returning #" + subgraphs.length + " hypotheses.");
         return lis;
     }
 
     @Override
-    public String handleContent(String content, HashMultimap<String,String> arguments) {
+    public String handleContent(String content, HashMultimap<String, String> arguments) {
         //TuplesDao dao;
 
         // Reload the properties from the configuration file, so that I can edit the arguments are re-load them at each new request.
@@ -232,6 +234,7 @@ public class Baseline3 extends SimplePostRequest {
                 x.updateWithSelectedArguments(allowed);
                 up.put(x.nistType, x);
             });
+            LoadFact.comparator.setExpandedKBBaseline(new ExpansionForApproximation(up));
 
             // TODO: for each AgileRecord, only extract the elements that are allowed by the extracted arguments. tuple.get(0).
 
@@ -240,75 +243,79 @@ public class Baseline3 extends SimplePostRequest {
             for (Iterator<Map.Entry<String, Collection<AgileRecord>>> te_iterator = up.asMap().entrySet().iterator(); te_iterator.hasNext(); ) {
                 Map.Entry<String, Collection<AgileRecord>> te = te_iterator.next();
                 String type = te.getKey();
+                if (type.equals("_bot_")) {
+                    // In this case, just count the amount of inconsistencies that have been inferred.
+                    tupleInconsistencyScore += 1.0 / (te.getValue().size() * 2.0);
+                } else {
 
-                ArrayList<AgileRecord> records;
+                    ArrayList<AgileRecord> records;
 
 
-                //System.err.println("Mapping tuple to equivalent representation...");
-                {
-                    // This hashmap will map each tuple to its equivalent representation
-                    HashMultimap<AgileRecord, String> tupleToIds = HashMultimap.create();
+                    //System.err.println("Mapping tuple to equivalent representation...");
+                    {
+                        // This hashmap will map each tuple to its equivalent representation
+                        HashMultimap<AgileRecord, String> tupleToIds = HashMultimap.create();
 
-                    //boolean incoDetected = false;
-                    for (AgileRecord rec : te.getValue()) {
-                        double x = rec.getDegreeTypeInconsistency(qgc.getOntology2());
-                        if (x > 0) {
-                            typeInconsistencyScore += x;
-                            //incoDetected = true;
-                        }
-                        tupleToIds.put(rec, rec.id);
-                        tupleToIds.putAll(rec, rec.mentionsId);
-                    }
-
-                    te_iterator.remove();
-
-                    // Creating the equivalence class
-                    tupleToIds.forEach((y, id) -> y.mentionsId.add(id));
-
-                    records = new ArrayList<>(tupleToIds.keySet().size());
-
-                    // For each entry having the same type, I associate the schema to all the tuples sharing it
-                    Iterator<Map.Entry<AgileRecord, Collection<String>>> it = tupleToIds.asMap().entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<AgileRecord, Collection<String>> current = it.next();
-                        records.add(current.getKey());
-                        it.remove();
-                    }
-                    tupleToIds.clear();
-                }
-
-                //
-
-                int N = records.size();
-                for (int i1 = 0; i1 < N; i1++) {
-                    AgileRecord ari = records.get(i1);
-                    for (int j1 = 0; j1 < i1; j1++) {
-                        AgileRecord arj = records.get(j1);
-                        PartialOrderComparison cmp = LoadFact.comparator.compare(ari, arj);
-                        if (cmp.t.equals(POCType.Uncomparable)) {
-                            for (String x : ari.mentionsId) {
-                                jsonMap.get(i).putAll(x, arj.mentionsId);
+                        //boolean incoDetected = false;
+                        for (AgileRecord rec : te.getValue()) {
+                            double x = rec.getDegreeTypeInconsistency(qgc.getOntology2());
+                            if (x > 0) {
+                                typeInconsistencyScore += x;
+                                //incoDetected = true;
                             }
-                            for (String x : arj.mentionsId) {
-                                jsonMap.get(i).putAll(x, ari.mentionsId);
+                            tupleToIds.put(rec, rec.id);
+                            tupleToIds.putAll(rec, rec.mentionsId);
+                        }
+
+                        te_iterator.remove();
+
+                        // Creating the equivalence class
+                        tupleToIds.forEach((y, id) -> y.mentionsId.add(id));
+
+                        records = new ArrayList<>(tupleToIds.keySet().size());
+
+                        // For each entry having the same type, I associate the schema to all the tuples sharing it
+                        Iterator<Map.Entry<AgileRecord, Collection<String>>> it = tupleToIds.asMap().entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry<AgileRecord, Collection<String>> current = it.next();
+                            records.add(current.getKey());
+                            it.remove();
+                        }
+                        tupleToIds.clear();
+                    }
+
+                    //
+
+                    int N = records.size();
+                    for (int i1 = 0; i1 < N; i1++) {
+                        AgileRecord ari = records.get(i1);
+                        for (int j1 = 0; j1 < i1; j1++) {
+                            AgileRecord arj = records.get(j1);
+                            PartialOrderComparison cmp = LoadFact.comparator.compare(ari, arj);
+                            if (cmp.t.equals(POCType.Uncomparable)) {
+                                for (String x : ari.mentionsId) {
+                                    jsonMap.get(i).putAll(x, arj.mentionsId);
+                                }
+                                for (String x : arj.mentionsId) {
+                                    jsonMap.get(i).putAll(x, ari.mentionsId);
+                                }
+                                System.out.println("INCO == " + ari + " vs. " + arj);
+                                tupleInconsistencyScore += 1.0 / (ari.mentionsId.size() * arj.mentionsId.size() * 2.0);
+                                //incoDetected = false;
                             }
-                            //System.out.println("INCO == " + ari + " vs. " + arj);
-                            tupleInconsistencyScore += 1.0 / (ari.mentionsId.size() * arj.mentionsId.size() * 2.0);
-                            //incoDetected = false;
                         }
                     }
-                }
 
+                }
             }
-
-            sb.append("\""+i+"\" : "+(typeInconsistencyScore+(tupleInconsistencyScore*-2.0)));
-            if (i != M -1) sb.append(", ");
+            sb.append("\"" + i + "\" : " + (typeInconsistencyScore + (tupleInconsistencyScore * -2.0)));
+            if (i != M - 1) sb.append(", ");
             i++;
         }
         long end = System.currentTimeMillis();
 
-        System.err.println("s = "+(end-start)/1000.0);
-        System.err.println("# = "+noEdges);
+        System.err.println("s = " + (end - start) / 1000.0);
+        System.err.println("# = " + noEdges);
 
         //setAnswerBody("{}");
         sb.append("}");

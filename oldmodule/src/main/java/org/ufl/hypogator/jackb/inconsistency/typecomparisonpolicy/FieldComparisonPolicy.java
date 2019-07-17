@@ -2,6 +2,7 @@ package org.ufl.hypogator.jackb.inconsistency.typecomparisonpolicy;
 
 import com.google.common.collect.TreeMultimap;
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
+import org.ufl.hypogator.jackb.disambiguation.disambiguationFromKB;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 
 import java.util.HashSet;
@@ -55,4 +56,6 @@ public interface FieldComparisonPolicy {
      * @return the name associated to the policy
      */
     String getName();
+
+    //public void setExpandedKBBaseline(disambiguationFromKB expandedKBBaseline);
 }

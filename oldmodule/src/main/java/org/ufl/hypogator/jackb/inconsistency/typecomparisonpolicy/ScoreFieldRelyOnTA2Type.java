@@ -4,6 +4,7 @@ import com.google.common.collect.TreeMultimap;
 import org.ufl.hypogator.jackb.comparators.partialOrders.InformationPreservingComparator;
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
 import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
+import org.ufl.hypogator.jackb.disambiguation.disambiguationFromKB;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.legacy.TupleComparator;
 
@@ -16,6 +17,8 @@ import java.util.Objects;
  * Therefore, the associated dimension is ignored.
  */
 public class ScoreFieldRelyOnTA2Type implements FieldComparisonPolicy {
+    private disambiguationFromKB expandedKBBaseline;
+
 
     /*@Override
     public Double getScore(String fieldName, HashSet<PartialOrderComparison.Type> fieldType, Set<AgileField> vl, Set<AgileField> ul) {
@@ -120,4 +123,10 @@ public class ScoreFieldRelyOnTA2Type implements FieldComparisonPolicy {
     public String getName() {
         return "ScoreFieldRelyOnTA2Type";
     }
+
+    /*@Override
+    public void setExpandedKBBaseline(disambiguationFromKB expandedKBBaseline) {
+        this.expandedKBBaseline = expandedKBBaseline;
+        TupleComparator.setGlobalExpandedKBBaseline(expandedKBBaseline);
+    }*/
 }

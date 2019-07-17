@@ -41,6 +41,9 @@ public interface DisambiguatorForDimension<T extends Resolved, K extends Disambi
      * @return
      */
     default DisambiguationAlgorithm<T, K> getAlgorithm(double threshold) {
-        return new DisambiguationAlgorithm<>(this, threshold);
+        return new DisambiguationAlgorithm<>(this, threshold, allowedKBTypesForTypingExpansion(), allowReflexiveExpansion());
     }
+
+    public String[] allowedKBTypesForTypingExpansion();
+    public boolean allowReflexiveExpansion();
 }

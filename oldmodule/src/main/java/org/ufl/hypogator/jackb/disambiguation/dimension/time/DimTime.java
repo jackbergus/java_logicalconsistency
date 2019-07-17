@@ -33,7 +33,8 @@ import java.io.File;
  * temporal representations.
  */
 public class DimTime extends Dimension<ResolvedTime, InformativeTime> {
-    private static final DisambiguatorForDimensionForTime dft = new DisambiguatorForDimensionForTime();
+    static String[] noArgs = new String[0];
+    private static final DisambiguatorForDimensionForTime dft = new DisambiguatorForDimensionForTime(noArgs);
     private static final ComparingTimeResolutions ctr = new ComparingTimeResolutions();
     private final String dim;
 
@@ -66,5 +67,15 @@ public class DimTime extends Dimension<ResolvedTime, InformativeTime> {
     @Override
     public void close() {
 
+    }
+
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return noArgs;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return false;
     }
 }

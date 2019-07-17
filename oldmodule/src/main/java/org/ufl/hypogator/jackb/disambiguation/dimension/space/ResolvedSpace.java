@@ -308,7 +308,7 @@ public class ResolvedSpace implements Resolved {
         return (left != null && right != null && Objects.equals(left.isHistorical(),right.isHistorical()) && Objects.equals(left.getType(), right.getType()) && Objects.equals(left.getDescription(), right.getDescription())) || (left == null && right == null);
     }
 
-    private static final DisambiguatorForSpace res = DisambiguatorForSpace.getInstance();
+    private static final DisambiguatorForSpace res = DisambiguatorForSpace.getInstance(DimLocation.locationElements);
     public List<SemanticNetworkEntryPoint> asSMEPList() {
         List<SemanticNetworkEntryPoint> semanticArray = new ArrayList<>();
 

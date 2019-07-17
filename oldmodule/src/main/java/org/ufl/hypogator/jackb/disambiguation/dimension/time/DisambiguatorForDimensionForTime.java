@@ -39,11 +39,13 @@ import java.util.Properties;
 
 public class DisambiguatorForDimensionForTime implements DisambiguatorForDimension<ResolvedTime, InformativeTime> {
     AnnotationPipeline pipeline;
+    private String[] noArgs;
 
     /**
      * Initializes the stanford pipeline
      */
-    public DisambiguatorForDimensionForTime() {
+    public DisambiguatorForDimensionForTime(String[] noArgs) {
+        this.noArgs = noArgs;
         pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
@@ -79,7 +81,18 @@ public class DisambiguatorForDimensionForTime implements DisambiguatorForDimensi
 
     @Override
     public DisambiguationAlgorithm<ResolvedTime, InformativeTime> getAlgorithm(double ignored) {
-        return new DisambiguationAlgorithm<>(this, ignored);
+        return new DisambiguationAlgorithm<>(this, ignored, noArgs, allowReflexiveExpansion());
     }
+
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return noArgs;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return false;
+    }
+
 
 }

@@ -42,8 +42,10 @@ public class DisambiguatorForSpace implements DisambiguatorForDimension<Resolved
     private MoreRecallLocationresolver clavinLocationResolver;
     private final boolean doFuzzyMatch;
     private final AdditionalSpaceHierarchy ash = AdditionalSpaceHierarchy.instance();
+    private String[] locationElements;
 
-    public DisambiguatorForSpace() {
+    public DisambiguatorForSpace(String[] locationElements) {
+        this.locationElements = locationElements;
         ConfigurationEntrypoint ins = ConfigurationEntrypoint.getInstance();
         try {
             clavinLocationResolver = new MoreRecallLocationresolver(new LuceneGazetteer(ins.clavinFolder));
@@ -55,9 +57,9 @@ public class DisambiguatorForSpace implements DisambiguatorForDimension<Resolved
     }
 
     private static DisambiguatorForSpace instance;
-    public static DisambiguatorForSpace getInstance() {
+    public static DisambiguatorForSpace getInstance(String[] locationElements) {
         if (instance == null) {
-            instance = new DisambiguatorForSpace();
+            instance = new DisambiguatorForSpace(locationElements);
         }
         return instance;
     }
@@ -126,6 +128,16 @@ public class DisambiguatorForSpace implements DisambiguatorForDimension<Resolved
             }
         }
         return si;
+    }
+
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return locationElements;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return true;
     }
 
 }

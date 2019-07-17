@@ -32,7 +32,7 @@ public class StaticDatabaseClass {
     public static MultiWordSimilarity sim = new MultiWordSimilarity();
     //private static JsonOntologyLoader ontologyEntrypoint = JsonOntologyLoader.getInstance();
     public final static org.ufl.hypogator.jackb.logger.Logger LOGGER = LoggerFactory.getLogger(InconsistencyDetection.class);
-    public final static boolean doMemoization = FieldComparisonPolicyFactory.getInstance().doesFieldComparisonPolicyRequireDimensionMemoization(ConfigurationEntrypoint.getInstance().typingPolicy);
+    //public final static boolean doMemoization = FieldComparisonPolicyFactory.getInstance().doesFieldComparisonPolicyRequireDimensionMemoization(ConfigurationEntrypoint.getInstance().typingPolicy);
 
     public static boolean loadProperties() {
         if (properties.isEmpty()) try {

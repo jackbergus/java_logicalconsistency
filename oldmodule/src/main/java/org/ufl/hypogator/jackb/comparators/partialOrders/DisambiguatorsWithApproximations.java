@@ -81,6 +81,8 @@ public abstract class DisambiguatorsWithApproximations<T extends Resolved,
         } else {
             K dis = memoization.get(term);
             if (dis == null) {
+                /*if (term.equals("maidan nezalezhnosti"))
+                    System.err.println("DEBUG");*/
                 dis = algorithm.checkDisambiguation(term);
                 if (dis == null)
                     nonTerms.add(term);

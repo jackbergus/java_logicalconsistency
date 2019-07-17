@@ -42,10 +42,15 @@ public class DisambiguationAlgorithm<T extends Resolved,
     final HashMap<String, K> memoization = new HashMap<>();
     final DisambiguatorForDimension<T, K> disambiguator;
     private final double maximumThereshold;
+    final String[] allowedKBTypesForTypingExpansion;
+    private boolean doReflexivity;
+    private disambiguationFromKB expansionDisambiguation;
 
-    public DisambiguationAlgorithm(DisambiguatorForDimension<T, K> disambiguator, double maximumThereshold) {
+    public DisambiguationAlgorithm(DisambiguatorForDimension<T, K> disambiguator, double maximumThereshold, String[] allowedKBTypesForTypingExpansion, boolean doReflexivity) {
         this.disambiguator = disambiguator;
         this.maximumThereshold = maximumThereshold;
+        this.allowedKBTypesForTypingExpansion = allowedKBTypesForTypingExpansion;
+        this.doReflexivity = doReflexivity;
     }
 
     private double score(K term) {
@@ -68,7 +73,14 @@ public class DisambiguationAlgorithm<T extends Resolved,
             return memoization.get(toDisambiguate);
         }
 
+        /*if (toDisambiguate.equals("buildings"))
+            System.err.println("DEBUG");*/
         K term = disambiguator.disambiguate(toDisambiguate);
+        for (String allowedTypes : allowedKBTypesForTypingExpansion) {
+            for (String additionalExamples : expansionDisambiguation.getPossibleCandidatesFor(toDisambiguate, allowedTypes, doReflexivity)) {
+                term.expandWith(disambiguator.disambiguate(additionalExamples));
+            }
+        }
 
         if (debugging)
             logger.debug("disambiguated with "+term);
@@ -125,7 +137,21 @@ public class DisambiguationAlgorithm<T extends Resolved,
 
     @Override
     public DisambiguationAlgorithm<T, K> getAlgorithm(double threshold) {
-        return new DisambiguationAlgorithm<>(disambiguator, threshold);
+        return new DisambiguationAlgorithm<>(disambiguator, threshold, allowedKBTypesForTypingExpansion, doReflexivity);
+    }
+
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return allowedKBTypesForTypingExpansion;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return doReflexivity;
+    }
+
+    public void setExpansionDisambiguation(disambiguationFromKB expansionDisambiguation) {
+        this.expansionDisambiguation = expansionDisambiguation;
     }
 
     /**

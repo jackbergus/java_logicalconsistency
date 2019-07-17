@@ -46,7 +46,7 @@ public class DimConcepts extends Dimension<ResolvedConcept, InformativeConcept> 
     }
 
     public DimConcepts(String dimension) {
-        this(dimension, new ComparingConceptResolution(dimension), new DisambiguatorForDimensionForConcept(dimension));
+        this(dimension, new ComparingConceptResolution(dimension), new DisambiguatorForDimensionForConcept(dimension, argumentsForPartof));
     }
 
 
@@ -99,5 +99,16 @@ public class DimConcepts extends Dimension<ResolvedConcept, InformativeConcept> 
 
     public void close() {
         disambiguator.close();
+    }
+
+    static String[] argumentsForPartof = new String[]{"partOf"};
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return argumentsForPartof;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return false;
     }
 }

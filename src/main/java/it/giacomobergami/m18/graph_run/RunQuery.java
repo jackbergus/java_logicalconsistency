@@ -85,10 +85,10 @@ public class RunQuery {
                 "\non conflict (eid,type_event,weight,arg1,arg2,arg3,arg4,arg5,arg6,arg7,bitmap_null,bitmap_neg,bitmap_hed) do nothing";
         int numberOfUpdates = 0;
         int numberOfIterations = -1;
-        if (query.contains("t1.null")) {
+        /*if (query.contains("Conflict.Attack")) {
+            System.err.println("DEBUG: Conflict.Attack");
             returnAssociatedQuery(nodeId);
-            System.err.println("DEBUG");
-        }
+        }*/
         do {
             numberOfUpdates = db.rawSqlUpdate(query);
             numberOfIterations++;
@@ -116,10 +116,10 @@ public class RunQuery {
      */
     int runMultiplePaths(Database db, Set<List<String>> lsOfList) {
         return lsOfList.stream().mapToInt(new ToIntFunction<List<String>>() {
-            int i = 0;
+            int i = 1;
             @Override
             public int applyAsInt(List<String> x) {
-                //System.out.println(i++);
+                //System.out.println((i++)+" of "+ lsOfList.size());
                 return RunQuery.this.runQueryPath(db, x);
             }
         }).sum();
@@ -133,21 +133,36 @@ public class RunQuery {
             paths = dependencyGraph.generatePathsForExpansionModule();
         }
 
-        // First, run the rules directly pointing to the cycles
-        runMultiplePaths(db, paths.pathFromStartingToCycles);
+        int counter;
 
-        // Then, run the rules directly pointing to terminal nodes.
-        runMultiplePaths(db, paths.pathDirecltyTerminal);
-
-        // Run the loops with some "fegatelli" (bitter bites) messing up the elegant loop semantics
-        int numberOfUpdates = 0;
         do {
-            numberOfUpdates = runMultiplePaths(db, dependencyGraph.cycles);
-            numberOfUpdates += runMultiplePaths(db, paths.fegatelli);
-        } while (numberOfUpdates > 0); // The loop will terminate where no new expansions will be produced.
+            counter = 0;
+            // First, run the rules directly pointing to the cycles
+            counter += runMultiplePaths(db, paths.pathFromStartingToCycles);
+            System.out.println("New starting data: " + counter);
 
-        // At the end, run the terminal paths
-        runMultiplePaths(db, paths.pathFromCyclesToEnding);
+            // Then, run the rules directly pointing to terminal nodes.
+            counter += runMultiplePaths(db, paths.pathDirecltyTerminal);
+            System.out.println("add ending data: " + counter);
+
+            // Run the loops with some "fegatelli" (bitter bites) messing up the elegant loop semantics
+            int numberOfUpdates = 0;
+            do {
+                numberOfUpdates = runMultiplePaths(db, dependencyGraph.cycles);
+                numberOfUpdates += runMultiplePaths(db, paths.fegatelli);
+                System.out.println("New cycle data: "+numberOfUpdates);
+                if (numberOfUpdates > 0)
+                    counter++;
+            } while (numberOfUpdates > 0); // The loop will terminate where no new expansions will be produced.
+
+
+            // At the end, run the terminal paths
+            counter += runMultiplePaths(db, paths.pathFromCyclesToEnding);
+            System.out.println("add final data: "+ counter);
+
+        } while (counter > 0);
+
+
     }
 
     public void debugPlot() {

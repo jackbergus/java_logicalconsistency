@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
 import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
+import org.ufl.hypogator.jackb.disambiguation.disambiguationFromKB;
 import org.ufl.hypogator.jackb.inconsistency.AgileRecord;
 import org.ufl.hypogator.jackb.inconsistency.legacy.TupleComparator;
 import org.ufl.hypogator.jackb.m9.fdep.FDep;
@@ -17,6 +18,7 @@ public class FunctionalDependency implements FieldGroupingPolicy {
     private final HashMultimap<String, FDep> file;
     private final TupleComparator compareHeadWithCustomConfiguration;
     private final FieldGroupingPolicy internal;
+    private disambiguationFromKB expandedKBBaseline;
 
     public FunctionalDependency(FieldGroupingPolicy internal) {
         this.internal = internal;
@@ -94,5 +96,12 @@ public class FunctionalDependency implements FieldGroupingPolicy {
     @Override
     public boolean doesPolicyNotRequireExtendedComparison() {
         return false;
+    }
+
+    @Override
+    public void setExpandedKBBaseline(disambiguationFromKB expandedKBBaseline) {
+        this.expandedKBBaseline = expandedKBBaseline;
+        compareHeadWithCustomConfiguration.setExpandedKBBaseline(expandedKBBaseline);
+        internal.setExpandedKBBaseline(expandedKBBaseline);
     }
 }
