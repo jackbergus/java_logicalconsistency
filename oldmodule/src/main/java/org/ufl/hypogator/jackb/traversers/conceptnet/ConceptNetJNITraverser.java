@@ -41,6 +41,7 @@ import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.ans
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -78,7 +79,8 @@ public class ConceptNetJNITraverser implements SemanticNetworkTraversers<Relatio
     private ConceptNetJNITraverser(ConceptNetVocabulary voc) {
         this.onlyEnglishConcept = conf.retrieveOnlyEnglishConcepts();
         this.voc = voc;
-        this.ep.init();
+        if (ep != null)
+            ep.init();
     }
 
     @Override
@@ -174,8 +176,11 @@ public class ConceptNetJNITraverser implements SemanticNetworkTraversers<Relatio
     }
 
     private static ObjectMapper mapper = Concept5ClientConfigurations.instantiate().jsonSerializer;
+    private static IteratorWithOperations<Edge> emptyDataIterator = new DataIterator<Edge>(Collections.emptyIterator());
 
     private IteratorWithOperations<Edge> ingoingRelDefaultEn(String term, Long relMap) {
+        if (ep == null) return emptyDataIterator;
+
         Long res1 = dumpingGround.nodeIdToOffset(term);
         if (res1 == null)
             return VoidIterator.getInstance();
@@ -190,6 +195,8 @@ public class ConceptNetJNITraverser implements SemanticNetworkTraversers<Relatio
     }
 
     private IteratorWithOperations<Edge> outgoingRelDefaultEn(String term, Long relMap) {
+        if (ep == null) return emptyDataIterator;
+
         Long res1 = dumpingGround.nodeIdToOffset(term);
         if (res1 == null)
             return VoidIterator.getInstance();
