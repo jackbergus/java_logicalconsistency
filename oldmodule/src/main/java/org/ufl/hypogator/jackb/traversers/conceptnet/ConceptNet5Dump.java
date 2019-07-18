@@ -112,7 +112,8 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
                            idToOffset.put(x.substring(0, idx), Long.valueOf(x.substring(idx+1)));
                        }
                     } catch (NumberFormatException e) {
-                        e.printStackTrace();
+                        System.err.println("Error opening the file: "+offsets.toPath());
+                        //e.printStackTrace();
                     }
                 });
             } catch (IOException e) {

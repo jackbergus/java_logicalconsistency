@@ -5,6 +5,9 @@ import org.ufl.hypogator.jackb.disambiguation.dimension.Dimension;
 import java.util.HashMap;
 import java.util.function.Function;
 
+/**
+ * Choosing the way to represent no-spatiotemporal concepts
+ */
 public class DimConceptFactory {
 
     private static HashMap<String, DimConceptsUnion> asUnion = new HashMap<>();

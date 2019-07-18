@@ -22,41 +22,14 @@ public class TwoGramIndexerJNI implements AutoCloseable {
 
     private static final ConceptNet5Dump dump = ConceptNet5Dump.getInstance();
 
-    /*public Map<Double, Collection<K>> fuzzyMatch(Double threshold, Integer topK, Similarity sim, String... objectStrings) {
-        if (objectStrings == null || objectStrings.length == 0)
-            return Collections.emptyMap();
-        PollMap<Double, K> toReturnTop = new PollMap<>(topK);
-        for (int i = 0, objectStringsLength = objectStrings.length; i < objectStringsLength; i++) {
-            String objectString = objectStrings[i];
-
-            ArrayList<String> objectGrams = LowConfidenceRank.compareString_wordLetterPairs(objectString);
-            HashSet<K> candidates = new HashSet<>();
-            for (String gram : objectGrams) {
-                candidates.addAll(gramToObjects.get(gram));
-            }
-            HashMap<String, Integer> m1 = LowConfidenceRank.compareStringHashMap(objectString).getKey();
-
-            rankCollectionOf(objectString, candidates, m1, objectGrams.size(), threshold, toReturnTop, sim);
-        }
-        //TreeMap<Double, Collection<K>> toReturn2 = new TreeMap<>();
-        //toReturnTop.asMap().forEach(toReturn2::put);
-        return toReturnTop.getPoll();
-    }
-
-    public boolean containsExactTerm(String s) {
-        return termToObjects.containsKey(s);
-    }
-
-    public Set<K> containsExactTerm2(String s) {
-        return termToObjects.get(s);
-    }*/
-
-
+    static boolean correctlyInitialized = false;
     static {
         try {
             NativeUtils.loadLibraryFromJar("/libfuzzymatching.so");
-        } catch (IOException e) {
+            correctlyInitialized = true;
+        } catch (Exception e) {
             e.printStackTrace();
+            correctlyInitialized = false;
         }
     }
 
@@ -154,22 +127,28 @@ public class TwoGramIndexerJNI implements AutoCloseable {
         }
 
         public void fuzzyMatch(double threshold, int topk, String term) {
-            visitedLong.clear();
-            parent.fuzzyMatch(dimension, threshold, topk, term);
-            current = true;
+            if (correctlyInitialized) {
+                visitedLong.clear();
+                parent.fuzzyMatch(dimension, threshold, topk, term);
+                current = true;
+            }
         }
 
         private boolean hasInternalNext() {
-            return (current = current && parent.hasCurrent(dimension));
+            return correctlyInitialized && (current = current && parent.hasCurrent(dimension));
         }
 
         public boolean containsExactTerm(String term) {
-            long ids[] = parent.containsExactTerm(dimension, term);
+            long ids[] = null;
+            if (correctlyInitialized)
+                ids = parent.containsExactTerm(dimension, term);
             return ids != null && ids.length > 0;
         }
 
         public Set<ConceptNet5Postgres.RecordResultForSingleNode> containsExactTerm2(String term) {
-            long ids[] = parent.containsExactTerm(dimension, term);
+            long[] ids = null;
+            if (correctlyInitialized)
+                ids = parent.containsExactTerm(dimension, term);
             if (ids == null || ids.length == 0)
                 return Collections.emptySet();
             HashSet<ConceptNet5Postgres.RecordResultForSingleNode> me = new HashSet<>();
@@ -189,6 +168,9 @@ public class TwoGramIndexerJNI implements AutoCloseable {
         public Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode> next() {
             Long x;
             Double d;
+
+            if (!correctlyInitialized)
+                return null;
 
             if (cursor == null) {
                 if (!hasInternalNext()) {
@@ -211,7 +193,8 @@ public class TwoGramIndexerJNI implements AutoCloseable {
 
         @Override
         protected void finalize() {
-            parent.closeDimension(dimension);
+            if (correctlyInitialized)
+                parent.closeDimension(dimension);
         }
 
         /**
@@ -249,24 +232,26 @@ public class TwoGramIndexerJNI implements AutoCloseable {
 
             @Override
             public Map<Double, Collection<ConceptNet5Postgres.RecordResultForSingleNode>> fuzzyMatch(Double threshold, Integer topK, Similarity sim, String objectStrings) {
-                this.parent.fuzzyMatch(threshold, topK, objectStrings);
                 TreeMap<Double, Collection<ConceptNet5Postgres.RecordResultForSingleNode>> map = new TreeMap<>();
-                while (this.parent.hasNext()) {
-                    Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode> cp = this.parent.next();
-                    if (!map.containsKey(cp.getKey())) map.put(cp.getKey(), new ArrayList<>());
-                    map.get(cp.getKey()).add(cp.getValue());
+                if (correctlyInitialized) {
+                    this.parent.fuzzyMatch(threshold, topK, objectStrings);
+                    while (this.parent.hasNext()) {
+                        Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode> cp = this.parent.next();
+                        if (!map.containsKey(cp.getKey())) map.put(cp.getKey(), new ArrayList<>());
+                        map.get(cp.getKey()).add(cp.getValue());
+                    }
                 }
                 return map;
             }
 
             @Override
             public Collection<ConceptNet5Postgres.RecordResultForSingleNode> containsExactTerm2(String term) {
-                return parent.containsExactTerm2(term);
+                return correctlyInitialized ? parent.containsExactTerm2(term) : Collections.emptyList();
             }
 
             @Override
             public boolean containsExactTerm(String term) {
-                return parent.containsExactTerm(term);
+                return correctlyInitialized ? parent.containsExactTerm(term) : false;
             }
         }
     }

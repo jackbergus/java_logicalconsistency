@@ -72,7 +72,7 @@ public class NativeUtils {
      * (restriction of {@link File#createTempFile(String, String)}).
      * @throws FileNotFoundException If the file could not be found inside the JAR.
      */
-    public static void loadLibraryFromJar(String path) throws IOException {
+    public static void loadLibraryFromJar(String path) throws Exception {
  
         if (null == path || !path.startsWith("/")) {
             throw new IllegalArgumentException("The path has to be absolute (start with '/').");
@@ -105,8 +105,13 @@ public class NativeUtils {
             throw new FileNotFoundException("File " + path + " was not found inside JAR.");
         }
 
+        boolean isError = false;
+        Exception exp = null;
         try {
             System.load(temp.getAbsolutePath());
+        } catch (RuntimeException e) {
+            isError = true;
+            exp = e;
         } finally {
             if (isPosixCompliant()) {
                 // Assume POSIX compliant file system, can be deleted after loading
@@ -115,6 +120,10 @@ public class NativeUtils {
                 // Assume non-POSIX, and don't delete until last file descriptor closed
                 temp.deleteOnExit();
             }
+        }
+
+        if (isError && (exp != null)) {
+            throw exp;
         }
     }
 

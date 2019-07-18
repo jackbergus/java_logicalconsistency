@@ -1,6 +1,7 @@
 package org.ufl.hypogator.jackb.disambiguation.dimension.concept;
 
 import com.google.common.collect.HashMultimap;
+import it.giacomobergami.m18.TTLOntology2;
 import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
 import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
@@ -17,7 +18,7 @@ import java.util.*;
 public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeConcept> {
     private final static Collection<String> availableTypes = Concept5ClientConfigurations.instantiate().conceptnetResolvableTypes();
     private final static Boolean forceUnion = ConfigurationEntrypoint.getInstance().forceUnion;
-    private final static JsonOntologyLoader l = JsonOntologyLoader.getInstance();
+    private final static TTLOntology2 l = new TTLOntology2("data/SeedlingOntology2.ttl");
     private final static DisambiguationPolicy policy = DisambiguationPolicyFactory.getInstance().getPolicy(ConfigurationEntrypoint.getInstance().disambiguationPolicy);
 
     public final String fieldName;

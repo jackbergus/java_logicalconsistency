@@ -21,16 +21,11 @@
 
 package org.ufl.hypogator.jackb.disambiguation.dimension.concept;
 
-import javafx.util.Pair;
 import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
 import org.ufl.hypogator.jackb.disambiguation.dimension.Dimension;
-import org.ufl.hypogator.jackb.disambiguation.dimension.Direction;
-import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
 
 import java.io.File;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class DimConcepts extends Dimension<ResolvedConcept, InformativeConcept> {
     private final String dimension;
@@ -48,17 +43,6 @@ public class DimConcepts extends Dimension<ResolvedConcept, InformativeConcept> 
     public DimConcepts(String dimension) {
         this(dimension, new ComparingConceptResolution(dimension), new DisambiguatorForDimensionForConcept(dimension, argumentsForPartof));
     }
-
-
-    /*@Override
-    public Pair<Direction, Optional<Pair<Double, List<SemanticNetworkEntryPoint>>>> informativeCompare(ResolvedConcept cpT, ResolvedConcept cpU) {
-        // If t and u have a positive score, that means, they somehow belong to the hierarchy
-        if (cpT.getScore() > 0 && cpU.getScore() > 0) {
-            // Check the subtyping direction
-            return disambiguator.getDirection(cpT.getDisambiguated(), cpU.getDisambiguated());
-        }
-        return null;
-    }*/
 
     /**
      * This functions provides penalizations to terms that are not met (e.g., Union)

@@ -8,11 +8,15 @@ import java.io.IOException;
  * This class provides the interface to the C++ library that reads the graph in a binary format
  */
 public class JNIEntryPoint {
+
+    static boolean correctlyInitialized = false;
     static {
         try {
             NativeUtils.loadLibraryFromJar("/libjni.so");
-        } catch (IOException e) {
+            correctlyInitialized = true;
+        } catch (Exception e) {
             e.printStackTrace();
+            correctlyInitialized = false;
         }
     }
 
@@ -23,7 +27,7 @@ public class JNIEntryPoint {
     private JNIEntryPoint() {}
     private static JNIEntryPoint self;
     public static final synchronized JNIEntryPoint getInstance() {
-        if (self == null) {
+        if (self == null && correctlyInitialized) {
             self = new JNIEntryPoint();
             self.init();
         }
