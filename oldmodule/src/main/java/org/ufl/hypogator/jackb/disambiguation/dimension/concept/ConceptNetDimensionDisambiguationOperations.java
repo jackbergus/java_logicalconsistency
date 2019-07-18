@@ -249,6 +249,7 @@ public class ConceptNetDimensionDisambiguationOperations {
      * @param right     Right unresolved argument
      * @return
      */
+    @Deprecated
     private Pair<Direction, Optional<Pair<Double, List<SemanticNetworkEntryPoint>>>> getDirection
         (int steps, String left, String right) {
         return getDirection(steps, resolveExactTerm(left), resolveExactTerm(right));

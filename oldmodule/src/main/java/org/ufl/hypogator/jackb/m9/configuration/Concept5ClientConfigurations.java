@@ -23,8 +23,8 @@ package org.ufl.hypogator.jackb.m9.configuration;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.giacomobergami.m18.TTLOntology2;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
-import org.ufl.hypogator.jackb.ontology.TtlOntology;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.queries.JsonQuery;
@@ -282,8 +282,8 @@ public class Concept5ClientConfigurations {
     public Collection<String> conceptnetResolvableTypes() {
         if (memoizeCollection == null) {
             File dir = new File(hierarchiesFolder);
-            TtlOntology loader = new TtlOntology("data/SeedlingOntology.ttl");
-            Set<String> eF = loader.getEntityOrFillers();
+            //TtlOntology loader = new TtlOntology("data/SeedlingOntology.ttl");
+            Set<String> eF = TTLOntology2.getInstance().getEntityOrFillers();
             if (dir.exists()) {
                 ArrayList<String> toret = new ArrayList<>();
                 File[] files = dir.listFiles();

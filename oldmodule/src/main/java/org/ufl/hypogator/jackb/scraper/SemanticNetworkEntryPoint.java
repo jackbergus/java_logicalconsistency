@@ -58,53 +58,6 @@ public interface SemanticNetworkEntryPoint {
 
     static SemanticNetworkEntryPoint generateDefaultRoot(String term) {
         return EdgeVertex.generateSemanticRoot(term);
-        /*return new SemanticNetworkEntryPoint() {
-            @Override
-            public String getSemanticId() {
-                return "/aida/root/"+term;
-            }
-
-            @Override
-            public String getValue() {
-                return term;
-            }
-
-            @Override
-            public ScraperSources getGeneratingSource() {
-                return ScraperSources.AIDA;
-            }
-
-            @Override
-            public void setGeneratingSource(ScraperSources source) {
-                throw new RuntimeException("Cannot change a default AIDA dataset");
-            }
-
-            @Override
-            public boolean hasPOS() {
-                return true;
-            }
-
-            @Override
-            public String getPOS() {
-                return "n";
-            }
-
-            @Override
-            public String getLanguage() {
-                return "en";
-            }
-
-            HashSet<SemanticNetworkEntryPoint> s = new HashSet<>();
-            @Override
-            public Collection<SemanticNetworkEntryPoint> equivalenceClassBySemanticId() {
-                return s;
-            }
-
-            @Override
-            public void addToEquivalenceSet(SemanticNetworkEntryPoint semanticNetworkEntryPoint) {
-                s.add(semanticNetworkEntryPoint);
-            }
-        };*/
     }
 
     static String toConceptNetString(EdgeVertex dst) {

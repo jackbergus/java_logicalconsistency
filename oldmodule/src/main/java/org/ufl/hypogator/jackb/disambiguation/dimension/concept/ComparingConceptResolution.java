@@ -21,26 +21,22 @@
 
 package org.ufl.hypogator.jackb.disambiguation.dimension.concept;
 
-import com.google.common.collect.HashMultimap;
 import javafx.util.Pair;
-import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
 import org.ufl.hypogator.jackb.comparators.partialOrders.InformationPreservingComparator;
 import org.ufl.hypogator.jackb.comparators.partialOrders.POCType;
 import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
-import org.ufl.hypogator.jackb.comparators.partialOrders.policy.DisambiguationPolicy;
-import org.ufl.hypogator.jackb.comparators.partialOrders.policy.DisambiguationPolicyFactory;
+import org.ufl.hypogator.jackb.disambiguation.DisambiguatorForDimension;
 import org.ufl.hypogator.jackb.disambiguation.dimension.memoization.MemoizationLessData;
 import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
-import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
-import org.ufl.hypogator.jackb.utils.adt.Triple;
 
 import java.io.*;
 
-public class ComparingConceptResolution extends InformationPreservingComparator<ResolvedConcept> {
+public class ComparingConceptResolution extends InformationPreservingComparator<ResolvedConcept>
+                                        implements DisambiguatorForDimension<ResolvedConcept, InformativeConcept> {
 
     //private final static DisambiguationPolicy dpf = DisambiguationPolicyFactory.getInstance().getPolicy(ConfigurationEntrypoint.getInstance().disambiguationPolicy);
     private final String dimension;
-    private DisambiguatorForDimensionForConcept disambiguator;
+    private DisambiguatorForDimensionForConcept disambiguatorFromJNIOnly;
     private final MemoizationLessData<String> memoizerTester = new MemoizationLessData<>();
     FileWriter fw;
     BufferedWriter bw;
@@ -79,7 +75,7 @@ public class ComparingConceptResolution extends InformationPreservingComparator<
                 //for (SemanticNetworkEntryPoint le : cpT.list) {
                     //for (SemanticNetworkEntryPoint re : cpU.list) {
                         double leSOrR = ((leS /* * (1.0/((double)right.disambiguation.size()))*/) * (cpU.score));
-                        PartialOrderComparison cmp = disambiguator.getDirectionWithMemoization2(le, re);
+                        PartialOrderComparison cmp = disambiguatorFromJNIOnly.getDirectionWithMemoization2(le, re);
                         //if (cmp.t != PartialOrderComparison.Type.Uncomparable)
                         //map.put(cmp.t, cmp.uncertainty * leSOrR);
                     //}
@@ -118,19 +114,19 @@ public class ComparingConceptResolution extends InformationPreservingComparator<
 
     @Override
     public void serializeToDisk(File file) {
-        disambiguator.serializeToDisk(file);
+        disambiguatorFromJNIOnly.serializeToDisk(file);
         memoizerTester.serializeToDisk(new File(file.getAbsolutePath()+"_forStrings"));
     }
 
     @Override
     public void loadFromDisk(File file) {
-        disambiguator.loadFromDisk(file);
+        disambiguatorFromJNIOnly.loadFromDisk(file);
         memoizerTester.loadFromDisk(new File(file.getAbsolutePath()+"_forStrings"));
         File[] folders = file.listFiles();
         if (folders != null) for (File subFolder : folders) {
             if (!subFolder.isDirectory()) continue;
             String baseFileName = file.getName()+"_memoization.jbin";
-            disambiguator.appendFromDisk(new File(subFolder, baseFileName));
+            disambiguatorFromJNIOnly.appendFromDisk(new File(subFolder, baseFileName));
             memoizerTester.appendFromDisk(new File(subFolder, baseFileName+"_forStrings"));
         }
     }
@@ -151,7 +147,7 @@ public class ComparingConceptResolution extends InformationPreservingComparator<
     }
 
     public ComparingConceptResolution setDisabiguator(DisambiguatorForDimensionForConcept disambiguator) {
-        this.disambiguator = disambiguator;
+        this.disambiguatorFromJNIOnly = disambiguator;
         return this;
     }
 
@@ -160,4 +156,19 @@ public class ComparingConceptResolution extends InformationPreservingComparator<
         close();
     }
 
+    @Override
+    public InformativeConcept disambiguate(String str) {
+        return null;
+    }
+
+    private String[] argumentsForPartof = new String[]{"partOf"};
+    @Override
+    public String[] allowedKBTypesForTypingExpansion() {
+        return argumentsForPartof;
+    }
+
+    @Override
+    public boolean allowReflexiveExpansion() {
+        return false;
+    }
 }

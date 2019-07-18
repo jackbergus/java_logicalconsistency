@@ -23,7 +23,7 @@ public class QueryGenerationConfiguration {
         properties.load(propertiesFile);
 
         System.err.println("Loading the ontology file");
-        ontology2 = new TTLOntology2(properties.getProperty("ttlOntology2","data/SeedlingOntology2.ttl"));
+        ontology2 = TTLOntology2.getInstance();
 
         System.err.println("Loading the RunQuery module");
         expansionRunner = new RunQuery(new FileReader(properties.getProperty("additionalSchemaDefinition", "data/schema_definition.txt")));

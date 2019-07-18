@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.Gson;
+import it.giacomobergami.m18.TTLOntology2;
 import it.giacomobergami.m18.Utils;
 import javafx.util.Pair;
 import org.postgresql.util.PGobject;
@@ -18,7 +19,6 @@ import org.ufl.hypogator.jackb.m9.Hypotheses;
 import org.ufl.hypogator.jackb.m18.LoadFact;
 import org.ufl.hypogator.jackb.m9.SQLTuples;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
-import org.ufl.hypogator.jackb.ontology.TtlOntology;
 import org.ufl.hypogator.jackb.server.handlers.abstracts.SimplePostRequest;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ import static org.ufl.hypogator.jackb.m9.endm9.HypoAnalyse.longestRepeatedSubstr
 public class Baseline2 extends SimplePostRequest {
 
     public static Gson jsonSerializer = new Gson();
-    static TtlOntology fringes = new TtlOntology("data/SeedlingOntology.ttl");
+    static TTLOntology2 fringes = TTLOntology2.getInstance();
 
     public Baseline2() {
     }
@@ -134,7 +134,7 @@ public class Baseline2 extends SimplePostRequest {
                         for (SQLTuples tup : te.getValue()) {
                             AgileRecord rec = tup.asAgileRecord(type, associatedFieldsToER.get(tup.tupleId));
                             System.out.println(rec);
-                            double x = rec.getDegreeTypeInconsistency(fringes, tup.tupleId);
+                            double x = rec.getDegreeTypeInconsistency(fringes);
                             if (x > 0) {
                                 typeInconsistencyScore += x;
                                 //incoDetected = true;

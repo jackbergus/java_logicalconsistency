@@ -15,7 +15,7 @@ public class JNIEntryPoint {
             NativeUtils.loadLibraryFromJar("/libjni.so");
             correctlyInitialized = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             correctlyInitialized = false;
         }
     }

@@ -48,7 +48,6 @@ import java.util.function.Function;
 public class CheckIsA<DataSpecificRelationships> {
 
     private final File file;
-    private final String dimension;
     private DiGraphEquivalenceClass toUpper;
     private DiGraph<String> eqClass;
     private Set<String> visitedTerms;
@@ -80,7 +79,6 @@ public class CheckIsA<DataSpecificRelationships> {
     public CheckIsA(SemanticNetworkTraversers<DataSpecificRelationships> pg_dump_traverser, File graphFile, String dimension) {
         visitedTerms = new HashSet<>();
         this.pg_dump_traverser = pg_dump_traverser;
-        this.dimension = dimension;
 
         // Loads the vocabulary that should be memorized inside the seed maps/hashmaps. In this way, the content is not duplicated.
         // The content not to be duplicated contains the whols
@@ -102,7 +100,6 @@ public class CheckIsA<DataSpecificRelationships> {
     public CheckIsA(SemanticNetworkTraversers<DataSpecificRelationships> pg_dump_traverser, TwoGramIndexerJNI.TwoGramIndexerForDimension graphFile, String dimension) {
         visitedTerms = new HashSet<>();
         this.pg_dump_traverser = pg_dump_traverser;
-        this.dimension = dimension;
 
         // Loads the vocabulary that should be memorized inside the seed maps/hashmaps. In this way, the content is not duplicated.
         // The content not to be duplicated contains the whols

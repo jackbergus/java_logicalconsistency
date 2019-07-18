@@ -28,8 +28,8 @@ import org.ufl.hypogator.jackb.disambiguation.DisambiguationAlgorithm;
 import org.ufl.hypogator.jackb.disambiguation.DisambiguatorForDimension;
 import org.ufl.hypogator.jackb.disambiguation.dimension.Direction;
 import org.ufl.hypogator.jackb.fuzzymatching.MultiWordSimilarity;
-import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
+import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
 
@@ -40,8 +40,7 @@ import java.util.*;
  * When the information is perfect, this code provides the most compliant representation.
  * When this is not the case, this code provides some fuzzy string matching, through which we try to reconstruct
  */
-@Deprecated
-public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisambiguationOperations
+public class DisambiguatorNewForDimensionForConcept extends ConceptNetDimensionDisambiguationOperations
         implements DisambiguatorForDimension<ResolvedConcept, InformativeConcept> {
 
     /**
@@ -65,7 +64,7 @@ public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisa
      * @param dim LegacyDimension associated
      * @param argumentsForPartof
      */
-    public DisambiguatorForDimensionForConcept(String dim, String[] argumentsForPartof) {
+    public DisambiguatorNewForDimensionForConcept(String dim, String[] argumentsForPartof) {
         super(dim);
         this.argumentsForPartof = argumentsForPartof;
     }
@@ -90,7 +89,7 @@ public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisa
         // TODO: The hierarchy may contain trained element, which did not fit in ConceptNet's Vocabulary.
         // TODO: Therefore, the vocabulary should also contain every element within the hierarchy
         // In order to do so, while loading the graph, I update hte
-        if ((!getEnrichedVocabulary().isStopWord(tmpUnrectified)) && getEnrichedVocabulary().containsExactTerm(tmpUnrectified)) {
+        if ((!getEnrichedVocabulary().isStopWord(tmpUnrectified)) /*&& getEnrichedVocabulary().containsExactTerm(tmpUnrectified)*/) {
             t = rectify(t.toLowerCase());
             logger.debug("the term is exactely matched by the vocabulary. This means that it may exist as a nodeg");
             Pair<Direction, Optional<Pair<Double, List<SemanticNetworkEntryPoint>>>> cp = getDirection(dim, t);

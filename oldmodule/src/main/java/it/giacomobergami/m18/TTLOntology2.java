@@ -23,6 +23,7 @@ import org.ufl.hypogator.jackb.streamutils.iterators.IteratorWithOperations;
 import org.ufl.hypogator.jackb.streamutils.iterators.operations.UnionIterator;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,7 +44,7 @@ public class TTLOntology2 {
     private Set<String> eventOrRelationship;
     DiGraph<String> top_down_hierarchy;
 
-    public TTLOntology2(String url) {
+    private TTLOntology2(String url) {
         this.model = RDFDataMgr.loadModel(url);
         ldcToNist_map = new HashMap<>();
         nistToLDC_map = new HashMap<>();
@@ -60,6 +61,22 @@ public class TTLOntology2 {
         top_down_hierarchy = new DiGraph<>();
         load();
     }
+
+    private static TTLOntology2 selfie = null;
+    public static TTLOntology2 getInstance() {
+        if (selfie == null) {
+            Properties properties = new Properties();
+            try {
+                properties.load(new FileReader("logicalinconsistency.properties"));
+                String url = properties.getProperty("ttlOntology2","data/SeedlingOntology2.ttl");
+                selfie = new TTLOntology2(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return selfie;
+    }
+
 
     /**
      * Creates a resources using the jena definitions

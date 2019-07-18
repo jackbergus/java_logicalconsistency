@@ -2,7 +2,6 @@ package org.ufl.hypogator.jackb.m9;
 
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
-import org.ufl.hypogator.jackb.ontology.TtlOntology;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -14,7 +13,7 @@ public class SeparateMemoizationForConcepts extends StaticDatabaseClass {
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.print("Some String");
         printWriter.printf("Product name is %s and its price is %d $", "iPhone", 1000);
-        TtlOntology ontology = new TtlOntology("data/SeedlingOntology.ttl");
+        //TtlOntology ontology = new TtlOntology("data/SeedlingOntology.ttl");
         loadProperties();
         Database opt = Database.openOrCreate(engine, dbname, username, password).get();
         if (argo.length == 1) {

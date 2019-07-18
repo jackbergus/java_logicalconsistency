@@ -10,7 +10,6 @@ import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.inconsistency.legacy.TupleComparator;
 import org.ufl.hypogator.jackb.m9.Hypotheses;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
-import org.ufl.hypogator.jackb.ontology.TtlOntology;
 
 import java.io.File;
 import java.io.FileReader;
@@ -22,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StatsOverOuts extends StaticDatabaseClass {
 
     public static Gson jsonSerializer = new Gson();
-    static TtlOntology fringes = new TtlOntology("data/SeedlingOntology.ttl");
+    //static TtlOntology fringes = new TtlOntology("data/SeedlingOntology.ttl");
     public static final TupleComparator comparator = TupleComparator.getDefaultTupleComparator();
 
     public static void main(String args[]) throws IOException {

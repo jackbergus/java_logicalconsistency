@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import it.giacomobergami.m18.TTLOntology2;
 import javafx.util.Pair;
 import org.ufl.hypogator.jackb.m9.endm9.HypoAnalyse;
-import org.ufl.hypogator.jackb.ontology.TtlOntology;
 import org.ufl.hypogator.jackb.ontology.data.TypedValue;
 
 import java.util.*;
@@ -126,8 +125,8 @@ public class AgileRecord {
         return fieldList.get(schema.get(j));
     }
 
-    @Deprecated
-    public double getDegreeTypeInconsistency(TtlOntology ontology, String tupleId) {
+    /*@Deprecated
+    public double getDegreeTypeInconsistency(TtlOntology ontology) {
         double count = 0;
         for (int i = 0, n = size(); i<n; i++) {
             for (AgileField field : ith(i)) {
@@ -140,7 +139,7 @@ public class AgileRecord {
             }
         }
         return count == 0 ? 0 : 1.0/(count);
-    }
+    }*/
 
     public double getDegreeTypeInconsistency(TTLOntology2 ontology) {
         double count = 0;

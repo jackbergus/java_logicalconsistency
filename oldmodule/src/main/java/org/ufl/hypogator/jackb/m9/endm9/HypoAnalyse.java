@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.HashMultimap;
 import com.google.gson.Gson;
+import it.giacomobergami.m18.TTLOntology2;
 import it.giacomobergami.m18.Utils;
 import javafx.util.Pair;
 import org.postgresql.util.PGobject;
@@ -19,7 +20,6 @@ import org.ufl.hypogator.jackb.m9.Hypotheses;
 import org.ufl.hypogator.jackb.m18.LoadFact;
 import org.ufl.hypogator.jackb.m9.SQLTuples;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
-import org.ufl.hypogator.jackb.ontology.TtlOntology;
 
 import java.io.File;
 import java.io.FileReader;
@@ -30,7 +30,7 @@ import java.util.*;
 public class HypoAnalyse extends StaticDatabaseClass {
 
     public static Gson jsonSerializer = new Gson();
-    static TtlOntology fringes = new TtlOntology("data/SeedlingOntology.ttl");
+    static TTLOntology2 fringes = TTLOntology2.getInstance();
     public static final TupleComparator comparator = TupleComparator.getDefaultTupleComparator();
 
     // Returns the longest repeating non-overlapping
@@ -201,7 +201,7 @@ public class HypoAnalyse extends StaticDatabaseClass {
                         for (SQLTuples tup : te.getValue()) {
                             AgileRecord rec = tup.asAgileRecord(type, associatedFieldsToER.get(tup.tupleId));
                             tupleToIds.put(rec, tup.tupleId);
-                            typeInconsistencyScore += rec.getDegreeTypeInconsistency(fringes, tup.tupleId);
+                            typeInconsistencyScore += rec.getDegreeTypeInconsistency(fringes);
                             countRecords++;
                         }
 

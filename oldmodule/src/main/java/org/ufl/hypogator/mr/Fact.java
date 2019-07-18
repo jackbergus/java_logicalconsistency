@@ -16,7 +16,7 @@ import java.io.File;
 @Table(sqlTable = "fact")
 public class Fact extends SourceTabLoader {
 
-    private static final TTLOntology2 jol = new TTLOntology2("data/SeedlingOntology2.ttl");
+    private static final TTLOntology2 jol = TTLOntology2.getInstance();
 
     @JsonProperty("mention_id")
     @SQLType(type = "varchar")
