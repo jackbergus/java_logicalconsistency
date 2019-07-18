@@ -1,6 +1,5 @@
 package it.giacomobergami.m18;
 
-
 import com.google.common.collect.HashMultimap;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
@@ -10,13 +9,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.core.Prologue;
-
-// Require classes in the new project
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.alg.shortestpath.ListSingleSourcePathsImpl;
-import org.jgrapht.alg.shortestpath.TreeSingleSourcePathsImpl;
-import org.jgrapht.graph.DefaultDirectedWeightedGraph;
-import org.jgrapht.graph.GraphWalk;
 import org.ufl.hypogator.jackb.inconsistency.AgileField;
 import org.ufl.hypogator.jackb.ontology.Label;
 import org.ufl.hypogator.jackb.ontology.Ontology;
@@ -33,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+// Require classes in the new project
 
 
 public class TTLOntology2 {

@@ -4,11 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultimap;
 import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
-import org.ufl.hypogator.jackb.ontology.data.RawEventRelationship;
-import org.ufl.hypogator.jackb.streamutils.data.AlgebraSupport;
-import org.ufl.hypogator.jackb.streamutils.data.ArraySupport;
-import org.ufl.hypogator.jackb.streamutils.iterators.IteratorWithOperations;
-import org.ufl.hypogator.jackb.streamutils.iterators.operations.UnionIterator;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -82,12 +77,12 @@ public class JsonOntologyLoader {
     }
 
 
-    public IteratorWithOperations<RawEventRelationship> asBackwardRepresentation() {
+    /*public IteratorWithOperations<RawEventRelationship> asBackwardRepresentation() {
         return UnionIterator
                 .with(new AlgebraSupport<>(new ArraySupport<>(self.event.hasTypes)).map(TypeSubtype::backwardCompatibility))
                 .with(new AlgebraSupport<>(new ArraySupport<>(self.relation.hasTypes)).map(TypeSubtype::backwardCompatibility))
                 .done();
-    }
+    }*/
 
     // Ontology queries
 

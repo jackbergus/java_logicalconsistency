@@ -59,13 +59,11 @@ class DisambiguateListOfStringsViaLDC {
             LDCResult result = null;
             if (ldcDisambiguator != null)
                 result = ldcDisambiguator.bestFuzzyMatch(y);
-
+            else
+                result = new LDCResult(y);
             if (res == null) {
                 stringLength = y.length();
-                if (result != null)
-                    res = result;
-                else
-                    res = new LDCResult(y);
+                res = result;
             } else if ((res.score * scoreReliability + (stringLength/longest) * stringLengthReliability) < (result.score * scoreReliability + (y.length()/longest) * stringLengthReliability)) {
                 stringLength = y.length();
                 res = result;

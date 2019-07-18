@@ -1,6 +1,7 @@
 package org.ufl.hypogator.jackb.server.handlers.concrete;
 
 import com.google.common.collect.HashMultimap;
+import it.giacomobergami.m18.TTLOntology2;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
 import org.ufl.hypogator.jackb.m18.LoadFact;
 import org.ufl.hypogator.jackb.m9.configuration.StaticDatabaseClass;
@@ -15,6 +16,12 @@ import java.util.stream.Collectors;
 
 public class LoadDatabaseViaRequest extends SimplePostRequest {
 
+    private TTLOntology2 ontology2;
+
+    public LoadDatabaseViaRequest(TTLOntology2 ontology2) {
+        this.ontology2 = ontology2;
+    }
+
     @Override
     public String handleContent(String content, HashMultimap<String, String> requestParameters) {
         Set<String> dbName_string = requestParameters.get("dbname");
@@ -23,7 +30,7 @@ public class LoadDatabaseViaRequest extends SimplePostRequest {
         }
         String dbName = dbName_string.iterator().next();
         StaticDatabaseClass.loadProperties();
-        LoadFact lf = new LoadFact();
+        LoadFact lf = new LoadFact(ontology2);
         Database opt = Database.openOrCreate(StaticDatabaseClass.engine, dbName, StaticDatabaseClass.username, StaticDatabaseClass.password).get();
         String toBeReturned = "Error on closing the database";
         try {

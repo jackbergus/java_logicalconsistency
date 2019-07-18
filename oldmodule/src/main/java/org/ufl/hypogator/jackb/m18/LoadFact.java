@@ -1,5 +1,6 @@
 package org.ufl.hypogator.jackb.m18;
 
+import it.giacomobergami.m18.TTLOntology2;
 import org.jooq.Record1;
 import org.jooq.impl.DSL;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.dbms.Database;
@@ -25,19 +26,11 @@ import java.util.stream.Stream;
 
 public class LoadFact extends StaticDatabaseClass {
 
-    public static boolean load(File ldcData) {
-        if (!databaseConnection().isPresent()) {
-            if (!loadProperties()) return false;
-            Optional<Database> opt = Database.openOrCreate(engine, dbname, username, password);
+    private TTLOntology2 ontology2;
 
-            if (opt.isPresent()) {
-                Database database = opt.get();
-                loadForcefully(database, ldcData);
-            } else {
-                System.err.println("Error creating the new database (");
-            }
-            return true;
-        } else return false;
+    public LoadFact(TTLOntology2 ontology2) {
+        super();
+        this.ontology2 = ontology2;
     }
 
     private static void createLDCDataSchema(Database database, File ldcData, Integer batchSize) {
@@ -68,7 +61,7 @@ public class LoadFact extends StaticDatabaseClass {
 
 
 
-    public static void loadForcefully(Database database, File ldcData) {
+    public void loadForcefully(Database database, File ldcData) {
 
         AbstractVocabulary.IsStopwordPredicate checkStopwords = AbstractVocabulary.getIsStopwordPredicate();
 
@@ -109,39 +102,20 @@ public class LoadFact extends StaticDatabaseClass {
                 "    );\n" +
                 "$FUNCTION$;");
 
-        /*if (true) {
-            // associating to each clusterId the element that has more occurences. Therefore, we're going to
-            // disambiguate only this element,..
-            System.out.println("Generating the table of the most frequent term associated within the cluster");
-            d = new Benchmark<Object, Object>() {
-                @Override
-                public Object function(Object input) {
-                    database.rawSqlStatement(new File("sql/TA201_MostFrequentInstance.sql"));
-                    return null;
-                }
-            }.apply(null).getKey();
-            System.out.println("s = "+d);
-
-            database.rawSqlStatement("create unique index on entity_resolver_count (\"argumentClusterId\", \"argumentRawString\");");
-            database.rawSqlStatement("alter table entity_resolver_count ADD CONSTRAINT PK_entity_resolver_count PRIMARY KEY USING INDEX \"entity_resolver_count_argumentClusterId_argumentRawString_idx\";");
-        }*/
-
         // UPDATE: alternative
-        if (true) {
-            System.out.println("Generating the table of the most frequent term associated within the cluster");
-            database.rawSqlCommand("DROP TABLE IF EXISTS mentions_for_update");
-            d = new Benchmark<Object, Object>() {
-                @Override
-                public Object function(Object input) {
-                    database.rawSqlStatement(new File("sql/TA211_NewGroupByForChar.sql"));
-                    database.rawSqlStatement("select * from mentions_for_update b  where 0 < (select count(x) from (select unnest(strings) as x from mentions_for_update a where b.amid = a.amid  ) foo where NOT ((x = '') IS NOT FALSE));");
-                    database.rawSqlStatement("create unique index on mentions_for_update (amid);");
-                    database.rawSqlStatement("alter table mentions_for_update ADD CONSTRAINT PK_mentions_for_update PRIMARY KEY USING INDEX mentions_for_update_amid_idx;");
-                    return null;
-                }
-            }.apply(null).getKey();
-            System.out.println("s = "+d);
-        }
+        System.out.println("Generating the table of the most frequent term associated within the cluster");
+        database.rawSqlCommand("DROP TABLE IF EXISTS mentions_for_update");
+        d = new Benchmark<Object, Object>() {
+            @Override
+            public Object function(Object input) {
+                database.rawSqlStatement(new File("sql/TA211_NewGroupByForChar.sql"));
+                database.rawSqlStatement("select * from mentions_for_update b  where 0 < (select count(x) from (select unnest(strings) as x from mentions_for_update a where b.amid = a.amid  ) foo where NOT ((x = '') IS NOT FALSE));");
+                database.rawSqlStatement("create unique index on mentions_for_update (amid);");
+                database.rawSqlStatement("alter table mentions_for_update ADD CONSTRAINT PK_mentions_for_update PRIMARY KEY USING INDEX mentions_for_update_amid_idx;");
+                return null;
+            }
+        }.apply(null).getKey();
+        System.out.println("s = "+d);
 
         // Force garbage collection
         System.gc();
@@ -154,7 +128,7 @@ public class LoadFact extends StaticDatabaseClass {
             Set<String> toExpandUsingTA2 = disambiguateWithLDC(database, checkStopwords);
 
             if (doExpansionFromTA2) {
-                System.out.println("Performing the expansion over the TA2 clustering data");
+                System.out.println("Performing the expansion over the TA2 clustering data for the non-LDC matched elements");
                 for (String nullDisambiguated : toExpandUsingTA2) {
                     System.err.println("\tDisambiguating for: "+nullDisambiguated);
                     MentionsForUpdate sidekick_table = Tables.MENTIONS_FOR_UPDATE.as("sidekick");
@@ -227,13 +201,28 @@ public class LoadFact extends StaticDatabaseClass {
         System.out.println("View creation for KB Expansion = " + ((end - start) / 1000));
     }
 
-    public static List<String> streamStringsWithSplitAndClean(AbstractVocabulary.IsStopwordPredicate checkStopwords, Stream<String> stream) {
+    public static String splitCamelCaseString(String s){
+        StringBuilder result = new StringBuilder();
+        for (String w : s.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")) {
+            result.append(w).append(' ');
+        }
+        return result.toString().trim();
+    }
+
+    public List<String> streamStringsWithSplitAndClean(AbstractVocabulary.IsStopwordPredicate checkStopwords, Stream<String> stream) {
         return stream.flatMap(z -> {
             HashSet<String> dedup = new HashSet<>();
             new ArraySupport<>(z.split("\\|")).forEachRemaining(y -> {
                 // Update: removing the stopwords from the to-disambiguate set
                 if ((!y.isEmpty())&&(!checkStopwords.test(y))) {
 
+                    // If it is an ontology element, then I need to just get the least subtype
+                    if (ontology2.getEntityOrFillers().contains(y)) {
+                        if (y.contains(".")) {
+                            String[] description = y.split("\\.");
+                            y = splitCamelCaseString(description[description.length-1]);
+                        }
+                    }
                     dedup.add(y);
                 }
             });
@@ -244,7 +233,7 @@ public class LoadFact extends StaticDatabaseClass {
                 .collect(Collectors.toList());
     }
 
-    public static Set<String> disambiguateWithLDC(Database database, AbstractVocabulary.IsStopwordPredicate checkStopwords) {
+    public Set<String> disambiguateWithLDC(Database database, AbstractVocabulary.IsStopwordPredicate checkStopwords) {
         LDCMatching ldcDisambiguator = LDCMatching.getInstance();
         Set<String> notClusteredElements = new HashSet<>();
 
@@ -275,17 +264,17 @@ public class LoadFact extends StaticDatabaseClass {
     }
 
 
-    public static void main(String args[]) throws IOException {
+    /*public static void main(String args[]) throws IOException {
         loadProperties();
         Database opt = Database.openOrCreate(engine, "p103", username, password).get();
         //String t101 = "/media/giacomo/Data/Progetti/hypogator/data/T101.all.int";
         String ta2 = "/home/giacomo/Scrivania/P103.csv";
         //String ta2 = "./run2.csv";
         loadForcefully(opt, new File(ta2));
-        /*Files.readAllLines(Paths.get("/home/giacomo/Scrivania/evaluation/linking/manual_linking.csv")).stream().forEach(x -> {
-            System.out.println(AIDATuple.t.transliterate(x));
-        });*/
-    }
+        //Files.readAllLines(Paths.get("/home/giacomo/Scrivania/evaluation/linking/manual_linking.csv")).stream().forEach(x -> {
+        //    System.out.println(AIDATuple.t.transliterate(x));
+        //});
+    }*/
 
     private static class StringPair {
         public String key;
