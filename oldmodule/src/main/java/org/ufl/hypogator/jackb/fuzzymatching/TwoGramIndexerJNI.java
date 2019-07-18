@@ -38,7 +38,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
 
     private TwoGramIndexerJNI() {
         this.dir = Concept5ClientConfigurations.instantiate().getHierarchiesFolder();
-        openDirectory(this.dir);
+        if (correctlyInitialized) openDirectory(this.dir);
         map = new HashMap<>();
     }
 
@@ -112,7 +112,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
         TwoGramIndexerForDimension(String dimension, TwoGramIndexerJNI parent) {
             this.dimension = dimension;
             this.parent = parent;
-            parent.openDimensioN(dimension);
+            if (correctlyInitialized) parent.openDimensioN(dimension);
             current = false;
             isFirst = true;
             hierarchyGraph = new DiGraphEquivalenceClass();
