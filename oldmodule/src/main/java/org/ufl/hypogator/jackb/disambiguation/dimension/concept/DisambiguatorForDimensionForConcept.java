@@ -40,7 +40,6 @@ import java.util.*;
  * When the information is perfect, this code provides the most compliant representation.
  * When this is not the case, this code provides some fuzzy string matching, through which we try to reconstruct
  */
-@Deprecated
 public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisambiguationOperations
         implements DisambiguatorForDimension<ResolvedConcept, InformativeConcept> {
 

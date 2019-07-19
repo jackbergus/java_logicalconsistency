@@ -115,7 +115,7 @@ public class TTLOntology2 {
     Resource label;
     Resource allowedNist;
     private Ontology load() {
-
+        System.err.println("Loading TTL2");
         Iterable<QuerySolution> getKindFromSorts = () -> query(null, subclassof, category);
         for (QuerySolution kind : getKindFromSorts) {
             RDFNode currKind = kind.get("s");
@@ -151,7 +151,7 @@ public class TTLOntology2 {
                     //ldcToNist(ts.ldcName, ts.nistName);
                 }
         }
-        extractHierarchy(true, new File("test.txt"));
+        //extractHierarchy(true, new File("test.txt"));
         expandArgumentTypes();
 
         for (Sort s : self.getSorts()) {
@@ -174,6 +174,7 @@ public class TTLOntology2 {
                         }
                 }
         }
+        System.err.println("Loading TTL2... end");
         return self;
     }
 
