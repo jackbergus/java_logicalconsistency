@@ -45,17 +45,8 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
     public ConceptNetVocabulary(FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> vocabulary) {
         super(vocabulary);
     }
-    /*private ConceptNetVocabulary(HashMultimap<String, String> vocabulary) {
-        super(vocabulary);
-    }*/
 
-    /*public void addTermsFromVertex(String x) {
-        String u = ConceptNetDimensionDisambiguationOperations.unrectify(x);
-        if (!vocabulary.containsKey(u)) {
-            vocabulary.put(u, "/c/en/"+x);
-        }
-    }*/
-
+    @Deprecated
     public static ConceptNetVocabulary readVocabulary(File f, String... languages) {
         TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode> ls;
 
@@ -82,6 +73,7 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
      *
      * @return
      */
+    @Deprecated
     public static ConceptNetVocabulary readDefaultVocabulary() {
         if (voc == null) {
             System.err.println("[ConceptNetVocabulary::readDefaultVocabulary] Reading Concepts Vocabulary for FuzzyMatching...");
@@ -101,7 +93,7 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
         return voc;
     }
 
-    public static void main(String args[]) throws IOException, ClassNotFoundException {
+    /*public static void main(String args[]) throws IOException, ClassNotFoundException {
         System.err.println("LOADING");
 
         FileInputStream file = new FileInputStream("data/nodes/termToObjects.ser");
@@ -129,7 +121,7 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
         System.out.println(voc.fuzzyMatch("buk", 3, .6));
         System.out.println(voc.fuzzyMatch("buk 332", 3, .6));
         System.err.println("DONE");
-    }
+    }*/
 
     private static CNVocabularyEntry e = null;
     public static CNVocabularyEntry getInstance() {
@@ -166,6 +158,7 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
             this.isStopWord = isStopWord;
         }
 
+        @Deprecated
         public TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode> listEntries(File folder, Set<String> languages) {
             //HashMultimap<String, String> term_to_id = HashMultimap.create();
             String[] languagesUrlConceptnet = new String[languages.size()];

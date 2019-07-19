@@ -80,7 +80,7 @@ public class ConceptNetDimensionDisambiguationOperations {
         // ConceptNetTraverser and MultiConcpetScraper have a mutual dependency. Setting the vocabulary as null at first
         this.resolutor = ConceptNetJNITraverser.getInstance();
         // Then, generating and loading the vocabulary
-        this.dimensionScraper = new MultiConceptScraper<>(resolutor).dimension(dim, true); // TODO: true
+        this.dimensionScraper = new MultiConceptScraper<>(resolutor).dimension(dim, ConfigurationEntrypoint.getInstance().useJNI); // TODO: true
         // Then, setting the vocabulary
         this.resolutor.setVocabulary(dimensionScraper.getEnrichedVocabulary());
         this.dimension = dim;

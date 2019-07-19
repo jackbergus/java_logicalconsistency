@@ -29,7 +29,6 @@ import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import java.util.List;
 
 public interface TermScorer<T> {
-    double score(T root, T elem);
     Pair<Double, List<T>> scoreWithPath(T root, T elem);
     FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> getEnrichedVocabulary();
     String getDimension();

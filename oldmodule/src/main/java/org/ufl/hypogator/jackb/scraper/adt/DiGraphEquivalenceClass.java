@@ -70,7 +70,7 @@ public class DiGraphEquivalenceClass extends DiGraph<SemanticNetworkEntryPoint> 
 
     public void loadFromFile2(File file, ConceptNetVocabulary voc, Function<String, SemanticNetworkEntryPoint> deserialize) throws IOException {
         FileChannelLinesSpliterator.lines(file.toPath(), Charset.defaultCharset()).forEach(y -> {
-            DiGraphEquivalenceClass.this.addEdge(y,null,  x -> {
+            DiGraphEquivalenceClass.this.addEdge(y,voc,  x -> {
                 try {
                     return om.readValue(x, EdgeVertex.class);
                 } catch (IOException e) {

@@ -228,11 +228,6 @@ public class ConceptScraper3<DataSpecificRelationships> implements AutoCloseable
         }
     }
 
-    @Override
-    public double score(SemanticNetworkEntryPoint root, SemanticNetworkEntryPoint element) {
-        return score(root, element, false, null);
-    }
-
     /**
      * 1) The main function used to perform the score for the inference part
      * @param root  Root to be reached during the traversal operation

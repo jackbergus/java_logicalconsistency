@@ -33,6 +33,7 @@ public class ConfigurationEntrypoint {
     public final String groupingPolicy;
     public final File functionalDependencyFile;
     public final Function<String, Dimension<ResolvedConcept, InformativeConcept>> dimConceptFactory;
+    public final Boolean useJNI;
 
     private static ConfigurationEntrypoint self;
     private ConfigurationEntrypoint() throws IOException {
@@ -56,6 +57,7 @@ public class ConfigurationEntrypoint {
         forceUnion = Boolean.valueOf(p.getProperty("forceUnion", "false"));
         postgresDump = new File(p.getProperty("pgDump", "data/postgres"));
         dimConceptFactory = DimConceptFactory.getInstance(Boolean.valueOf(p.getProperty("DimConceptsWithUnion", "false")));
+        useJNI = Boolean.valueOf(p.getProperty("useJNI", "false"));
     }
 
     public static ConfigurationEntrypoint getInstance() {

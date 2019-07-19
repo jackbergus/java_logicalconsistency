@@ -13,7 +13,10 @@ import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 public class ConceptNet5Dump implements ConceptNet5Interface {
@@ -69,7 +72,7 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
     }
 
     public static String removeSuffix(final String s, final String suffix) {
-        if (s != null && suffix != null && s.endsWith(suffix)){
+        if (s != null && suffix != null && s.endsWith(suffix)) {
             return s.substring(0, s.length() - suffix.length());
         }
         return s;
@@ -79,90 +82,89 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
         reserialize = true;
         File pgDump = ConfigurationEntrypoint.getInstance().postgresDump;
         System.err.println("[ConceptNet5Dump::initialize] Concurrent loading data");
-        Thread t1 = new Thread(() -> {
-            File nodes = new File(pgDump, "pg_nodes.csv");
-            try {
-                FileChannelLinesSpliterator.lines(nodes.toPath(), Charset.defaultCharset()).forEach(x -> {
-                    String l[] = x.split("\t");
-                    String k = l[0];
-                    k = removeSuffix(k, "/n");
-                    if (k.endsWith("/a") || k.endsWith("/r")) return;
-                    for (int i = 1, lLength = l.length; i < lLength; i++) {
-                        String arg = l[i];
-                        clangToSeed.put(k, arg);
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        t1.start();
+        File nodes = new File(pgDump, "pg_nodes.csv");
+        File offsets = new File(pgDump, "ng_noes_name_to_offset.csv");
+        if (nodes.exists() && offsets.exists()) {
+            Thread t1 = new Thread(() -> {
+                try {
+                    FileChannelLinesSpliterator.lines(nodes.toPath(), Charset.defaultCharset()).forEach(x -> {
+                        String l[] = x.split("\t");
+                        String k = l[0];
+                        k = removeSuffix(k, "/n");
+                        if (k.endsWith("/a") || k.endsWith("/r")) return;
+                        for (int i = 1, lLength = l.length; i < lLength; i++) {
+                            String arg = l[i];
+                            clangToSeed.put(k, arg);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            t1.start();
+            Thread t2 = new Thread(() -> {
+                // Reading the C++-generated file during the serialization of the nodes of Pos
+                try {
+                    FileChannelLinesSpliterator.lines(offsets.toPath(), Charset.defaultCharset()).forEach(x -> {
+                        int idx = x.lastIndexOf(',');
+                        try {
+                            if (idx > 0) {
+                                String id = x.substring(0, idx);
+                                id = removeSuffix(id, "/n");
+                                if (id.endsWith("/a") || id.endsWith("/r")) return;
+                                idToOffset.put(x.substring(0, idx), Long.valueOf(x.substring(idx + 1)));
+                            }
+                        } catch (NumberFormatException e) {
+                            System.err.println("Error opening the file: " + offsets.toPath());
+                            //e.printStackTrace();
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
 
-        Thread t2 = new Thread(() -> {
-            // Reading the C++-generated file during the serialization of the nodes of Pos
-            File offsets = new File(pgDump, "ng_noes_name_to_offset.csv");
-            try {
-                FileChannelLinesSpliterator.lines(offsets.toPath(), Charset.defaultCharset()).forEach(x -> {
-                    int idx = x.lastIndexOf(',');
-                    try {
-                       if (idx > 0) {
-                           String id = x.substring(0, idx);
-                           id = removeSuffix(id, "/n");
-                           if (id.endsWith("/a") || id.endsWith("/r")) return;
-                           idToOffset.put(x.substring(0, idx), Long.valueOf(x.substring(idx+1)));
-                       }
-                    } catch (NumberFormatException e) {
-                        System.err.println("Error opening the file: "+offsets.toPath());
-                        //e.printStackTrace();
-                    }
-                });
-            } catch (IOException e) {
+            t2.start();
+            try { // Barrier
+                t1.join();
+                t2.join();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        });
-        t2.start();
-        try { // Barrier
-            t1.join();
-            t2.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
-
-
     }
 
     public void serialize() {
         if (!reserialize) return;
-        // Write the folder only if it has been set
-        //if (folder != null) {
-            // Starts the writing if it does not exist already
-            //if (!folder.exists()) {
-                // Create the folder and start writing
-                //folder.mkdirs();
-                //if (folder.isDirectory()) {
-                    System.err.println("[ConceptNet5Dump::serialize] Concurrent serializing");
-                    // Serializing only if the files do not already exist
-                    Thread uno = new Thread(() -> { File f = new File(folder, "clangToSeed.ser"); { HashMultimapSerializer.serialize(clangToSeed, f); } });
-                    Thread due = new Thread(() -> { File f = new File(folder, "idToOffset.ser"); { HashMultimapSerializer.serializeMap(idToOffset, f); } });
-
-                    uno.start();
-                    due.start();
-                    try {
-                        uno.join();
-                        due.join();
-                        reserialize = false;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                //} //else {
-                //    System.err.println("Error serializing the map: " + folder + " exists and it is not a folder");
-                //}
-            //}
-        //}
+        File f = new File(folder, "clangToSeed.ser");
+        File f2 = new File(folder, "idToOffset.ser");
+        if (f.exists() && f2.exists()) {
+            // Serializing only if the files do not already exist
+            System.err.println("[ConceptNet5Dump::serialize] Concurrent serializing");
+            Thread uno = new Thread(() -> {
+                {
+                    HashMultimapSerializer.serialize(clangToSeed, f);
+                }
+            });
+            Thread due = new Thread(() -> {
+                {
+                    HashMultimapSerializer.serializeMap(idToOffset, f2);
+                }
+            });
+            uno.start();
+            due.start();
+            try {
+                uno.join();
+                due.join();
+                reserialize = false;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static ConceptNet5Dump self = null;
+
     public static ConceptNet5Dump getInstance() {
         if (self == null)
             self = new ConceptNet5Dump(ConfigurationEntrypoint.getInstance().postgresDump);
@@ -196,7 +198,7 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
     /**
      * Performs the dumping of the data structures anew.
      *
-     * @param args  ignored parameter arguments
+     * @param args ignored parameter arguments
      */
     public static void main(String args[]) {
         File folder = ConfigurationEntrypoint.getInstance().postgresDump;
@@ -215,7 +217,7 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
 
     public Long addToPersistance(Object values, Long theLong) {
         if (values instanceof ConceptNet5Postgres.RecordResultForSingleNode) {
-            ConceptNet5Postgres.RecordResultForSingleNode val = (ConceptNet5Postgres.RecordResultForSingleNode)values;
+            ConceptNet5Postgres.RecordResultForSingleNode val = (ConceptNet5Postgres.RecordResultForSingleNode) values;
             String id = val.id;
             id = removeSuffix(id, "/n");
             if (id.endsWith("/a") || id.endsWith("/r")) return null;
@@ -223,7 +225,7 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
             reserialize = true;
             long newLong; // Using the native object. If you use the class, the reference that is Kept is always the one of the last object's assignment
             if (theLong == null) {
-                newLong = getMax+1;
+                newLong = getMax + 1;
                 getMax++;
             } else {
                 newLong = theLong;

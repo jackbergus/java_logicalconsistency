@@ -341,6 +341,7 @@ public class ConceptNet5Postgres implements ConceptNet5Interface {
         }
     }
 
+    @Deprecated
     public List<RecordResultForSingleNode> rawQueryNode(boolean like, String... node) {
         for (int i = 0, n = node.length; i<n; i++) {
             node[i] = Concept5ClientConfigurations.rectifyTerm(node[i]);

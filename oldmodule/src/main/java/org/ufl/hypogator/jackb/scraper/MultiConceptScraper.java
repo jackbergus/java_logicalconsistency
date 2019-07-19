@@ -167,11 +167,6 @@ public class MultiConceptScraper<DataSpecificRelationships> {
         }
 
         @Override
-        public double score(SemanticNetworkEntryPoint root, SemanticNetworkEntryPoint elem) {
-            return scraper2.score(root, elem, true, null);
-        }
-
-        @Override
         public Pair<Double, List<SemanticNetworkEntryPoint>> scoreWithPath(SemanticNetworkEntryPoint root, SemanticNetworkEntryPoint elem) {
             return scraper2.scoreWithPath(root, elem);
         }
