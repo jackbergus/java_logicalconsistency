@@ -55,7 +55,7 @@ public class ConceptNetVocabulary extends AbstractVocabulary<RecordResultForSing
      * @return
      */
     public static ConceptNetVocabulary readDefaultVocabulary() {
-        if (voc == null) {
+        /*if (voc == null) {
             System.err.println("[ConceptNetVocabulary::readDefaultVocabulary] Reading Concepts Vocabulary for FuzzyMatching...");
 
             // Loading the default path containing all ConceptNet's entities
@@ -69,7 +69,7 @@ public class ConceptNetVocabulary extends AbstractVocabulary<RecordResultForSing
             voc = readDefaultVocabulary();
 
             System.err.println("[ConceptNetVocabulary::readDefaultVocabulary]... Reading done");
-        }
+        }*/
         return voc;
     }
 
@@ -113,9 +113,6 @@ public class ConceptNetVocabulary extends AbstractVocabulary<RecordResultForSing
     public void addTermsFromVertex(Object apply) {
         if (apply instanceof EdgeVertex) {
             EdgeVertex ap = ((EdgeVertex) apply);
-            if (ap.id.contains("9N314M")) {
-                System.err.println(ap);
-            }
             this.forcePut(((EdgeVertex) apply).asRecordResultForSingleNode());
         }
     }

@@ -1,5 +1,5 @@
 /*
- * TraverseConceptNet.java
+ * FirstBatchAnswer.java
  * This file is part of aida_scraper
  *
  * Copyright (C) 2018 giacomo
@@ -19,12 +19,32 @@
  *
  */
 
-package org.ufl.hypogator.jackb.traversers.conceptnet;
+package org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat;
 
-import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
-import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.queries.JsonQuery;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.function.BiFunction;
+import java.util.Iterator;
+import java.util.List;
 
-public interface TraverseConceptNet extends BiFunction<Concept5ClientConfigurations, String, JsonQuery> {
+public class FirstBatchAnswer implements Iterable<Edge> {
+    @JsonProperty("@context")
+    private List<String> context;
+
+    @JsonProperty("@id")
+    private String id;
+
+    @JsonProperty("edges")
+    private List<Edge> edges;
+
+    @JsonProperty("view")
+    private View view;
+
+    public Iterator<Edge> nextBatchAnswer() {
+        return view == null ? null : view.firstBatchAnswer();
+    }
+
+    @Override
+    public Iterator<Edge> iterator() {
+        return edges.iterator();
+    }
 }

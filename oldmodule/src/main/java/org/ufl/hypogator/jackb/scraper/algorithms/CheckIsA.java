@@ -24,6 +24,7 @@ package org.ufl.hypogator.jackb.scraper.algorithms;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
 import org.ufl.hypogator.jackb.fuzzymatching.FuzzyMatcher;
+import org.ufl.hypogator.jackb.fuzzymatching.TwoGramIndexer;
 import org.ufl.hypogator.jackb.fuzzymatching.TwoGramIndexerJNI;
 import org.ufl.hypogator.jackb.logger.Logger;
 import org.ufl.hypogator.jackb.logger.LoggerFactory;
@@ -82,7 +83,9 @@ public class CheckIsA<DataSpecificRelationships> {
 
         // Loads the vocabulary that should be memorized inside the seed maps/hashmaps. In this way, the content is not duplicated.
         // The content not to be duplicated contains the whols
-        enrichedVocabulary = ConceptNetVocabulary.readDefaultVocabulary().copy();
+        // TODO: enrichedVocabulary = ConceptNetVocabulary.readDefaultVocabulary().copy();
+        // This other line of code allows to load the TwoGramMatcher directly from the enrichedVocabulary
+        enrichedVocabulary = new ConceptNetVocabulary(new TwoGramIndexer<>(RecordResultForSingleNode::getStrings));
 
         // This method also enriches the voc vocabulary
         toUpper = readFromFile(graphFile, x -> {

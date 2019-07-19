@@ -27,6 +27,7 @@ import it.giacomobergami.m18.TTLOntology2;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
 import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
+import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.queries.JsonQuery;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -267,7 +268,7 @@ public class Concept5ClientConfigurations {
         }
     }
 
-    /*public JsonQuery ingoingRelDefaultEn(String term, String rel) {
+    public JsonQuery ingoingRelDefaultEn(String term, String rel) {
         term = rectifyTerm(term);
         return term == null ? null : new JsonQuery(concpetNetConfURL + "/query?end=" + term + "&rel=" + (rel.startsWith("/r/") ? rel : "/r/"+rel),  useRestfulConceptnetAPI, retrieveOnlyEnglishConcepts()); ///c/en/
     }
@@ -275,7 +276,7 @@ public class Concept5ClientConfigurations {
     public JsonQuery outgoingRelDefaultEn(String term, String rel) {
         term = rectifyTerm(term);
         return term == null ? null : new JsonQuery(concpetNetConfURL + "/query?start=" + term + "&rel=" + (rel.startsWith("/r/") ? rel : "/r/"+rel),  useRestfulConceptnetAPI, retrieveOnlyEnglishConcepts()); ///c/en/
-    }*/
+    }
 
     private Collection<String> memoizeCollection = null;
     public Collection<String> conceptnetResolvableTypes() {
