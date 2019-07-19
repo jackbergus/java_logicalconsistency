@@ -1,12 +1,9 @@
 package org.ufl.hypogator.jackb;
 
-import org.ufl.hypogator.jackb.comparators.partialOrders.InformationPreservingComparator;
 import org.ufl.hypogator.jackb.disambiguation.dimension.Dimension;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConceptFactory;
-import org.ufl.hypogator.jackb.disambiguation.dimension.concept.DimConcepts;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.InformativeConcept;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ResolvedConcept;
-import org.ufl.hypogator.jackb.ontology.JsonOntologyLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,8 +73,8 @@ public class ConfigurationEntrypoint {
         return Objects.requireNonNull(getInstance()).dimConceptFactory.apply(fieldName);
     }
 
-    public JsonOntologyLoader getOntology() {
+    /*public JsonOntologyLoader getOntology() {
         return JsonOntologyLoader.getInstance();
-    }
+    }*/
 
 }

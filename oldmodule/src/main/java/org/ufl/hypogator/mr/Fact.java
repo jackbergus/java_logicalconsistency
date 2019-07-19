@@ -6,10 +6,8 @@ import it.giacomobergami.m18.TTLOntology2;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.model.SQLType;
 import org.ufl.aida.ldc.dbloader.tmpORM.withReflection.model.Table;
 import org.ufl.aida.ldc.dbloader.tmptables.SourceTabLoader;
-import org.ufl.aida.ldc.dbloader.tmptables.mentions.EntMentions;
 import org.ufl.hypogator.jackb.ontology.TypeSubtype;
 import org.ufl.hypogator.jackb.streamutils.data.Tuple;
-import org.ufl.hypogator.jackb.ontology.JsonOntologyLoader;
 
 import java.io.File;
 

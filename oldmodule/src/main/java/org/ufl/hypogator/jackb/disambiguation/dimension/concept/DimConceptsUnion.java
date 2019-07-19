@@ -8,7 +8,6 @@ import org.ufl.hypogator.jackb.comparators.partialOrders.PartialOrderComparison;
 import org.ufl.hypogator.jackb.comparators.partialOrders.policy.DisambiguationPolicy;
 import org.ufl.hypogator.jackb.comparators.partialOrders.policy.DisambiguationPolicyFactory;
 import org.ufl.hypogator.jackb.disambiguation.dimension.Dimension;
-import org.ufl.hypogator.jackb.ontology.JsonOntologyLoader;
 import org.ufl.hypogator.jackb.ontology.TypeSubtype;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 

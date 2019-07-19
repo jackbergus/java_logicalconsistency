@@ -5,7 +5,6 @@ import com.ibm.icu.text.Transliterator;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.AbstractVocabulary;
 import org.ufl.hypogator.jackb.fuzzymatching.ldc.LDCMatching;
 import org.ufl.hypogator.jackb.fuzzymatching.ldc.LDCResult;
-import org.ufl.hypogator.jackb.ontology.data.HypoGatorTrimmedMentions;
 
 import java.util.Collection;
 import java.util.Comparator;

@@ -1,6 +1,7 @@
 package org.ufl.hypogator.jackb.fuzzymatching.ldc;
 
 import com.google.common.collect.HashMultimap;
+import it.giacomobergami.m18.TTLOntology2;
 import javafx.util.Pair;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -19,12 +20,9 @@ import org.ufl.aida.ldc.dbloader.tmptables.slots.EvtSlots;
 import org.ufl.aida.ldc.dbloader.tmptables.slots.RelSlots;
 import org.ufl.aida.ldc.jOOQ.model.Tables;
 import org.ufl.aida.ldc.jOOQ.model.tables.records.EntityresolverRecord;
-import org.ufl.hypogator.jackb.ConfigurationEntrypoint;
 import org.ufl.hypogator.jackb.fuzzymatching.MultiWordSimilarity;
-import org.ufl.hypogator.jackb.ontology.JsonOntologyLoader;
 import org.ufl.hypogator.jackb.streamutils.data.ArraySupport;
 import org.ufl.hypogator.jackb.utils.ArgMaxCollector;
-import org.ufl.hypogator.jackb.utils.adt.Triple;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +43,7 @@ public class LDCMatching {
     private HashMultimap<String, String> kbidToTerms;
     private HashMap<String, Pair<Long, String>> kbtoNistType;
     private static MultiWordSimilarity sim = new MultiWordSimilarity();
-    private static JsonOntologyLoader ontologyEntrypoint = JsonOntologyLoader.getInstance();
+    private static TTLOntology2 ontologyEntrypoint = TTLOntology2.getInstance();
 
     private static boolean loadProperties() {
         if (properties.isEmpty()) try {
