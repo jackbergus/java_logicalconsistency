@@ -23,14 +23,12 @@
 
 package org.ufl.hypogator.jackb.disambiguation.dimension.concept;
 
-import com.google.common.collect.HashMultimap;
 import org.ufl.hypogator.jackb.fuzzymatching.FuzzyMatcher;
 import org.ufl.hypogator.jackb.fuzzymatching.TwoGramIndexer;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Dump;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
-import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
 
 import java.io.*;
 import java.util.*;
@@ -38,29 +36,12 @@ import java.util.function.Predicate;
 
 import static org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Dump.removeSuffix;
 
-public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres.RecordResultForSingleNode> {
+public class ConceptNetVocabulary extends AbstractVocabulary<RecordResultForSingleNode> {
 
     private final static ConceptNet5Dump dump = ConceptNet5Dump.getInstance();
 
-    public ConceptNetVocabulary(FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> vocabulary) {
+    public ConceptNetVocabulary(FuzzyMatcher<RecordResultForSingleNode> vocabulary) {
         super(vocabulary);
-    }
-
-    @Deprecated
-    public static ConceptNetVocabulary readVocabulary(File f, String... languages) {
-        TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode> ls;
-
-        // Either allows to store the files, or loads them as serialized
-        if (languages.length == 0) {
-            ls = getInstance().listEntries(f, new HashSet<>(Collections.singletonList("en")));
-        } else {
-            HashSet<String> s = new HashSet<>(Arrays.asList(languages));
-            ls = getInstance().listEntries(f, s);
-        }
-
-        // Serialized if the data has not been already serialized
-        ls.serialize();
-        return new ConceptNetVocabulary(ls);
     }
 
     private static ConceptNetVocabulary voc;
@@ -73,20 +54,19 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
      *
      * @return
      */
-    @Deprecated
     public static ConceptNetVocabulary readDefaultVocabulary() {
         if (voc == null) {
             System.err.println("[ConceptNetVocabulary::readDefaultVocabulary] Reading Concepts Vocabulary for FuzzyMatching...");
 
             // Loading the default path containing all ConceptNet's entities
             Concept5ClientConfigurations conf = Concept5ClientConfigurations.instantiate();
-            File path = conf.getConceptNetEntityList();
+            //File path = conf.getConceptNetEntityList();
 
             // Extract only the concepts that belong to the languages within this context (e.g., English, Russian, Urkrainian)
-            String[] lang = conf.getConceptNetEntityLanguages();
+            //String[] lang = conf.getConceptNetEntityLanguages();
 
             // Read all the elements within the vocabulary
-            voc = readVocabulary(path, lang);
+            voc = readDefaultVocabulary();
 
             System.err.println("[ConceptNetVocabulary::readDefaultVocabulary]... Reading done");
         }
@@ -123,12 +103,12 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
         System.err.println("DONE");
     }*/
 
-    private static CNVocabularyEntry e = null;
+    /*private static CNVocabularyEntry e = null;
     public static CNVocabularyEntry getInstance() {
         if (e == null)
             e = new CNVocabularyEntry(AbstractVocabulary.getIsStopwordPredicate());
         return e;
-    }
+    }*/
 
     public void addTermsFromVertex(Object apply) {
         if (apply instanceof EdgeVertex) {
@@ -142,24 +122,20 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
 
     public ConceptNetVocabulary copy() {
         if (vocabulary instanceof TwoGramIndexer)
-            return new ConceptNetVocabulary(((TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode>)vocabulary).copy());
+            return new ConceptNetVocabulary(((TwoGramIndexer<RecordResultForSingleNode>)vocabulary).copy());
         else return new ConceptNetVocabulary(vocabulary);
     }
 
-    private static class CNVocabularyEntry {
-        /*String queryTerm;
-        String term;*/
-        ConceptNet5Postgres voc = ConceptNet5Postgres.getInstance();
+    /*private static class CNVocabularyEntry {
+        //ConceptNet5Postgres voc = ConceptNet5Postgres.getInstance();
         final Predicate<String> isStopWord;
 
         CNVocabularyEntry(Predicate<String> isStopWord) {
-            /*this.queryTerm = queryTerm;
-            this.term = term;*/
             this.isStopWord = isStopWord;
         }
 
         @Deprecated
-        public TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode> listEntries(File folder, Set<String> languages) {
+        public TwoGramIndexer<RecordResultForSingleNode> listEntries(File folder, Set<String> languages) {
             //HashMultimap<String, String> term_to_id = HashMultimap.create();
             String[] languagesUrlConceptnet = new String[languages.size()];
 
@@ -168,33 +144,33 @@ public class ConceptNetVocabulary extends AbstractVocabulary<ConceptNet5Postgres
                 languagesUrlConceptnet[i] = "/c/"+it.next()+"/%";
             }
 
-            TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode> twi =
-                    new TwoGramIndexer<>(ConceptNet5Postgres.RecordResultForSingleNode::getStrings, folder);
+            TwoGramIndexer<RecordResultForSingleNode> twi =
+                    new TwoGramIndexer<>(RecordResultForSingleNode::getStrings, folder);
 
             // Loading the files only if they have not been loaded already
             if (!folder.exists()) {
-                List<ConceptNet5Postgres.RecordResultForSingleNode> ls = voc.rawQueryNode(true, languagesUrlConceptnet);
+                List<RecordResultForSingleNode> ls = voc.rawQueryNode(true, languagesUrlConceptnet);
                 twi.addAll(ls, AbstractVocabulary.getIsStopwordPredicate());
             }
 
             return twi;
         }
-    }
+    }*/
 
     /**
      *
      * @param key
      * @return      Null if the object is not allowed. Otherwise, it is mapped to a ConcpetNet5 object
      */
-    private Long asLong(ConceptNet5Postgres.RecordResultForSingleNode key) {
+    private Long asLong(RecordResultForSingleNode key) {
         String id = key.id;
         id = removeSuffix(id, "/n");
         if (id.endsWith("/a") || id.endsWith("/r")) return null;
-        return dump.nodeIdToOffset(id);
+        return dump != null ? dump.nodeIdToOffset(id) : null;
     }
 
     public void serializeToFolder(File folder, ConceptNet5Dump javaPersister) throws IOException {
         if (vocabulary instanceof TwoGramIndexer)
-            TwoGramIndexer.serializeToCSVFolder(this::asLong, folder, ((TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode>)this.vocabulary), javaPersister);
+            TwoGramIndexer.serializeToCSVFolder(this::asLong, folder, ((TwoGramIndexer<RecordResultForSingleNode>)this.vocabulary), javaPersister);
     }
 }

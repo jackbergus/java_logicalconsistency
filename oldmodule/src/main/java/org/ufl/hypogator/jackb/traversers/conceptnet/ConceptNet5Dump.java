@@ -28,6 +28,7 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
     private Map<Long, String> offsetToId;
     private Set<Long> hashSet;
     private Long getMax;
+    private boolean initialized;
 
     private ConceptNet5Dump(File folder) {
         this.folder = folder;
@@ -52,8 +53,10 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
                 obj3.join();
                 obj4.join();*/
                 obj5.join();
+                initialized = true;
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                initialized = false;
             }
             System.err.println("[ConceptNet5Dump]... done");
         } else {
@@ -66,8 +69,10 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
         getMax = hashSet.stream().max(Long::compare).orElse(0L);
         reserialize = false;
         offsetToId = new HashMap<>();
-        for (Map.Entry<String, Long> entry : idToOffset.entrySet()) {
-            offsetToId.put(entry.getValue(), entry.getKey());
+        if (initialized) {
+            for (Map.Entry<String, Long> entry : idToOffset.entrySet()) {
+                offsetToId.put(entry.getValue(), entry.getKey());
+            }
         }
     }
 
@@ -131,6 +136,9 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            initialized = true;
+        } else {
+            initialized = false;
         }
     }
 
@@ -138,7 +146,7 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
         if (!reserialize) return;
         File f = new File(folder, "clangToSeed.ser");
         File f2 = new File(folder, "idToOffset.ser");
-        if (f.exists() && f2.exists()) {
+        if (initialized && f.exists() && f2.exists()) {
             // Serializing only if the files do not already exist
             System.err.println("[ConceptNet5Dump::serialize] Concurrent serializing");
             Thread uno = new Thread(() -> {
@@ -168,7 +176,7 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
     public static ConceptNet5Dump getInstance() {
         if (self == null)
             self = new ConceptNet5Dump(ConfigurationEntrypoint.getInstance().postgresDump);
-        return self;
+        return self.initialized ? self : null;
     }
 
     public Long nodeIdToOffset(String node) {
@@ -216,8 +224,8 @@ public class ConceptNet5Dump implements ConceptNet5Interface {
     }
 
     public Long addToPersistance(Object values, Long theLong) {
-        if (values instanceof ConceptNet5Postgres.RecordResultForSingleNode) {
-            ConceptNet5Postgres.RecordResultForSingleNode val = (ConceptNet5Postgres.RecordResultForSingleNode) values;
+        if (values instanceof RecordResultForSingleNode) {
+            RecordResultForSingleNode val = (RecordResultForSingleNode) values;
             String id = val.id;
             id = removeSuffix(id, "/n");
             if (id.endsWith("/a") || id.endsWith("/r")) return null;

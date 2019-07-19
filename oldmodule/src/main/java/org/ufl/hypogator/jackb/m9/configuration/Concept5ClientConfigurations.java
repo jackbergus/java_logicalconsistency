@@ -25,9 +25,8 @@ package org.ufl.hypogator.jackb.m9.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.giacomobergami.m18.TTLOntology2;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
-import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.queries.JsonQuery;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +48,7 @@ public class Concept5ClientConfigurations {
     public final String pathToLocalWordNetGloss;
     private String clavinIndexPath;
     private Properties props = new Properties();
-    public final static ConceptNet5Postgres scia = ConceptNet5Postgres.getInstance();
+    //public final static ConceptNet5Postgres scia = ConceptNet5Postgres.getInstance();
 
     private static Concept5ClientConfigurations self;
     private String pathToJNILIbrary;
@@ -256,7 +255,7 @@ public class Concept5ClientConfigurations {
             return EdgeVertex.generateSemanticRoot(term);
         else {
             // Checking whether the vocabulary has some graph term
-            Collection<ConceptNet5Postgres.RecordResultForSingleNode> singleton = null;
+            Collection<RecordResultForSingleNode> singleton = null;
             if (vocabulary != null)
                 singleton = vocabulary.containsExactTerm2(term);
             EdgeVertex toReturn = null;
@@ -264,11 +263,11 @@ public class Concept5ClientConfigurations {
             if (singleton != null && !singleton.isEmpty()) {
                 toReturn = singleton.iterator().next().getParent();
             }
-            return toReturn == null ? scia.queryNode(false, term) : toReturn;
+            return toReturn;// == null ? scia.queryNode(false, term) : toReturn;
         }
     }
 
-    public JsonQuery ingoingRelDefaultEn(String term, String rel) {
+    /*public JsonQuery ingoingRelDefaultEn(String term, String rel) {
         term = rectifyTerm(term);
         return term == null ? null : new JsonQuery(concpetNetConfURL + "/query?end=" + term + "&rel=" + (rel.startsWith("/r/") ? rel : "/r/"+rel),  useRestfulConceptnetAPI, retrieveOnlyEnglishConcepts()); ///c/en/
     }
@@ -276,7 +275,7 @@ public class Concept5ClientConfigurations {
     public JsonQuery outgoingRelDefaultEn(String term, String rel) {
         term = rectifyTerm(term);
         return term == null ? null : new JsonQuery(concpetNetConfURL + "/query?start=" + term + "&rel=" + (rel.startsWith("/r/") ? rel : "/r/"+rel),  useRestfulConceptnetAPI, retrieveOnlyEnglishConcepts()); ///c/en/
-    }
+    }*/
 
     private Collection<String> memoizeCollection = null;
     public Collection<String> conceptnetResolvableTypes() {
@@ -310,32 +309,16 @@ public class Concept5ClientConfigurations {
         return nextPage != null && nextPage.startsWith("http://wordnet-rdf.princeton.edu/wn31/");
     }
 
-    public JsonQuery generateQuery(String nextPage) {
+    /*public JsonQuery generateQuery(String nextPage) {
         if (isNextPageFromWordnet(nextPage)) {
             return null; // TODO
         } else {
             return nextPage == null ? null : new JsonQuery(concpetNetConfURL + nextPage, useRestfulConceptnetAPI, false);
         }
-    }
+    }*/
 
     public String getHierarchiesFolder() {
         return hierarchiesFolder;
-    }
-
-    public String getFuzzyAlgorithm() {
-        if (props.containsKey("fuzzyAlgorithm")) {
-            return (props.getProperty("fuzzyAlgorithm"));
-        } else {
-            return null;
-        }
-    }
-
-    public File getLDCDataFolder() {
-        if (props.containsKey("LDCDataFolder")) {
-            return new File(props.getProperty("LDCDataFolder"));
-        } else {
-            return new File("/media/giacomo/Data/flo/LDC2018E45_AIDA_Scenario_1_Seedling_Annotation_V2.0.tar/LDC2018E45_AIDA_Scenario_1_Seedling_Annotation_V5.0");
-        }
     }
 
     public static void main(String[] args) {

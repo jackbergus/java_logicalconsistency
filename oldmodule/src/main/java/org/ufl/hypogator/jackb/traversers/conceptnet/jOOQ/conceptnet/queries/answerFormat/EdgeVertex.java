@@ -30,11 +30,11 @@ import org.ufl.hypogator.jackb.fuzzymatching.LowConfidenceRank;
 import org.ufl.hypogator.jackb.fuzzymatching.Similarity;
 import org.ufl.hypogator.jackb.html.Table;
 import org.ufl.hypogator.jackb.traversers.babelnet.BabelNetTraverser;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.scraper.ScraperSources;
 import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
 import javafx.util.Pair;
 import org.jooq.Record2;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 
 import java.io.Serializable;
 import java.util.*;
@@ -166,8 +166,8 @@ public class EdgeVertex implements SemanticNetworkEntryPoint, Serializable {
         return root;
     }
 
-    public ConceptNet5Postgres.RecordResultForSingleNode asRecordResultForSingleNode() {
-        return new ConceptNet5Postgres.RecordResultForSingleNode(this.id, new String[]{this.label, this.term}, this);
+    public RecordResultForSingleNode asRecordResultForSingleNode() {
+        return new RecordResultForSingleNode(this.id, new String[]{this.label, this.term}, this);
     }
 
     public void fromConceptNet(Record2<String, Object[]> stringBigDecimalRecord3) {

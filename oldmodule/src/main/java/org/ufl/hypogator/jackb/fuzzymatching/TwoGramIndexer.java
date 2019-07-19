@@ -2,7 +2,6 @@ package org.ufl.hypogator.jackb.fuzzymatching;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 import javafx.util.Pair;
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetDimensionDisambiguationOperations;
@@ -10,10 +9,9 @@ import org.ufl.hypogator.jackb.fuzzymatching.cow.HashMultimapWithHMSeed;
 import org.ufl.hypogator.jackb.fuzzymatching.cow.MapWithHMSeed;
 import org.ufl.hypogator.jackb.streamutils.data.ArraySupport;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Dump;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
 import org.ufl.hypogator.jackb.utils.adt.PollMap;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -228,7 +226,7 @@ public class TwoGramIndexer<K> implements FuzzyMatcher<K> {
         fw.close();
     }
 
-    public static void serializeToCSVFolder(Function<ConceptNet5Postgres.RecordResultForSingleNode, Long> objectMap, File folder, TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode> multiIndices, ConceptNet5Dump javaPersister) throws IOException {
+    public static void serializeToCSVFolder(Function<RecordResultForSingleNode, Long> objectMap, File folder, TwoGramIndexer<RecordResultForSingleNode> multiIndices, ConceptNet5Dump javaPersister) throws IOException {
         if (folder == null || multiIndices == null)
             return;
         if (!folder.exists())
@@ -340,7 +338,7 @@ public class TwoGramIndexer<K> implements FuzzyMatcher<K> {
         });
     }
 
-    public static void serialize_to_json2(HashMultimap<ConceptNet5Postgres.RecordResultForSingleNode, String> file, JsonWriter writer) {
+    public static void serialize_to_json2(HashMultimap<RecordResultForSingleNode, String> file, JsonWriter writer) {
         file.asMap().forEach((k, v) -> {
             try {
                 writer.name(k.id);
@@ -371,12 +369,12 @@ public class TwoGramIndexer<K> implements FuzzyMatcher<K> {
         });
     }
 
-    public static void serialize_to_json(HashMultimap<String, ConceptNet5Postgres.RecordResultForSingleNode> file, JsonWriter writer) {
+    public static void serialize_to_json(HashMultimap<String, RecordResultForSingleNode> file, JsonWriter writer) {
         file.asMap().forEach((k, v) -> {
             try {
                 writer.name(k);
                 writer.beginArray();
-                for (ConceptNet5Postgres.RecordResultForSingleNode x : v) {
+                for (RecordResultForSingleNode x : v) {
                     writer.beginObject();
                     writer.name("id");
                     writer.value(x.id);
@@ -401,7 +399,7 @@ public class TwoGramIndexer<K> implements FuzzyMatcher<K> {
     }
 
     public static void main(String[] args) throws IOException {
-        TwoGramIndexer<ConceptNet5Postgres.RecordResultForSingleNode> l = new TwoGramIndexer<>(ConceptNet5Postgres.RecordResultForSingleNode::getStrings, new File("/media/giacomo/Biggus/project_dir/data/nodes"));
+        TwoGramIndexer<RecordResultForSingleNode> l = new TwoGramIndexer<>(RecordResultForSingleNode::getStrings, new File("/media/giacomo/Biggus/project_dir/data/nodes"));
 
         //Gson gson = new Gson();
         /*{

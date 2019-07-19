@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class ConceptNetTraverser implements SemanticNetworkTraversers<RelationshipTypes> {
+public class sConceptNetTraverser implements SemanticNetworkTraversers<RelationshipTypes> {
 
     private final Concept5ClientConfigurations conf;
     private final boolean onlyEnglishConcept;

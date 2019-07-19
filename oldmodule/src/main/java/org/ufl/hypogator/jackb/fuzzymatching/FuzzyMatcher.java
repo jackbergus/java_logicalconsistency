@@ -1,7 +1,6 @@
 package org.ufl.hypogator.jackb.fuzzymatching;
 
 import org.ufl.hypogator.jackb.disambiguation.dimension.concept.AbstractVocabulary;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 
 import java.util.Collection;
 import java.util.Map;

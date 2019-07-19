@@ -37,6 +37,7 @@ import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.ans
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_1.SemanticEdge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_2.CoarsenedHierarchicalType;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.raw_type.RelationshipTypes;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -59,7 +60,7 @@ public class ConceptNetJNITraverser implements SemanticNetworkTraversers<Relatio
 
     private static final JNIEntryPoint ep = JNIEntryPoint.getInstance();
     private final boolean onlyEnglishConcept;
-    private FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode>  voc;
+    private FuzzyMatcher<RecordResultForSingleNode>  voc;
 
     public static final RelationshipTypes[] rel = new RelationshipTypes[]
             { RelationshipTypes.RelatedTo };
@@ -85,7 +86,8 @@ public class ConceptNetJNITraverser implements SemanticNetworkTraversers<Relatio
 
     @Override
     public Iterable<Edge> synonymsOutgoing(SemanticNetworkEntryPoint currentHierarchyElement) {
-        return conf.outgoingRelDefaultEn(currentHierarchyElement.asConceptNetId(), synonymType().toString());
+        throw new NotImplementedException();
+        //return conf.outgoingRelDefaultEn(currentHierarchyElement.asConceptNetId(), synonymType().toString());
     }
 
     @Override
@@ -132,12 +134,12 @@ public class ConceptNetJNITraverser implements SemanticNetworkTraversers<Relatio
         // TODO: also return conf.resolveEntryPoint(term), that I may miss
     }
 
-    public EdgeVertex resolveEntryPoint(String term, FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> vocabulary) {
+    public EdgeVertex resolveEntryPoint(String term, FuzzyMatcher<RecordResultForSingleNode> vocabulary) {
         if (term.equals("Union") || conf.conceptnetResolvableTypes().contains(term))
             return EdgeVertex.generateSemanticRoot(term);
         else {
             // Checking whether the vocabulary has some graph term
-            Collection<ConceptNet5Postgres.RecordResultForSingleNode> singleton = null;
+            Collection<RecordResultForSingleNode> singleton = null;
             if (vocabulary != null)
                 singleton = vocabulary.containsExactTerm2(term);
             EdgeVertex toReturn = null;
@@ -210,7 +212,7 @@ public class ConceptNetJNITraverser implements SemanticNetworkTraversers<Relatio
                 .map(PgObjectString::asBackwardCompatibilityEdge);
     }
 
-    public void setVocabulary(FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> enrichedVocabulary) {
+    public void setVocabulary(FuzzyMatcher<RecordResultForSingleNode> enrichedVocabulary) {
         this.voc = enrichedVocabulary;
     }
 

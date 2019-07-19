@@ -5,7 +5,7 @@ import javafx.util.Pair;
 import org.ufl.hypogator.jackb.scraper.adt.DiGraphEquivalenceClass;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Dump;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
 
 import java.io.File;
@@ -99,7 +99,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
         close();
     }
 
-    public class TwoGramIndexerForDimension implements Iterator<Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode>> {
+    public class TwoGramIndexerForDimension implements Iterator<Pair<Double, RecordResultForSingleNode>> {
         private String dimension;
         DiGraphEquivalenceClass hierarchyGraph;
         private File hierarchyFile;
@@ -107,7 +107,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
         private boolean current;
         private boolean isFirst;
         HashSet<Long> visitedLong;
-        private Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode> cursor;
+        private Pair<Double, RecordResultForSingleNode> cursor;
 
         TwoGramIndexerForDimension(String dimension, TwoGramIndexerJNI parent) {
             this.dimension = dimension;
@@ -145,13 +145,13 @@ public class TwoGramIndexerJNI implements AutoCloseable {
             return ids != null && ids.length > 0;
         }
 
-        public Set<ConceptNet5Postgres.RecordResultForSingleNode> containsExactTerm2(String term) {
+        public Set<RecordResultForSingleNode> containsExactTerm2(String term) {
             long[] ids = null;
             if (correctlyInitialized)
                 ids = parent.containsExactTerm(dimension, term);
             if (ids == null || ids.length == 0)
                 return Collections.emptySet();
-            HashSet<ConceptNet5Postgres.RecordResultForSingleNode> me = new HashSet<>();
+            HashSet<RecordResultForSingleNode> me = new HashSet<>();
             for (int i = 0, idsLength = ids.length; i < idsLength; i++) {
                 long x = ids[i];
                 me.add(resolveId(x));
@@ -165,7 +165,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
         }
 
         @Override
-        public Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode> next() {
+        public Pair<Double, RecordResultForSingleNode> next() {
             Long x;
             Double d;
 
@@ -186,7 +186,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
 
                 cursor = new Pair<>(d, resolveId(x));
             }
-            Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode> value = cursor;
+            Pair<Double, RecordResultForSingleNode> value = cursor;
             cursor = null;
             return value;
         }
@@ -202,7 +202,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
          * @param id    Long to be converted
          * @return      Internal memory-costly representation
          */
-        private ConceptNet5Postgres.RecordResultForSingleNode resolveId(long id) {
+        private RecordResultForSingleNode resolveId(long id) {
             String stringId = dump.offsetToNodeId(id);
             EdgeVertex v = (EdgeVertex) hierarchyGraph.resolveId(stringId);
             if (v == null) {
@@ -219,11 +219,11 @@ public class TwoGramIndexerJNI implements AutoCloseable {
             return hierarchyFile;
         }
 
-        public FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> getEnrichedVocabulary() {
+        public FuzzyMatcher<RecordResultForSingleNode> getEnrichedVocabulary() {
             return new JNIFuzzyMatcher(this);
         }
 
-        public class JNIFuzzyMatcher implements FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> {
+        public class JNIFuzzyMatcher implements FuzzyMatcher<RecordResultForSingleNode> {
             private final TwoGramIndexerForDimension parent;
 
             public JNIFuzzyMatcher(TwoGramIndexerForDimension parent) {
@@ -231,12 +231,12 @@ public class TwoGramIndexerJNI implements AutoCloseable {
             }
 
             @Override
-            public Map<Double, Collection<ConceptNet5Postgres.RecordResultForSingleNode>> fuzzyMatch(Double threshold, Integer topK, Similarity sim, String objectStrings) {
-                TreeMap<Double, Collection<ConceptNet5Postgres.RecordResultForSingleNode>> map = new TreeMap<>();
+            public Map<Double, Collection<RecordResultForSingleNode>> fuzzyMatch(Double threshold, Integer topK, Similarity sim, String objectStrings) {
+                TreeMap<Double, Collection<RecordResultForSingleNode>> map = new TreeMap<>();
                 if (correctlyInitialized) {
                     this.parent.fuzzyMatch(threshold, topK, objectStrings);
                     while (this.parent.hasNext()) {
-                        Pair<Double, ConceptNet5Postgres.RecordResultForSingleNode> cp = this.parent.next();
+                        Pair<Double, RecordResultForSingleNode> cp = this.parent.next();
                         if (!map.containsKey(cp.getKey())) map.put(cp.getKey(), new ArrayList<>());
                         map.get(cp.getKey()).add(cp.getValue());
                     }
@@ -245,7 +245,7 @@ public class TwoGramIndexerJNI implements AutoCloseable {
             }
 
             @Override
-            public Collection<ConceptNet5Postgres.RecordResultForSingleNode> containsExactTerm2(String term) {
+            public Collection<RecordResultForSingleNode> containsExactTerm2(String term) {
                 return correctlyInitialized ? parent.containsExactTerm2(term) : Collections.emptyList();
             }
 

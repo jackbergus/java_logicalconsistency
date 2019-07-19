@@ -1,7 +1,5 @@
 package org.ufl.hypogator.jackb.main;
 
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
-
 import java.io.File;
 import java.io.IOException;
 

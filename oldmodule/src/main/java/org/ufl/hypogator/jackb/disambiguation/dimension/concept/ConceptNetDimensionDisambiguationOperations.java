@@ -31,11 +31,10 @@ import org.ufl.hypogator.jackb.disambiguation.dimension.memoization.MemoizationL
 import org.ufl.hypogator.jackb.fuzzymatching.FuzzyMatcher;
 import org.ufl.hypogator.jackb.scraper.MultiConceptScraper;
 import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
-import org.ufl.hypogator.jackb.scraper.TermScorer;
 import org.ufl.hypogator.jackb.scraper.adt.DiGraph;
 import org.ufl.hypogator.jackb.scraper.adt.DiGraphEquivalenceClass;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNetJNITraverser;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.utils.SetOperations;
 
 import javax.annotation.Nullable;
@@ -150,7 +149,7 @@ public class ConceptNetDimensionDisambiguationOperations {
      *
      * @return
      */
-    public FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> getEnrichedVocabulary() {
+    public FuzzyMatcher<RecordResultForSingleNode> getEnrichedVocabulary() {
         return dimensionScraper.getEnrichedVocabulary();
     }
 

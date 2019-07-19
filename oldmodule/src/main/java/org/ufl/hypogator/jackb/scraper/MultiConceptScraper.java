@@ -27,8 +27,8 @@ import org.ufl.hypogator.jackb.fuzzymatching.FuzzyMatcher;
 import org.ufl.hypogator.jackb.fuzzymatching.TwoGramIndexerJNI;
 import org.ufl.hypogator.jackb.traversers.babelnet.BabelNetTraverser;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
 import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNetTraverser;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.raw_type.RelationshipTypes;
 import org.ufl.hypogator.jackb.scraper.adt.SemanticNetworkTraversers;
@@ -172,7 +172,7 @@ public class MultiConceptScraper<DataSpecificRelationships> {
         }
 
         @Override
-        public FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> getEnrichedVocabulary() {
+        public FuzzyMatcher<RecordResultForSingleNode> getEnrichedVocabulary() {
             return scraper2.getEnrichedVocabulary();
         }
 

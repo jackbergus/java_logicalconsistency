@@ -22,14 +22,13 @@
 package org.ufl.hypogator.jackb.scraper;
 
 import javafx.util.Pair;
-import org.ufl.hypogator.jackb.disambiguation.dimension.concept.ConceptNetVocabulary;
 import org.ufl.hypogator.jackb.fuzzymatching.FuzzyMatcher;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 
 import java.util.List;
 
 public interface TermScorer<T> {
     Pair<Double, List<T>> scoreWithPath(T root, T elem);
-    FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> getEnrichedVocabulary();
+    FuzzyMatcher<RecordResultForSingleNode> getEnrichedVocabulary();
     String getDimension();
 }

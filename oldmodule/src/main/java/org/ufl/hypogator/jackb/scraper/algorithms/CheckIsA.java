@@ -28,7 +28,7 @@ import org.ufl.hypogator.jackb.fuzzymatching.TwoGramIndexerJNI;
 import org.ufl.hypogator.jackb.logger.Logger;
 import org.ufl.hypogator.jackb.logger.LoggerFactory;
 import org.ufl.hypogator.jackb.scraper.adt.DiGraphEquivalenceClass;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_1.SemanticEdge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_2.TraversalEdge;
@@ -51,12 +51,12 @@ public class CheckIsA<DataSpecificRelationships> {
     private DiGraphEquivalenceClass toUpper;
     private DiGraph<String> eqClass;
     private Set<String> visitedTerms;
-    private final FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> enrichedVocabulary;
+    private final FuzzyMatcher<RecordResultForSingleNode> enrichedVocabulary;
     private final SemanticNetworkTraversers<DataSpecificRelationships> pg_dump_traverser;
     private final static ObjectMapper om = new ObjectMapper();
     private final static Logger logger = LoggerFactory.getLogger(CheckIsA.class);
 
-    public FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> getEnrichedVocabularyWithHierarchy() {
+    public FuzzyMatcher<RecordResultForSingleNode> getEnrichedVocabularyWithHierarchy() {
         return enrichedVocabulary;
     }
 

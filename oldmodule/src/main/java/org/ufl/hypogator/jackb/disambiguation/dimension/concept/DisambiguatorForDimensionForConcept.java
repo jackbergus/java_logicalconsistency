@@ -30,7 +30,7 @@ import org.ufl.hypogator.jackb.disambiguation.dimension.Direction;
 import org.ufl.hypogator.jackb.fuzzymatching.MultiWordSimilarity;
 import org.ufl.hypogator.jackb.scraper.SemanticNetworkEntryPoint;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.utils.adt.HashMultimapSerializer;
 
 import java.io.File;
@@ -116,15 +116,15 @@ public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisa
         // If either the concept is not within the hierarchy or no right relationship has been found (e.g., the term
         // is a superconcept outside the hierarchy), then I try to perform some fuzzy matching, by also extracting the
         // concept that shares the subword terms as in the term element.
-        Map<Double, Collection<ConceptNet5Postgres.RecordResultForSingleNode>> m = getEnrichedVocabulary().fuzzyMatch(threshold, 3, null, t.replace('_', ' ')/*, 3, threshold*/);
-        Iterator<Map.Entry<Double, Collection<ConceptNet5Postgres.RecordResultForSingleNode>>> it = m.entrySet().iterator();
+        Map<Double, Collection<RecordResultForSingleNode>> m = getEnrichedVocabulary().fuzzyMatch(threshold, 3, null, t.replace('_', ' ')/*, 3, threshold*/);
+        Iterator<Map.Entry<Double, Collection<RecordResultForSingleNode>>> it = m.entrySet().iterator();
         double score = -1;
 
         // Return only the concept which maximizes the dimensional score
         while (it.hasNext()) {
-            Map.Entry<Double, Collection<ConceptNet5Postgres.RecordResultForSingleNode>> cp2 = it.next();
+            Map.Entry<Double, Collection<RecordResultForSingleNode>> cp2 = it.next();
             double d = cp2.getKey();
-            for (ConceptNet5Postgres.RecordResultForSingleNode node : cp2.getValue()) {
+            for (RecordResultForSingleNode node : cp2.getValue()) {
                 for (String x : node.getStrings()) {
                     /*Pair<Double, List<SemanticNetworkEntryPoint>>*/
                     Pair<Direction, Optional<Pair<Double, List<SemanticNetworkEntryPoint>>>> gen = getDirection(dim, x);

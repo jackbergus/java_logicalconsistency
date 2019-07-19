@@ -27,7 +27,7 @@ import org.ufl.hypogator.jackb.fuzzymatching.TwoGramIndexerJNI;
 import org.ufl.hypogator.jackb.logger.Logger;
 import org.ufl.hypogator.jackb.logger.LoggerFactory;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
-import org.ufl.hypogator.jackb.traversers.conceptnet.ConceptNet5Postgres;
+import org.ufl.hypogator.jackb.traversers.conceptnet.RecordResultForSingleNode;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.Edge;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.EdgeVertex;
 import org.ufl.hypogator.jackb.traversers.conceptnet.jOOQ.conceptnet.queries.answerFormat.relationships.aggregation_1.SemanticEdge;
@@ -57,7 +57,7 @@ public class ConceptScraper3<DataSpecificRelationships> implements AutoCloseable
     private final boolean onlyEnglishConcept;
     private final HashSet<String> visitedIdHierarchy = new HashSet<>();
     private final int limit;
-    private final FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> enrichedVocabulary;
+    private final FuzzyMatcher<RecordResultForSingleNode> enrichedVocabulary;
     private final static Logger logger = LoggerFactory.getLogger(ConceptScraper3.class);
 
     // Algorithms
@@ -252,7 +252,7 @@ public class ConceptScraper3<DataSpecificRelationships> implements AutoCloseable
     }
 
     @Override
-    public FuzzyMatcher<ConceptNet5Postgres.RecordResultForSingleNode> getEnrichedVocabulary() {
+    public FuzzyMatcher<RecordResultForSingleNode> getEnrichedVocabulary() {
         return this.enrichedVocabulary;
     }
 
