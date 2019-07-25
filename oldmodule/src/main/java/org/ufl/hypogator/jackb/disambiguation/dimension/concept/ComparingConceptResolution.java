@@ -45,7 +45,7 @@ public class ComparingConceptResolution extends InformationPreservingComparator<
     public ComparingConceptResolution(String dimension) {
         this.dimension = dimension;
         try {
-            fw = new FileWriter("prediction.txt", true);
+            fw = new FileWriter("ComparingConceptResolution_prediction.txt", true);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
@@ -57,7 +57,7 @@ public class ComparingConceptResolution extends InformationPreservingComparator<
     @Override
     protected PartialOrderComparison nonNullCompare(ResolvedConcept cpT, ResolvedConcept cpU) {
         if (cpT.str.equals(cpU.str)) {
-            out.println("P("+cpT.str + " == "+ cpU.str + ")="+(cpT.score+cpU.score-cpT.score*cpU.score) );
+            out.println("P("+cpT.str + " ≡ "+ cpU.str + ")="+(cpT.score+cpU.score-cpT.score*cpU.score) );
             out.flush();
             return new PartialOrderComparison(POCType.Equal, cpT.score+cpU.score-cpT.score*cpU.score);
         } else {

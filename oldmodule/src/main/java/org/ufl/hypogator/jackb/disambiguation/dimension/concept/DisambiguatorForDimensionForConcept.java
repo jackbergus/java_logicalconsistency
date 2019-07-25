@@ -90,7 +90,7 @@ public class DisambiguatorForDimensionForConcept extends ConceptNetDimensionDisa
         // TODO: Therefore, the vocabulary should also contain every element within the hierarchy
         // In order to do so, while loading the graph, I update hte
         if ((!getEnrichedVocabulary().isStopWord(tmpUnrectified)) && getEnrichedVocabulary().containsExactTerm(tmpUnrectified)) {
-            t = rectify(t.toLowerCase());
+            t = t.toLowerCase(); //rectify(t.toLowerCase());
             logger.debug("the term is exactely matched by the vocabulary. This means that it may exist as a nodeg");
             Pair<Direction, Optional<Pair<Double, List<SemanticNetworkEntryPoint>>>> cp = getDirection(dim, t);
 

@@ -1,5 +1,6 @@
 package org.ufl.hypogator.jackb.m18;
 
+import com.google.common.base.Functions;
 import com.ibm.icu.text.Transliterator;
 import org.ufl.aida.ta2.tables.records.MentionsForUpdateRecord;
 import org.ufl.hypogator.jackb.fuzzymatching.ldc.LDCMatching;
@@ -8,21 +9,24 @@ import org.ufl.hypogator.jackb.fuzzymatching.ldc.LDCResult;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 class DisambiguateListOfStringsViaLDC {
     private boolean myResult;
     private LDCMatching ldcDisambiguator;
     private MentionsForUpdateRecord x;
     private List<String> singleList;
+    private final boolean frequency;
     private LDCResult res;
     private String resolved;
     private boolean fromFuzzyMatching;
     public static final Transliterator t = Transliterator.getInstance("Cyrillic-Latin; Latin-Ascii");
 
-    public DisambiguateListOfStringsViaLDC(LDCMatching ldcDisambiguator, MentionsForUpdateRecord x, List<String> singleList) {
+    public DisambiguateListOfStringsViaLDC(LDCMatching ldcDisambiguator, MentionsForUpdateRecord x, List<String> singleList, boolean frequency) {
         this.ldcDisambiguator = ldcDisambiguator;
         this.x = x;
         this.singleList = singleList;
+        this.frequency = frequency;
     }
 
     boolean is() {
@@ -55,18 +59,26 @@ class DisambiguateListOfStringsViaLDC {
             return this;
         }
 
-        for (String y : singleList) {
-            LDCResult result = null;
-            if (ldcDisambiguator != null)
-                result = ldcDisambiguator.bestFuzzyMatch(y);
-            else
-                result = new LDCResult(y);
-            if (res == null) {
-                stringLength = y.length();
-                res = result;
-            } else if ((res.score * scoreReliability + (stringLength/longest) * stringLengthReliability) < (result.score * scoreReliability + (y.length()/longest) * stringLengthReliability)) {
-                stringLength = y.length();
-                res = result;
+        if (frequency) {
+            res = new LDCResult(singleList.stream().collect(Collectors.groupingBy(Functions.identity(), Collectors.counting()))
+                    .entrySet()
+                    .stream()
+                    .max(Comparator.comparing(Map.Entry::getValue))
+                    .get().getKey());
+        } else {
+            for (String y : singleList) {
+                LDCResult result = null;
+                if (ldcDisambiguator != null)
+                    result = ldcDisambiguator.bestFuzzyMatch(y);
+                else
+                    result = new LDCResult(y);
+                if (res == null) {
+                    stringLength = y.length();
+                    res = result;
+                } else if ((res.score * scoreReliability + (stringLength / longest) * stringLengthReliability) < (result.score * scoreReliability + (y.length() / longest) * stringLengthReliability)) {
+                    stringLength = y.length();
+                    res = result;
+                }
             }
         }
         resolved = res.resolved;

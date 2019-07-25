@@ -11,7 +11,7 @@ import org.ufl.hypogator.jackb.disambiguation.dimension.Dimension;
 import org.ufl.hypogator.jackb.ontology.TypeSubtype;
 import org.ufl.hypogator.jackb.m9.configuration.Concept5ClientConfigurations;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeConcept> {
@@ -19,6 +19,9 @@ public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeCon
     private final static Boolean forceUnion = ConfigurationEntrypoint.getInstance().forceUnion;
     private final static TTLOntology2 l = TTLOntology2.getInstance();
     private final static DisambiguationPolicy policy = DisambiguationPolicyFactory.getInstance().getPolicy(ConfigurationEntrypoint.getInstance().disambiguationPolicy);
+    FileWriter fw;
+    BufferedWriter bw;
+    PrintWriter out;
 
     public final String fieldName;
     private final Set<DimConcepts> concepts;
@@ -37,6 +40,14 @@ public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeCon
                     concepts.add(new DimConcepts(x.nistName));
             }
         }
+        try {
+            fw = new FileWriter("DimConceptsUnion_prediction.txt", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        bw = new BufferedWriter(fw);
+        out = new PrintWriter(bw);
     }
 
     @Override
@@ -56,13 +67,24 @@ public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeCon
                 map.put(result.t, result.uncertainty);
             }
             PartialOrderComparison ls = policy.getDirection(map);
-            System.out.println("P("+left + ls.t + right+"|data)="+ls.uncertainty);
+            out.println("P("+left + ls.t + right+"|data)="+ls.uncertainty);
             return ls;
         }
     }
 
     public void close() {
         concepts.forEach(DimConcepts::close);
+        out.close();
+        try {
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -105,7 +127,7 @@ public class DimConceptsUnion  extends Dimension<ResolvedConcept, InformativeCon
         }
     }
 
-    String[] argumentsForPartof = new String[]{"partOf"};
+    String[] argumentsForPartof = new String[]{"partOfInv"};
     @Override
     public String[] allowedKBTypesForTypingExpansion() {
         return argumentsForPartof;

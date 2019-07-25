@@ -59,7 +59,7 @@ public enum POCType {
             case Greater:
                 return " > ";
             default:
-                return " n.c. ";
+                return " != ";
         }
     }
 }

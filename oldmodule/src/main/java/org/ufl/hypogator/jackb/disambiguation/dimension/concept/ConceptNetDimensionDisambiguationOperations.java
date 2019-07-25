@@ -178,11 +178,11 @@ public class ConceptNetDimensionDisambiguationOperations {
      * @param subtype Type that has to be checked
      * @return Returns the score and the path as a witness
      */
-    public Pair<Double, List<SemanticNetworkEntryPoint>> scoreTyping(String type, String subtype) {
+    /*public Pair<Double, List<SemanticNetworkEntryPoint>> scoreTyping(String type, String subtype) {
         type = (type.equals(getDimension())) ? type : rectify(type);
         subtype = (subtype.equals(getDimension())) ? subtype : rectify(subtype);
         return scoreTyping(resolveExactTerm(type), resolveExactTerm(subtype));
-    }
+    }*/
 
     public Pair<Double, List<SemanticNetworkEntryPoint>> scoreTyping(SemanticNetworkEntryPoint type, SemanticNetworkEntryPoint subtype) {
         return dimensionScraper.scoreWithPath(type, subtype);

@@ -125,7 +125,7 @@ public class LoadFact extends StaticDatabaseClass {
         //          deteriorate the computational complexity, and move this phase into the next one.
         {
             // performing the fuzzy maching. This is performed in a block, so that the memory can be freed
-            Set<String> toExpandUsingTA2 = disambiguateWithLDC(database, checkStopwords);
+            Set<String> toExpandUsingTA2 = disambiguateWithLDC(database, checkStopwords, false);
 
             if (doExpansionFromTA2) {
                 System.out.println("Performing the expansion over the TA2 clustering data for the non-LDC matched elements");
@@ -163,7 +163,7 @@ public class LoadFact extends StaticDatabaseClass {
                             .forUpdate()
                             .fetch()
                             .forEach(x -> {
-                                updateRecordFromList(null, null, x, singleList);
+                                updateRecordFromList(null, null, x, singleList, true);
                             });
                 }
             }
@@ -233,7 +233,7 @@ public class LoadFact extends StaticDatabaseClass {
                 .collect(Collectors.toList());
     }
 
-    public Set<String> disambiguateWithLDC(Database database, AbstractVocabulary.IsStopwordPredicate checkStopwords) {
+    public Set<String> disambiguateWithLDC(Database database, AbstractVocabulary.IsStopwordPredicate checkStopwords, boolean frequency) {
         LDCMatching ldcDisambiguator = LDCMatching.getInstance();
         Set<String> notClusteredElements = new HashSet<>();
 
@@ -242,13 +242,13 @@ public class LoadFact extends StaticDatabaseClass {
                 .fetch()
                 .forEach(x -> {
                     List<String> singleList = streamStringsWithSplitAndClean(checkStopwords,Arrays.stream( x.getStrings()));
-                    updateRecordFromList(ldcDisambiguator, notClusteredElements, x, singleList);
+                    updateRecordFromList(ldcDisambiguator, notClusteredElements, x, singleList, frequency);
                 });
         return notClusteredElements;
     }
 
-    public static void updateRecordFromList(LDCMatching ldcDisambiguator, Set<String> notClusteredElements, MentionsForUpdateRecord record, List<String> list) {
-        DisambiguateListOfStringsViaLDC disambiguateListOfStringsViaLDC = new DisambiguateListOfStringsViaLDC(ldcDisambiguator, record, list).invoke();
+    public static void updateRecordFromList(LDCMatching ldcDisambiguator, Set<String> notClusteredElements, MentionsForUpdateRecord record, List<String> list, boolean frequency) {
+        DisambiguateListOfStringsViaLDC disambiguateListOfStringsViaLDC = new DisambiguateListOfStringsViaLDC(ldcDisambiguator, record, list, frequency).invoke();
         if (disambiguateListOfStringsViaLDC.is()) return;// continue
         LDCResult res = disambiguateListOfStringsViaLDC.getRes();
         String resolved = disambiguateListOfStringsViaLDC.getResolved();

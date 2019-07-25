@@ -85,7 +85,7 @@ public class DimConcepts extends Dimension<ResolvedConcept, InformativeConcept> 
         disambiguator.close();
     }
 
-    static String[] argumentsForPartof = new String[]{"partOf"};
+    static String[] argumentsForPartof = new String[]{"partOfInv"};
     @Override
     public String[] allowedKBTypesForTypingExpansion() {
         return argumentsForPartof;

@@ -73,12 +73,13 @@ public class DisambiguationAlgorithm<T extends Resolved,
             return memoization.get(toDisambiguate);
         }
 
-        /*if (toDisambiguate.equals("buildings"))
-            System.err.println("DEBUG");*/
         K term = disambiguator.disambiguate(toDisambiguate);
-        for (String allowedTypes : allowedKBTypesForTypingExpansion) {
-            for (String additionalExamples : expansionDisambiguation.getPossibleCandidatesFor(toDisambiguate, allowedTypes, doReflexivity)) {
-                term.expandWith(disambiguator.disambiguate(additionalExamples));
+        if (expansionDisambiguation != null) {
+            // If the terms are available, expand each element with the related terms (partOf inverted or nearTo),
+            for (String allowedTypes : allowedKBTypesForTypingExpansion) {
+                for (String additionalExamples : expansionDisambiguation.getPossibleCandidatesFor(toDisambiguate, allowedTypes, doReflexivity)) {
+                    term.expandWith(disambiguator.disambiguate(additionalExamples));
+                }
             }
         }
 
