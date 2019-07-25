@@ -53,7 +53,7 @@ import java.nio.charset.StandardCharsets;
 
 public class Main {
     private static final String HOSTNAME = "localhost";
-    private static final int PORT = 9999;
+    private static final int PORT = 9998;
     private static final int BACKLOG = 1;
 
     private static final String HEADER_ALLOW = "Allow";

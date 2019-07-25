@@ -254,7 +254,7 @@ public class ConversionForExpansion extends StaticDatabaseClass {
         ar.score = expansionsRecord.getWeight();
 
         for (int i=0; i<toScanOver.size(); i++) {
-            List<String> ls = toScanOver.get(i);
+            List<String> ls = new ArrayList<>(toScanOver.get(i));
             ls.removeIf(x -> x == null || x.trim().isEmpty());
             if (nulled.bitmap[i] == 0) {
                 List<AgileField> field = new ArrayList<>();

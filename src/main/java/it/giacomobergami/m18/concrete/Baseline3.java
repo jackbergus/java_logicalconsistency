@@ -308,11 +308,13 @@ public class Baseline3 extends SimplePostRequest {
 
                 }
             }
-            sb.append("\"" + i + "\" : " + (typeInconsistencyScore + (tupleInconsistencyScore * -2.0)));
+            sb.append("\"" + i + "\" : " + (typeInconsistencyScore + (tupleInconsistencyScore * 2.0)));
             if (i != M - 1) sb.append(", ");
             i++;
         }
         long end = System.currentTimeMillis();
+
+        StaticDatabaseClass.comparator.close();
 
         System.err.println("s = " + (end - start) / 1000.0);
         System.err.println("# = " + noEdges);

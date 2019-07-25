@@ -85,10 +85,11 @@ public class RunQuery {
                 "\non conflict (eid,type_event,weight,arg1,arg2,arg3,arg4,arg5,arg6,arg7,bitmap_null,bitmap_neg,bitmap_hed) do nothing";
         int numberOfUpdates = 0;
         int numberOfIterations = -1;
-        /*if (query.contains("Conflict.Attack")) {
-            System.err.println("DEBUG: Conflict.Attack");
-            returnAssociatedQuery(nodeId);
-        }*/
+
+        // Dirty trick: I need to better check the generation of some useless rules that produce no new knowledge and only slow down the computation, and remove them
+        if (query.contains("WHEN t1.type_event = 'Physical.LocatedNear' AND t2.type_event = 'Physical.LocatedNear'"))
+            return 0;
+
         do {
             numberOfUpdates = db.rawSqlUpdate(query);
             numberOfIterations++;
